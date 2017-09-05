@@ -1,0 +1,12 @@
+1.redis的支持  ok
+2.支持了redis以后，socket-redis也需要支持   ok
+3.jsdoc的导出
+4.cli脚手架
+5.模块和库分离
+6.express的支持
+7.milktea老模块的改造   ok
+8.基础工具，定时器
+9.多核心的支持
+10.守护进程/跨进程访问
+11.openthis等改成bin
+12.文件上传
