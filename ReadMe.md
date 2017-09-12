@@ -9,6 +9,9 @@
 ``` 在项目目录执行
 # 安装本地工程模块
 $ npm run build
+
+如果是Linux系统（包括相关核心的其他OS）,需额外执行以下命令
+$ export NODE_PATH="/usr/local/lib/node_modules"
 ```
 
 
