@@ -16,7 +16,11 @@ module.exports = class {
 		this.count++;
 		if (typeof $data == "object" && $data.num)
 		{
-			$succcess($data.num * $data.num + ":" + this.count + " : " + this.id);
+			$succcess({
+				num: $data.num * $data.num,
+				count: this.count,
+				id: this.id
+			});
 		}
 		else
 		{
