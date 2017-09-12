@@ -3,7 +3,6 @@
  */
 var g = require("../global");
 var Manager = require("./Manager");
-var _module = require("../module/module");
 var time = require("../utils/TimeTool");
 var _defaultPort = 12000;
 
@@ -30,7 +29,7 @@ module.exports = class extends Manager {
 			this.server.adapter(redis(this.param.redis));
 		}
 
-		this.server.on('connection', function ($client)
+		this.server.on('connection', ($client)=>
 		{
 			startTime = Date.now();
 //			trace("[connection]", $client.client.id);
@@ -39,12 +38,12 @@ module.exports = class extends Manager {
 //				trace(n);
 //			}
 
-			$client.onevent = function ($data)
+			$client.onevent = ($data)=>
 			{
 				//返回结构如下：
 				//{type:2,nsp:'/',data:[eventType,params]};
 //				log.log("[Socket] " + this.name + "[recieved]", $data)
-				go($data, $client);
+				go(this, $data, $client);
 			}
 
 			$client.on('disconnect', function ()
@@ -61,7 +60,7 @@ module.exports = class extends Manager {
 
 var startTime = 0;
 
-function go($data, $client)
+function go($mgr, $data, $client)
 {
 	var nsp = $data.nsp;
 	var type = $data.type;
@@ -71,7 +70,7 @@ function go($data, $client)
 	{
 		dataType = dataArr[0];
 
-		var func = _module.getFunc(dataType);
+		var func = $mgr.getFunc(dataType);
 		if (func)
 		{
 			func(dataArr[1], function successBack($returnObj)

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="format-detection" content="email=no">
+	<meta name="viewport"
+		  content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1.0, minimum-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="./index.css" media="all">
+	<script src="./zepto.min.js"></script>
+	<script src="./socket.io.js"></script>
+</head>
+<body>
+<div class="net">
+	<div class="block">
+		<label>http</label><input id="domainTxt" value="" />
+		<label>socket</label><input id="ipTxt" value="" />
+	</div>
+	<div style="margin: 0px">
+		<br /><br />
+		<button id="connectBtn" class="sendBtn">连接Socket</button>
+	</div>
+</div>
+<div class="net">
+	<div class="block call">
+		<label>接口</label><input id="cmdTxt" value="" />
+		<label>参数</label><input id="paramTxt" value="" />
+	</div>
+	<div class="block" style="width: 260px">
+		<button id="sendGetBtn">Http get 请求</button>
+		<button id="sendSocketBtn">Socket 请求</button>
+		<button id="sendPostBtn">Http post 请求</button>
+	</div>
+</div>
+<div id="logTxt" class="log-text"></div>
+<div></div>
+</body>
+<script>
+	init();
+	initEvent();
+
+	function init()
+	{
+		window.socketIsConnected = false;
+
+		var ls = window.localStorage;
+		if (ls.domain)
+		{
+			$("#domainTxt").val(ls.domain);
+		}
+
+		if (ls.ip)
+		{
+			$("#ipTxt").val(ls.ip);
+		}
+
+		if (ls.cmd)
+		{
+			$("#cmdTxt").val(ls.cmd);
+		}
+
+		if (ls.param)
+		{
+			$("#paramTxt").val(ls.param);
+		}
+
+		$("#sendSocketBtn").get(0).disabled = true;
+	}
+
+	function initEvent()
+	{
+		$("#connectBtn").click(function ()
+		{
+			var ip = $("#ipTxt").val();
+			if (!ip)
+			{
+				return;
+			}
+			var url = ip;
+			var path = "";
+			url = url.replace("http://", "");
+			if (url.indexOf("/"))
+			{
+				path = url.split("/")[1];
+				if (path)
+				{
+					path = "/" + path;
+				}
+
+				url = url.split("/")[0];
+			}
+			url = "http://" + url;
+
+			if (!window.socketIsConnected && url)
+			{
+				window.socket = io(url, {
+					path: path,
+					transports: ["websocket", "polling"]
+				});
+				showLog("Connect: " + url + path, true);
+				socket.on('connect', function ()
+				{
+					save("ip", ip);
+					socketIsConnected = true;
+					showLog("Socket Server Connected!", true);
+					$("#sendSocketBtn").get(0).disabled = false;
+					$("#connectBtn").get(0).disabled = true;
+				});
+				socket.on("data", function (d)
+				{
+					showLog("接收到Socket数据:");
+					showLog(JSON.stringify(d, null, "　"));
+				});
+			}
+		});
+
+		$("#sendGetBtn").click(function ()
+		{
+			if (checkHttp())
+			{
+				var domain = $("#domainTxt").val();
+				var cmd = $("#cmdTxt").val();
+				var param = $("#paramTxt").val();
+				var dObj = param ? JSON.parse(param) : null;
+				var url = domain + cmd;
+				url.indexOf("http://") < 0 && (url = "http://" + url);
+				showLog("发送Http get请求: " + url, true);
+				if (param)
+				{
+					showLog("参数: " + param, true);
+				}
+				$.get(url, dObj, function (d)
+				{
+					save("domain", domain);
+					save("cmd", cmd);
+					save("param", param);
+					showLog(JSON.stringify(d, null, "　"));
+				})
+			}
+		});
+
+		$("#sendPostBtn").click(function ()
+		{
+			if (checkHttp())
+			{
+				var domain = $("#domainTxt").val();
+				var cmd = $("#cmdTxt").val();
+				var param = $("#paramTxt").val();
+				var dObj = param ? JSON.parse(param) : null;
+				var url = domain + cmd;
+				url.indexOf("http://") < 0 && (url = "http://" + url);
+				showLog("发送Http post请求: " + url, true);
+				if (param)
+				{
+					showLog("参数: " + param, true);
+				}
+				$.post(url, dObj, function (d)
+				{
+					save("domain", domain);
+					save("cmd", cmd);
+					save("param", param);
+					showLog(JSON.stringify(d, null, "　"));
+				})
+			}
+		});
+
+		$("#sendSocketBtn").click(function ()
+		{
+			if (checkSocket())
+			{
+				var cmd = $("#cmdTxt").val();
+				var param = $("#paramTxt").val();
+				var dObj = param ? JSON.parse(param) : null;
+
+				showLog("发送Socket请求: " + cmd + " " + param, true);
+				socket.emit(cmd, dObj);
+			}
+		});
+	}
+
+	function checkHttp()
+	{
+		return !!$("#domainTxt").val() && !!$("#cmdTxt").val() && !!$("#paramTxt").val();
+	}
+
+	function checkSocket()
+	{
+		return window.socketIsConnected && !!$("#cmdTxt").val() && !!$("#paramTxt").val();
+	}
+
+	function showLog($msg, $isInfo)
+	{
+		var infoP = $isInfo ? "<p class='info'>" : "<p>";
+		if (typeof $msg == "object")
+		{
+			$msg = JSON.stringify($msg);
+		}
+
+		$msg += "";
+		$msg = $msg.replace(/\n/g, "</p>" + infoP);
+		console.log($msg)
+		$("#logTxt").append(infoP + $msg + "</p>");
+		$("#logTxt").scrollTop($("#logTxt").get(0).scrollHeight);
+	}
+
+	function save(k, v)
+	{
+		var ls = window.localStorage;
+		ls[k] = v;
+	}
+</script>
+</html>                                                                                               

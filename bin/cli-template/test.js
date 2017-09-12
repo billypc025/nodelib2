@@ -5,7 +5,7 @@
 module.exports = class {
 	constructor()
 	{
-		this.id = Math.random();
+		this.id = new Date().getTime();
 		this.count = 0;
 		this.add("test", this.test);
 		this.add("test2", this.test2);
