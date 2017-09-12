@@ -8,7 +8,6 @@ module.exports = class {
 	{
 		this.add("test", this.test);
 		this.add("test2", this.test2);
-		this.add("test3", this.test3);
 		this.add("hello", this.hello);
 	}
 
