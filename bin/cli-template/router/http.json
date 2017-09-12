@@ -13,8 +13,8 @@
 	"param": {}
   },
   "module": {
-	"@/global-test": "./src/module/test",
-	"/test": "./src/module/test"
+	"@/global-test": "./module/test",
+	"/test": "./module/test"
   },
   "enabled": true
 }

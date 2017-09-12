@@ -6,7 +6,7 @@
 	"param": "billy"
   },
   "module": {
-	"test": "./src/module/test"
+	"test": "./module/test"
   },
   "enabled": true
 }
