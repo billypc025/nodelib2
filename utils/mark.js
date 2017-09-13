@@ -40,6 +40,7 @@ module.exports = function ($fileName, $targetName, $callBack)
 		}
 
 		var filePath = path.join("./", $fileName + ".md");
+		trace(filePath);
 		if (file.existsSync(filePath))
 		{
 			var fileContent = file.readFileSync(filePath, {encoding: "utf8"});
