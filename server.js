@@ -122,5 +122,6 @@ function showRouterList($basePath)
 
 function start()
 {
+	trace("start at:" + g.localHost.getLocalIp());
 	serverManager.start(options);
 }
