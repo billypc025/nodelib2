@@ -411,6 +411,7 @@ function addServer($routerName, $serverType)
 		var testFilePath = getCliPath("./bin/cli-template/test.js");
 		if (!projExist("./module/test.js"))
 		{
+			trace(123123)
 			copyFile("./bin/cli-template/test.js", "./module/test.js");
 			trace("Create File:" + getProjPath("./module/test.js"));
 		}
