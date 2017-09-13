@@ -72,113 +72,121 @@
 
 	function initEvent()
 	{
-		$("#connectBtn").click(function ()
+		$("#connectBtn").click(onClick_connectBtn);
+
+		$("#sendGetBtn").click(onClick_sendGetBtn);
+
+		$("#sendPostBtn").click(onClick_sendPostBtn);
+
+		$("#sendSocketBtn").click(onClick_sendSocketBtn);
+	}
+
+	function onClick_connectBtn(e)
+	{
+		var ip = $("#ipTxt").val();
+		if (!ip)
 		{
-			var ip = $("#ipTxt").val();
-			if (!ip)
-			{
-				return;
-			}
-			var url = ip;
-			var path = "";
-			url = url.replace("http://", "");
-			if (url.indexOf("/"))
-			{
-				path = url.split("/")[1];
-				if (path)
-				{
-					path = "/" + path;
-				}
-
-				url = url.split("/")[0];
-			}
-			url = "http://" + url;
-
-			if (!window.socketIsConnected && url)
-			{
-				window.socket = io(url, {
-					path: path,
-					transports: ["websocket", "polling"]
-				});
-				showLog("Connect: " + url + path, true);
-				socket.on('connect', function ()
-				{
-					save("ip", ip);
-					socketIsConnected = true;
-					showLog("Socket Server Connected!", true);
-					$("#sendSocketBtn").get(0).disabled = false;
-					$("#connectBtn").get(0).disabled = true;
-				});
-				socket.on("data", function (d)
-				{
-					showLog("接收到Socket数据:");
-					showLog(JSON.stringify(d, null, "　"));
-				});
-			}
-		});
-
-		$("#sendGetBtn").click(function ()
+			return;
+		}
+		var url = ip;
+		var path = "";
+		url = url.replace("http://", "");
+		if (url.indexOf("/"))
 		{
-			if (checkHttp())
+			path = url.split("/")[1];
+			if (path)
 			{
-				var domain = $("#domainTxt").val();
-				var cmd = $("#cmdTxt").val();
-				var param = $("#paramTxt").val();
-				var dObj = param ? JSON.parse(param) : null;
-				var url = domain + cmd;
-				url.indexOf("http://") < 0 && (url = "http://" + url);
-				showLog("发送Http get请求: " + url, true);
-				if (param)
-				{
-					showLog("参数: " + param, true);
-				}
-				$.get(url, dObj, function (d)
-				{
-					save("domain", domain);
-					save("cmd", cmd);
-					save("param", param);
-					showLog(JSON.stringify(d, null, "　"));
-				})
+				path = "/" + path;
 			}
-		});
 
-		$("#sendPostBtn").click(function ()
+			url = url.split("/")[0];
+		}
+		url = "http://" + url;
+
+		if (!window.socketIsConnected && url)
 		{
-			if (checkHttp())
+			window.socket = io(url, {
+				path: path,
+				transports: ["websocket", "polling"]
+			});
+			showLog("Connect: " + url + path, true);
+			socket.on('connect', function ()
 			{
-				var domain = $("#domainTxt").val();
-				var cmd = $("#cmdTxt").val();
-				var param = $("#paramTxt").val();
-				var dObj = param ? JSON.parse(param) : null;
-				var url = domain + cmd;
-				url.indexOf("http://") < 0 && (url = "http://" + url);
-				showLog("发送Http post请求: " + url, true);
-				if (param)
-				{
-					showLog("参数: " + param, true);
-				}
-				$.post(url, dObj, function (d)
-				{
-					save("domain", domain);
-					save("cmd", cmd);
-					save("param", param);
-					showLog(JSON.stringify(d, null, "　"));
-				})
-			}
-		});
+				save("ip", ip);
+				socketIsConnected = true;
+				showLog("Socket Server Connected!", true);
+				$("#sendSocketBtn").get(0).disabled = false;
+				$("#connectBtn").get(0).disabled = true;
+			});
+			socket.on("data", function (d)
+			{
+				showLog("接收到Socket数据:");
+				showLog(JSON.stringify(d, null, "　"));
+			});
+		}
+	}
 
-		$("#sendSocketBtn").click(function ()
+	function onClick_sendGetBtn(e)
+	{
+		if (checkHttp())
 		{
-			if (checkSocket())
+			var domain = $("#domainTxt").val();
+			var cmd = $("#cmdTxt").val();
+			var param = $("#paramTxt").val();
+			var dObj = param ? JSON.parse(param) : null;
+			var url = domain + cmd;
+			url.indexOf("http://") < 0 && (url = "http://" + url);
+			showLog("发送Http get请求: " + url, true);
+			if (param)
 			{
-				var cmd = $("#cmdTxt").val();
-				var param = $("#paramTxt").val();
-				var dObj = param ? JSON.parse(param) : null;
-
-				showLog("发送Socket请求: " + cmd + " " + param, true);
-				socket.emit(cmd, dObj);
+				showLog("参数: " + param, true);
 			}
-		});
+			$.get(url, dObj, function (d)
+			{
+				save("domain", domain);
+				save("cmd", cmd);
+				save("param", param);
+				showLog(JSON.stringify(d, null, "　"));
+			})
+		}
+	}
+
+	function onClick_sendPostBtn(e)
+	{
+		if (checkHttp())
+		{
+			var domain = $("#domainTxt").val();
+			var cmd = $("#cmdTxt").val();
+			var param = $("#paramTxt").val();
+			var dObj = param ? JSON.parse(param) : null;
+			var url = domain + cmd;
+			url.indexOf("http://") < 0 && (url = "http://" + url);
+			showLog("发送Http post请求: " + url, true);
+			if (param)
+			{
+				showLog("参数: " + param, true);
+			}
+			$.post(url, dObj, function (d)
+			{
+				save("domain", domain);
+				save("cmd", cmd);
+				save("param", param);
+				showLog(JSON.stringify(d, null, "　"));
+			})
+		}
+	}
+
+	function onClick_sendSocketBtn(e)
+	{
+		if (checkSocket())
+		{
+			var cmd = $("#cmdTxt").val();
+			var param = $("#paramTxt").val();
+			var dObj = param ? JSON.parse(param) : null;
+
+			showLog("发送Socket请求: " + cmd + " " + param, true);
+			socket.emit(cmd, dObj);
+		}
 	}
 
 	function checkHttp()
