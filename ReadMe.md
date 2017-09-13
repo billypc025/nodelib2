@@ -52,6 +52,22 @@ $ nodecli add bin [binName] 在开发目录新增一个可执行bin
 $ nodecli start 更新框架及本地工具库（可以在任意目录执行）
 ```
 
+### markthis
+```
+$ markthis <mdFileName> [htmlFilePath]  将MarkDown文件转换为html文件
+```
+
+### zip
+```
+$ zip <zipFile/zipDir> [zipFilePath]  生成压缩包
+```
+
+### openthis
+```
+$ openthis [port] 以当前目录作为webroot，启动一个web服务
+```
+
+
 ## 启动服务
 > 在工程目录中，运行以下命令
 ```
@@ -158,7 +174,7 @@ info是一个服务列表，所有需要启动的服务，其配置都放在info
   "type": "web",
   "param": {
 	"port": 80,             //服务端口
-	"webroot": "./webroot"  //web目录地址
+	"webroot": "./webroot"  //web目录地址（支持绝对路径）
   },
   "enabled": true
 }
