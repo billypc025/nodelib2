@@ -222,9 +222,7 @@ function update()
 					else
 					{
 						var fileContent = fs.readFileSync(file).toString();
-						fileContent = fileContent.replace(/#!.+/g, "{$" + "EDIT_INFO}"
-						)
-						;
+						fileContent = fileContent.replace(new RegExp("#" + "!.+", "g"), "{$" + "EDIT_INFO}");
 						if (fileContent.indexOf("{$" + "EDIT_INFO}") >= 0)
 						{
 							fileContent = fileContent.replace("{$" + "EDIT_INFO}", editInfo);
