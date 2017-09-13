@@ -74,7 +74,6 @@ function getHtml($bodyHtml, $title)
 
 function getStyle()
 {
-	var currPath = __dirname;
 	var cssFile = file.readFileSync(path.join(__dirname, "mark.css"), {encoding: "utf8"});
 	cssFile = new CleanCSS({}).minify(cssFile).styles;
 	var html = "<style>";
