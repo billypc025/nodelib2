@@ -415,6 +415,9 @@ function addServer($routerName, $serverType)
 		if (!projExist("./module/test.js"))
 		{
 			trace(123123)
+			trace(123123)
+			trace(123123)
+			trace(123123)
 			copyFile("./bin/cli-template/test.js", "./module/test.js");
 			trace("Create File:" + getProjPath("./module/test.js"));
 		}
