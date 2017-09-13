@@ -39,8 +39,7 @@ module.exports = function ($fileName, $targetName, $callBack)
 			$targetName += ".html";
 		}
 
-		var filePath = path.join("./", $fileName + ".md");
-		trace(filePath);
+		var filePath = path.join(path.resolve("."), $fileName + ".md");
 		if (file.existsSync(filePath))
 		{
 			var fileContent = file.readFileSync(filePath, {encoding: "utf8"});
@@ -76,7 +75,7 @@ function getHtml($bodyHtml, $title)
 function getStyle()
 {
 	var currPath = __dirname;
-	var cssFile = file.readFileSync(currPath + "\\" + "mark.css", {encoding: "utf8"});
+	var cssFile = file.readFileSync(path.join(__dirname, "mark.css"), {encoding: "utf8"});
 	cssFile = new CleanCSS({}).minify(cssFile).styles;
 	var html = "<style>";
 	html += cssFile;
