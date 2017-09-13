@@ -19,7 +19,7 @@ trace("开始安装模块");
 exe("cnpm install");
 trace("模块安装完毕");
 var editInfo = os.platform().indexOf("win32") >= 0 ? "#!node" : "#!/usr/bin/env node";
-var packageJson = require("./package.json");
+var packageJson = require("../package.json");
 if (packageJson.bin && Object.keys(packageJson.bin).length > 0)
 {
 	for (var k in packageJson.bin)
