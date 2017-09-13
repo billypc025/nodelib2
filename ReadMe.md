@@ -97,6 +97,31 @@ info是一个服务列表，所有需要启动的服务，其配置都放在info
 }
 ```
 
+### socket服务
+```
+{
+  "name": "myServer",       //服务名称
+  "type": "socket",
+  "param": {
+	"port": 8002,           //socket服务端口
+	"path": "/test",        //socket服务路径
+	"serveClient": false,
+	"pingInterval": 10000,       //心跳间隔
+	"pingTimeout": 5000,         //心跳超时
+	"cookie": false,             //服务端cookie
+	"transports": ["websocket", "polling"],     //传输方式
+	"redis": {                    //是否启用redis保存共享连接
+	  "port": 6379,
+	  "host": "127.0.0.1"
+	}
+  },
+  "module": {                      //用于指定开发模块，以键值对的形式指定对应的请求地址关联到哪个模块去处理
+	"/test": "./module/test"
+  },
+  "enabled": true
+}
+```
+
 ### mysql服务
 ```
 {

@@ -55,7 +55,7 @@ if (packageJson.bin && Object.keys(packageJson.bin).length > 0)
 		}
 	}
 }
-trace("开始导入库");
+trace("开始导入库, 耐心等待...");
 exe("npm link");
 trace("ALL DONE -----------------------------");
 process.exit();
