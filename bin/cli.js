@@ -192,12 +192,55 @@ function update()
 {
 	checkInit();
 
-	exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " pull", function (e, d)
+	exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " checkout .", function (e, d)
 	{
-		trace("Update nodeLib Complete.");
-		updateFile();
-		process.exit();
+		exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " pull", function (e, d)
+		{
+			trace("Update nodeLib Complete.");
+
+			var editInfo = require("os").platform().indexOf("win32") >= 0 ? "#!node" : "#!/usr/bin/env node";
+			var packageJson = require("../package.json");
+			if (packageJson.bin && Object.keys(packageJson.bin).length > 0)
+			{
+				for (var k in packageJson.bin)
+				{
+					var file = path.join(libPath, packageJson.bin[k]);
+
+					if (!fs.existsSync(file))
+					{
+						if (file.indexOf(".js") != file.length - 3)
+						{
+							file += ".js";
+						}
+
+						if (!fs.existsSync(file))
+						{
+							trace("检查到不存在的bin文件: " + file);
+						}
+					}
+					else
+					{
+						var fileContent = fs.readFileSync(file).toString();
+						fileContent = fileContent.replace(/#!.+/g, "{$EDIT_INFO}");
+						if (fileContent.indexOf("{$EDIT_INFO}") >= 0)
+						{
+							fileContent = fileContent.replace("{$EDIT_INFO}", editInfo);
+						}
+						else
+						{
+							fileContent = editInfo + "\n" + fileContent;
+						}
+						trace("转换bin文件：" + file);
+						fs.writeFileSync(file, fileContent);
+					}
+				}
+			}
+
+			updateFile();
+			process.exit();
+		});
 	});
+
 }
 
 function updateFile()
