@@ -198,7 +198,8 @@ function update()
 		{
 			trace("Update nodeLib Complete.");
 
-			var editInfo = require("os").platform().indexOf("win32") >= 0 ? "#!node" : "#!/usr/bin/env node";
+			var editInfo = require("os").platform().indexOf("win32") >= 0 ? "#" + "!" + "node" : "#" + "!" + "/usr/bin/env" +
+			" node";
 			var packageJson = require("../package.json");
 			if (packageJson.bin && Object.keys(packageJson.bin).length > 0)
 			{
@@ -221,10 +222,12 @@ function update()
 					else
 					{
 						var fileContent = fs.readFileSync(file).toString();
-						fileContent = fileContent.replace(/#!.+/g, "{$EDIT_INFO}");
-						if (fileContent.indexOf("{$EDIT_INFO}") >= 0)
+						fileContent = fileContent.replace(/#!.+/g, "{$" + "EDIT_INFO}"
+						)
+						;
+						if (fileContent.indexOf("{$" + "EDIT_INFO}") >= 0)
 						{
-							fileContent = fileContent.replace("{$EDIT_INFO}", editInfo);
+							fileContent = fileContent.replace("{$" + "EDIT_INFO}", editInfo);
 						}
 						else
 						{
