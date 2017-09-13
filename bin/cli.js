@@ -366,7 +366,10 @@ function addServer($routerName, $serverType)
 		globalCmd.log("Server Type Added: " + serverType);
 
 		var testFilePath = getCliPath("./bin/cli-template/test.js");
-		copyFile("./bin/cli-template/test.js", "./module/test.js");
+		if (!projExist("./module/test.js"))
+		{
+			copyFile("./bin/cli-template/test.js", "./module/test.js");
+		}
 		trace("Create File:" + getProjPath("./module/test.js"));
 		process.exit();
 	}
