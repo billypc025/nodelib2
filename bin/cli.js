@@ -237,6 +237,7 @@ function update()
 				}
 			}
 
+			require("child_process").execSync("cd " + libPath + " && npm link");
 			updateFile();
 			process.exit();
 		});
