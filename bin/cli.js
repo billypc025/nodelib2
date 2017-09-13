@@ -237,6 +237,7 @@ function update()
 				}
 			}
 
+			trace("开始导入库");
 			require("child_process").execSync("cd " + libPath + " && npm link");
 			updateFile();
 			process.exit();
