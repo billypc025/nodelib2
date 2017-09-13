@@ -1,8 +1,7 @@
-var resolve = require("path").resolve;
 var file = require("fs");
 var mark = require("marked");
 var CleanCSS = require("clean-css");
-var path = resolve(".");
+var path = require("path");
 
 mark.setOptions({
 	renderer: new mark.Renderer(),
@@ -40,13 +39,13 @@ module.exports = function ($fileName, $targetName, $callBack)
 			$targetName += ".html";
 		}
 
-		var filePath = path + "\\" + $fileName + ".md";
+		var filePath = path.join("./", $fileName + ".md");
 		if (file.existsSync(filePath))
 		{
 			var fileContent = file.readFileSync(filePath, {encoding: "utf8"});
 			fileContent = mark(fileContent);
 			fileContent = getHtml(fileContent, $fileName);
-			file.writeFile(path + "\\" + $targetName, fileContent, {encoding: "utf8"}, $callBack);
+			file.writeFile(path.join("./", $targetName), fileContent, {encoding: "utf8"}, $callBack);
 		}
 		else
 		{
