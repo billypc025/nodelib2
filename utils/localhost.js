@@ -9,6 +9,7 @@ exports.getLocalIp = function ()
 	var localIp = "127.0.0.1";
 	var platform = os.platform();
 	var netList = os.networkInterfaces();
+	trace(netList)
 	if (platform == "win32")
 	{
 		netList = netList['本地连接']
