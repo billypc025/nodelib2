@@ -32,7 +32,7 @@ module.exports = function ($routerName)
 	}
 
 	global.libPath = g.path.resolve(__dirname);
-	global.projPath = global;
+	global.projPath = projPath;
 
 	var routerPath;
 	if ($routerName)
