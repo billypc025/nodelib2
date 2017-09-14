@@ -29,7 +29,7 @@ module.exports = class {
 		for (var routerPath in this.module)
 		{
 			var modulePath = this.module[routerPath];
-			var moduleClass = require(g.path.join(pglobal.projPath || "", modulePath));
+			var moduleClass = require(g.path.join(global.projPath || "", modulePath));
 			var moduleItem = _module.addModule(routerPath, moduleClass, this.data);
 
 			this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
