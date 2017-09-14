@@ -72,7 +72,8 @@ $ openthis [port] 以当前目录作为webroot，启动一个web服务
 ## 启动服务
 > 在工程目录中，运行以下命令
 ```
-$ nodecli start [routerName]
+$ nodecli start [routerName] [scriptPath] [scriptParam]
+scriptPath和scriptParam也可以在router文件中设置
 ```
 
 
@@ -191,7 +192,7 @@ info是一个服务列表，所有需要启动的服务，其配置都放在info
 	"param": "billy"        //脚本默认执行的模块的参数
   },
   "module": {                   //用于定义开发模块关联
-	"test": "./src/module/test"  //对应param
+	"test": "./src/module/test"  //对应param （注意开头不能有/）
   },
   "enabled": true
 }
