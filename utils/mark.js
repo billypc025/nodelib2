@@ -46,7 +46,7 @@ exports.convertFile = function ($fileName, $targetName, $callBack)
 			var fileContent = fs.readFileSync(filePath, {encoding: "utf8"});
 			fileContent = convert(fileContent, $fileName);
 			var targetFilePath = path.join("./", $targetName);
-			if (file.isDirectory(targetFilePath))
+			if (file.isDirectory(targetFilePath) || $targetName.charAt($targetName.length - 1) == "/")
 			{
 				if (!fs.existsSync(targetFilePath))
 				{
