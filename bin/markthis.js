@@ -5,7 +5,8 @@
 var g = require("../global");
 
 var fileName = getArgs(0, null);
-g.mark(fileName, function ($err)
+var targetName = getArgs(1, null);
+g.mark(fileName, targetName, function ($err)
 {
 	if ($err)
 	{
