@@ -54,7 +54,7 @@ exports.convertFile = function ($fileName, $targetName, $callBack)
 				}
 				targetFilePath = path.join(targetFilePath, $fileName + ".html");
 			}
-			else if (file.isFile(targetFilePath))
+			else
 			{
 				var basePath = file.getDirectory(targetFilePath);
 				if (!fs.existsSync(basePath))
