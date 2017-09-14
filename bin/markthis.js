@@ -6,7 +6,7 @@ var g = require("../global");
 
 var fileName = getArgs(0, null);
 var targetName = getArgs(1, null);
-g.mark(fileName, targetName, function ($err)
+g.mark.convertFile(fileName, targetName, function ($err)
 {
 	if ($err)
 	{

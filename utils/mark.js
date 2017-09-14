@@ -14,7 +14,7 @@ mark.setOptions({
 	smartypants: false
 })
 
-module.exports = function ($fileName, $targetName, $callBack)
+exports.convertFile = function ($fileName, $targetName, $callBack)
 {
 	if (typeof $targetName == "function")
 	{
@@ -43,9 +43,10 @@ module.exports = function ($fileName, $targetName, $callBack)
 		if (file.existsSync(filePath))
 		{
 			var fileContent = file.readFileSync(filePath, {encoding: "utf8"});
-			fileContent = mark(fileContent);
-			fileContent = getHtml(fileContent, $fileName);
-			file.writeFile(path.join("./", $targetName), fileContent, {encoding: "utf8"}, $callBack);
+			fileContent = convert(fileContent, $fileName);
+			var targetFilePath = path.join("./", $targetName);
+			trace("Creating File: " + targetFilePath);
+			file.writeFile(targetFilePath, fileContent, {encoding: "utf8"}, $callBack);
 		}
 		else
 		{
@@ -57,6 +58,13 @@ module.exports = function ($fileName, $targetName, $callBack)
 		$callBack("没有指定要转换的md文件！");
 	}
 }
+
+function convert($mdContent, $fileName)
+{
+	$mdContent = mark($mdContent);
+	$mdContent = getHtml($mdContent, $fileName || "");
+}
+exports.convert = convert;
 
 function getHtml($bodyHtml, $title)
 {
