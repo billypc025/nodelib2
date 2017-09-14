@@ -37,6 +37,7 @@ $ nodecli add router [routerName] 在开发目录新增一个router
 
 ```
 $ nodecli add server [serverType] 在开发目录新增一个服务类型
+$ nodecli add server [routerName] [serverType] 在开发目录新增一个服务类型
 目前支持的服务类型有： http socket web redis mysql script express
 ```
 
@@ -49,7 +50,7 @@ $ nodecli add bin [binName] 在开发目录新增一个可执行bin
 ```
 
 ```
-$ nodecli start 更新框架及本地工具库（可以在任意目录执行）
+$ nodecli start [routerName] [scriptPath] [scriptParam] 开始运行（可以在任意工程目录执行）
 ```
 
 ### markthis
