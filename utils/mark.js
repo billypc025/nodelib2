@@ -35,7 +35,7 @@ exports.convertFile = function ($fileName, $targetName, $callBack)
 			$targetName = $fileName;
 		}
 
-		if ($targetName.indexOf(".html") < 0)
+		if ($targetName.indexOf(".html") < 0 && $targetName.charAt($targetName.length - 1) != "/")
 		{
 			$targetName += ".html";
 		}
