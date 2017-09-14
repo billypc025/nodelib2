@@ -1,7 +1,8 @@
-var file = require("fs");
+var fs = require("fs");
 var mark = require("marked");
 var CleanCSS = require("clean-css");
 var path = require("path");
+var file = require("./FileUtil");
 
 mark.setOptions({
 	renderer: new mark.Renderer(),
@@ -40,13 +41,29 @@ exports.convertFile = function ($fileName, $targetName, $callBack)
 		}
 
 		var filePath = path.join(path.resolve("."), $fileName + ".md");
-		if (file.existsSync(filePath))
+		if (fs.existsSync(filePath))
 		{
-			var fileContent = file.readFileSync(filePath, {encoding: "utf8"});
+			var fileContent = fs.readFileSync(filePath, {encoding: "utf8"});
 			fileContent = convert(fileContent, $fileName);
 			var targetFilePath = path.join("./", $targetName);
+			if (file.isDirectory(targetFilePath))
+			{
+				if (!fs.existsSync(targetFilePath))
+				{
+					file.createDirectory(targetFilePath);
+				}
+				targetFilePath = path.join(targetFilePath, $fileName + ".html");
+			}
+			else if (file.isFile(targetFilePath))
+			{
+				var basePath = file.getDirectory(targetFilePath);
+				if (!fs.existsSync(basePath))
+				{
+					file.createDirectory(basePath);
+				}
+			}
 			trace("Creating File: " + targetFilePath);
-			file.writeFile(targetFilePath, fileContent, {encoding: "utf8"}, $callBack);
+			fs.writeFile(targetFilePath, fileContent, {encoding: "utf8"}, $callBack);
 		}
 		else
 		{
@@ -74,7 +91,7 @@ function getHtml($bodyHtml, $title)
 	html += "<meta name='viewport' content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>";
 	html += "<title>" + $title + "</title>";
 	html += getStyle();
-	html += "</head><body class='container'><div class='file-content wiki'>"
+	html += "</head><body class='container'><div class='fs-content wiki'>"
 	html += $bodyHtml;
 	html += "</div></body></html>";
 	return html;
@@ -82,7 +99,7 @@ function getHtml($bodyHtml, $title)
 
 function getStyle()
 {
-	var cssFile = file.readFileSync(path.join(__dirname, "mark.css"), {encoding: "utf8"});
+	var cssFile = fs.readFileSync(path.join(__dirname, "mark.css"), {encoding: "utf8"});
 	cssFile = new CleanCSS({}).minify(cssFile).styles;
 	var html = "<style>";
 	html += cssFile;
