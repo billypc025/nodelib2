@@ -10,6 +10,7 @@ module.exports = class extends Manager {
 	{
 		var args = getArgs();
 		args.shift();
+		args.shift();
 
 		this.defaultPath = this.param.path || "";
 		this.defaultParam = this.param.param || {};
