@@ -190,7 +190,7 @@ function add(...arg)
 
 function update()
 {
-	checkInit();
+//	checkInit();
 
 	exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " checkout .", function (e, d)
 	{
@@ -236,10 +236,14 @@ function update()
 					}
 				}
 			}
-
 			trace("开始导入库, 耐心等待...");
 			require("child_process").execSync("cd " + libPath + " && npm link");
-			updateFile();
+
+			if (projPath != "")
+			{
+				updateFile();
+			}
+
 			process.exit();
 		});
 	});
