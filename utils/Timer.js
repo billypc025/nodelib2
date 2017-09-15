@@ -6,7 +6,9 @@
  用setTimeout的方式来实现Timer
  这样每个setTimeout就检查一次，也就相当于interval，
  所以就分为延迟执行，和间隔执行两种
-
+ 然而setTime方式的缺陷是无法实施更新interval
+ 所以全局tick的方式确实还是很靠谱的
+ 但是tick里面使用的方法是浏览器端方法，并非node方法
  */
 const EventEmitter = require('events');
 const TIMER_UPDATE = "TIMER_UPDATE";

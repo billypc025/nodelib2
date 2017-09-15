@@ -15,6 +15,12 @@ mark.setOptions({
 	smartypants: false
 })
 
+/**
+ * 用于将MarkDown文件转换为html文件
+ * @param $fileName markDown文件路径
+ * @param $targetName 目标文件路径
+ * @param $callBack 完成回调
+ */
 exports.convertFile = function ($fileName, $targetName, $callBack)
 {
 	if (typeof $targetName == "function")
@@ -76,10 +82,16 @@ exports.convertFile = function ($fileName, $targetName, $callBack)
 	}
 }
 
+/**
+ * 用于将md格式的内容，转为html格式的内容
+ * @param $mdContent md格式的内容（字符串）
+ * @param $fileName  html格式的内容（字符串）
+ */
 function convert($mdContent, $fileName)
 {
 	$mdContent = mark($mdContent);
 	$mdContent = getHtml($mdContent, $fileName || "");
+	return $mdContent;
 }
 exports.convert = convert;
 
