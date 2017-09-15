@@ -13,7 +13,6 @@ exports.get = function (...arg)
 function EXEC_CHILD(...arg)
 {
 	this.cmdList = [];
-
 	this.add.apply(this, arg);
 }
 
@@ -25,27 +24,39 @@ function add(...arg)
 	}
 	this.cmdList.push.apply(this.cmdList, arg);
 }
-
 EXEC_CHILD.prototype.add = add;
 
-EXEC_CHILD.prototype.exe = function ($callBack, $errorBack)
+function show()
 {
-	if (this.cmdList.length == 0)
-	{
-		$errorBack && $errorBack("requset some cmd");
-	}
-	else
-	{
-		exec(this.cmdList.join(" "), function ($error, $stdout, $stderr)
-		{
-			if ($error)
-			{
-				$errorBack && $errorBack($error, $stderr);
-			}
-			else if ($callBack)
-			{
-				$callBack($stdout);
-			}
-		});
-	}
+	return this.cmdList.join(" ");
 }
+EXEC_CHILD.prototype.show = show;
+
+function exe($callBack, $errorBack)
+{
+	return new Promise((resolved, reject)=>
+	{
+		if (this.cmdList.length == 0)
+		{
+			$errorBack && $errorBack("requset some cmd");
+			reject("requset some cmd");
+		}
+		else
+		{
+			exec(this.cmdList.join(" "), function ($error, $stdout, $stderr)
+			{
+				if ($error)
+				{
+					$errorBack && $errorBack($error, $stderr);
+					reject($error, $stderr);
+				}
+				else
+				{
+					$callBack && $callBack($stdout);
+					resolved($stdout);
+				}
+			});
+		}
+	});
+}
+EXEC_CHILD.prototype.exe = exe;

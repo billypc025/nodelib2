@@ -14,7 +14,7 @@ var g = require("nodeLib");
 
 //方式一：带命令及参数
 /*
-var globalCmd = require("../utils/actionList")();
+var globalCmd = require("../utils/actionPool")();
 
 (function ()
 {

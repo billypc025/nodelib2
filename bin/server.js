@@ -1,8 +1,8 @@
 /**
  * Created by billy on 2017/5/13.
  */
-var g = require("./global");
-var serverManager = require("./manager/ServerManager");
+var g = require("../global");
+var serverManager = require("../manager/ServerManager");
 var options = {router: ""};
 
 module.exports = function ($routerName)
@@ -122,6 +122,6 @@ function showRouterList($basePath)
 
 function start()
 {
-	trace("start at:" + g.localHost.getLocalIp());
+	log.success("start at:" + g.localHost.getLocalIp());
 	serverManager.start(options);
 }

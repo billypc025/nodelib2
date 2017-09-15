@@ -17,7 +17,7 @@
 <div class="net">
 	<div class="block">
 		<label>http</label><input id="domainTxt" value="" />
-		<label>socket</label><input id="ipTxt" value="" />
+		<label>socket</label><input id="ipTxt" value="192.168.12.219:8002/test" />
 	</div>
 	<div style="margin: 0px">
 		<br /><br />
@@ -26,8 +26,8 @@
 </div>
 <div class="net">
 	<div class="block call">
-		<label>接口</label><input id="cmdTxt" value="" />
-		<label>参数</label><input id="paramTxt" value="" />
+		<label>接口</label><input id="cmdTxt" value="/test/chat" />
+		<label>参数</label><input id="paramTxt" value="你好" />
 	</div>
 	<div class="block" style="width: 260px">
 		<button id="sendGetBtn">Http get 请求</button>
@@ -73,11 +73,8 @@
 	function initEvent()
 	{
 		$("#connectBtn").click(onClick_connectBtn);
-
 		$("#sendGetBtn").click(onClick_sendGetBtn);
-
 		$("#sendPostBtn").click(onClick_sendPostBtn);
-
 		$("#sendSocketBtn").click(onClick_sendSocketBtn);
 	}
 
@@ -120,8 +117,15 @@
 			});
 			socket.on("data", function (d)
 			{
-				showLog("接收到Socket数据:");
-				showLog(JSON.stringify(d, null, "　"));
+				if(d.cmd=="/test/chat")
+				{
+					showLog(d.data.name+": "+d.data.msg);
+				}
+				else
+				{
+					showLog("接收到Socket数据:");
+					showLog(JSON.stringify(d, null, "　"));
+				}
 			});
 		}
 	}
@@ -133,7 +137,7 @@
 			var domain = $("#domainTxt").val();
 			var cmd = $("#cmdTxt").val();
 			var param = $("#paramTxt").val();
-			var dObj = param ? JSON.parse(param) : null;
+			var dObj = formatData(param)
 			var url = domain + cmd;
 			url.indexOf("http://") < 0 && (url = "http://" + url);
 			showLog("发送Http get请求: " + url, true);
@@ -158,7 +162,7 @@
 			var domain = $("#domainTxt").val();
 			var cmd = $("#cmdTxt").val();
 			var param = $("#paramTxt").val();
-			var dObj = param ? JSON.parse(param) : null;
+			var dObj = formatData(param);
 			var url = domain + cmd;
 			url.indexOf("http://") < 0 && (url = "http://" + url);
 			showLog("发送Http post请求: " + url, true);
@@ -182,9 +186,11 @@
 		{
 			var cmd = $("#cmdTxt").val();
 			var param = $("#paramTxt").val();
-			var dObj = param ? JSON.parse(param) : null;
-
-			showLog("发送Socket请求: " + cmd + " " + param, true);
+			var dObj = formatData(param);
+			if(cmd!="/test/chat")
+			{
+				showLog("发送Socket请求: " + cmd + " " + param, true);
+			}
 			socket.emit(cmd, dObj);
 		}
 	}
@@ -197,6 +203,19 @@
 	function checkSocket()
 	{
 		return window.socketIsConnected && !!$("#cmdTxt").val() && !!$("#paramTxt").val();
+	}
+	
+	function formatData($data)
+	{
+		if($data.charAt(0)=="{" && $data.charAt($data.length-1)=="}")
+		{
+			try{
+				$data=JSON.parse($data);
+			}
+			catch(e){}
+		}
+		
+		return $data || "";
 	}
 
 	function showLog($msg, $isInfo)

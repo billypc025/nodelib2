@@ -8,39 +8,57 @@ var qrcode = require("qrcode");
  * @param $txt 二维码字符串
  * @param $filePath 文件路径（缺省）
  * @param $callBack 回调方法 function($err,$data)
+ * @returns {Promise} 回调Promise
  */
 module.exports = function ($txt, $filePath, $callBack)
 {
-	if (typeof $filePath == "function")
+	return new Promise(function (resolved, reject)
 	{
-		$callBack = $filePath;
-		$filePath = null;
-	}
-
-	if ($txt)
-	{
-		if ($filePath)
+		if (typeof $filePath == "function")
 		{
-			qrcode.toFile($filePath, text, function (err, data)
+			$callBack = $filePath;
+			$filePath = null;
+		}
+
+		if ($txt)
+		{
+			if ($filePath)
 			{
-				if (!err)
+				qrcode.toFile($filePath, text, function (err, data)
 				{
-					$callBack();
-				}
-				else
-				{
-					$callBack("保存失败");
-					throw err
-				}
-			})
+					if (!err)
+					{
+						callBack();
+					}
+					else
+					{
+						callBack("保存失败");
+						throw err
+					}
+				})
+			}
+			else
+			{
+				qrcode.toString(text, {type: "terminal"}, callBack)
+			}
 		}
 		else
 		{
-			qrcode.toString(text, {type: "terminal"}, $callBack)
+			callBack("缺少必要的参数txt!");
 		}
-	}
-	else
-	{
-		$callBack("缺少必要的参数txt!");
-	}
+
+		function callBack($msg)
+		{
+			$callBack && $callBack($msg);
+
+			if ($msg)
+			{
+				reject($msg);
+			}
+			else
+			{
+				resolved();
+			}
+		}
+	})
 }

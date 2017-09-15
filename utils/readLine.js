@@ -12,6 +12,11 @@ if (!rl)
 	});
 }
 
+/**
+ * 用于命令行读取输入
+ * @param $msg 提示信息
+ * @returns {Promise} 回调Promise
+ */
 function show($msg)
 {
 	$msg = $msg || "";
@@ -26,6 +31,11 @@ function show($msg)
 	});
 }
 
+/**
+ * 用于命令行提示Y/N
+ * @param $msg 提示信息
+ * @returns {Promise} 回调Promise
+ */
 function showYesNo($msg)
 {
 	$msg = $msg || "";

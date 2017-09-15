@@ -7,8 +7,8 @@ var opener = require("opener");
 var timeTool = require("../utils/TimeTool");
 var exec = require("child_process").exec;
 
-var globalCmd = require("../utils/actionList")();
-var addCmd = require("../utils/actionList")();
+var globalCmd = require("../utils/actionPool")();
+var addCmd = require("../utils/actionPool")();
 
 var libPath = path.join(__dirname, "../");
 var currPath = path.resolve("./");
@@ -283,7 +283,7 @@ function open()
 function start($routerName)
 {
 	checkInit();
-	require("../server")($routerName);
+	require("./server")($routerName);
 }
 
 function addRouter($routerName, $serverType)

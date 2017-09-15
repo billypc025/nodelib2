@@ -20,66 +20,84 @@ mark.setOptions({
  * @param $fileName markDown文件路径
  * @param $targetName 目标文件路径
  * @param $callBack 完成回调
+ * @returns {Promise} 回调Promise
  */
 exports.convertFile = function ($fileName, $targetName, $callBack)
 {
-	if (typeof $targetName == "function")
+	return new Promise(function (resolved, reject)
 	{
-		$callBack = $targetName;
-		$targetName = "";
-	}
-
-	if ($fileName)
-	{
-		if ($fileName.indexOf(".md") == $fileName.length - 3)
+		if (typeof $targetName == "function")
 		{
-			$fileName = $fileName.substr(0, $fileName.length - 3);
+			$callBack = $targetName;
+			$targetName = "";
 		}
 
-		if (!$targetName)
+		if ($fileName)
 		{
-			$targetName = $fileName;
-		}
-
-		if ($targetName.indexOf(".html") < 0 && $targetName.charAt($targetName.length - 1) != "/")
-		{
-			$targetName += ".html";
-		}
-
-		var filePath = path.join(path.resolve("."), $fileName + ".md");
-		if (fs.existsSync(filePath))
-		{
-			var fileContent = fs.readFileSync(filePath, {encoding: "utf8"});
-			fileContent = convert(fileContent, $fileName);
-			var targetFilePath = path.join("./", $targetName);
-			if (file.isDirectory(targetFilePath) || $targetName.charAt($targetName.length - 1) == "/")
+			if ($fileName.indexOf(".md") == $fileName.length - 3)
 			{
-				if (!fs.existsSync(targetFilePath))
+				$fileName = $fileName.substr(0, $fileName.length - 3);
+			}
+
+			if (!$targetName)
+			{
+				$targetName = $fileName;
+			}
+
+			if ($targetName.indexOf(".html") < 0 && $targetName.charAt($targetName.length - 1) != "/")
+			{
+				$targetName += ".html";
+			}
+
+			var filePath = path.join(path.resolve("."), $fileName + ".md");
+			if (fs.existsSync(filePath))
+			{
+				var fileContent = fs.readFileSync(filePath, {encoding: "utf8"});
+				fileContent = convert(fileContent, $fileName);
+				var targetFilePath = path.join("./", $targetName);
+				if (file.isDirectory(targetFilePath) || $targetName.charAt($targetName.length - 1) == "/")
 				{
-					file.createDirectory(targetFilePath);
+					if (!fs.existsSync(targetFilePath))
+					{
+						file.createDirectory(targetFilePath);
+					}
+					targetFilePath = path.join(targetFilePath, $fileName + ".html");
 				}
-				targetFilePath = path.join(targetFilePath, $fileName + ".html");
+				else
+				{
+					var basePath = file.getDirectory(targetFilePath);
+					if (!fs.existsSync(basePath))
+					{
+						file.createDirectory(basePath);
+					}
+				}
+				trace("Creating File: " + targetFilePath);
+				fs.writeFile(targetFilePath, fileContent, {encoding: "utf8"}, callBack);
 			}
 			else
 			{
-				var basePath = file.getDirectory(targetFilePath);
-				if (!fs.existsSync(basePath))
-				{
-					file.createDirectory(basePath);
-				}
+				callBack("指定的文件不存在：" + filePath);
 			}
-			trace("Creating File: " + targetFilePath);
-			fs.writeFile(targetFilePath, fileContent, {encoding: "utf8"}, $callBack);
 		}
 		else
 		{
-			$callBack("指定的文件不存在：" + filePath);
+			callBack("没有指定要转换的md文件！");
 		}
-	}
-	else
-	{
-		$callBack("没有指定要转换的md文件！");
-	}
+
+		function callBack($msg)
+		{
+			$callBack && $callBack($msg);
+
+			if ($msg)
+			{
+				reject($msg);
+			}
+			else
+			{
+				resolved();
+			}
+		}
+	});
 }
 
 /**
