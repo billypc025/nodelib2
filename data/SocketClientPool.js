@@ -1,43 +1,72 @@
 /**
  * Created by billy on 2017/9/15.
  */
+
 var _hash = {};
-var _list = [];
 
-function init()
-{
-}
-exports.init = init;
-
-function add($client)
-{
-	var id = $client.id;
-	if (!_hash[id])
+class ClientPool {
+	constructor()
 	{
-		_hash[id] = $client;
-		_list.push($client);
+		this.hash = {};
+		this.list = [];
+	}
+
+	add($client)
+	{
+		var id = $client.id;
+		if (!this.hash[id])
+		{
+			this.hash[id] = createData($client);
+		}
+	}
+
+	addList($id)
+	{
+		if (this.list.indexOf($id) < 0)
+		{
+			this.list.push($id);
+			this.hash[$id].isLogin = true;
+		}
+	}
+
+	get($id)
+	{
+		return this.hash[$id];
+	}
+
+	remove($id)
+	{
+		var client = this.hash[$id];
+		if (client)
+		{
+			this.list.splice(this.list.indexOf($id), 1);
+			delete this.hash[$id];
+		}
 	}
 }
-exports.add = add;
 
-function get($id)
+function createData($client)
 {
-	return _hash[$id];
+	var clientData = {};
+	clientData.id = $client.id;
+	clientData.client = $client;
+	clientData.isLogin = false;
+	clientData.connectTime = Date.now();
+	clientData.update = updateData.bind(clientData);
+	return clientData;
 }
-exports.get = get;
 
-function remove($id)
+function updateData($obj)
 {
-	var client = _hash[$id];
-	if (client)
+	$obj.hasOwnProperty("isLogin") && (this.isLogin = $obj.isLogin);
+}
+
+exports.get = function ($name)
+{
+	if (!_hash[$name])
 	{
-		_list.splice(_list.indexOf(client), 1);
-		delete _hash[$id];
+		var clientPool = new ClientPool();
+		_hash[$name] = clientPool;
 	}
+	return _hash[$name];
 }
-exports.remove = remove;
-
-defineProperty(exports, "list", function ()
-{
-	return _list;
-});

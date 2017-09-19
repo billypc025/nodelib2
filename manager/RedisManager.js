@@ -11,6 +11,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		this.managerType = "Redis";
 		this.server = new Redis(this.param.port, this.param.host);
 		this.logLimit = this.param.logLimit || 5000;
 

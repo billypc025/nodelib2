@@ -382,11 +382,11 @@ function isString($str)
 }
 global.isString = isString;
 
-function debug($obj)
+function debug($obj, $maxDepth)
 {
-	return debuga({}, $obj, 0);
+	return debuga({}, $obj, 0, $maxDepth || 7);
 
-	function debuga(hash, obj, depth)
+	function debuga(hash, obj, depth, maxDepth)
 	{
 		if (obj == null || obj == undefined || typeof obj == "number" || typeof obj == "string" || typeof obj == "boolean")
 		{
@@ -397,7 +397,7 @@ function debug($obj)
 			var a = [];
 			for (var i = 0; i < obj.length; i++)
 			{
-				a[i] = debuga({}, obj[i], depth + 1);
+				a[i] = debuga({}, obj[i], depth + 1, maxDepth);
 			}
 			return a;
 		}
@@ -408,14 +408,14 @@ function debug($obj)
 		else
 		{
 
-			if (depth >= 7)
+			if (depth >= maxDepth)
 			{
 				return "[object object]";
 			}
 
 			for (var k in obj)
 			{
-				hash[k] = debuga({}, obj[k], depth + 1);
+				hash[k] = debuga({}, obj[k], depth + 1, maxDepth);
 			}
 			return hash;
 		}

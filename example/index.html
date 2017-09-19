@@ -117,9 +117,9 @@
 			});
 			socket.on("data", function (d)
 			{
-				if(d.cmd=="/test/chat")
+				if (d.cmd == "/test/chat")
 				{
-					showLog(d.data.name+": "+d.data.msg);
+					showLog(d.data.name + ": " + d.data.msg);
 				}
 				else
 				{
@@ -127,6 +127,10 @@
 					showLog(JSON.stringify(d, null, "　"));
 				}
 			});
+			socket.on('disconnect', function ()
+			{
+				showLog("------disconnect-----");
+			})
 		}
 	}
 
@@ -187,7 +191,7 @@
 			var cmd = $("#cmdTxt").val();
 			var param = $("#paramTxt").val();
 			var dObj = formatData(param);
-			if(cmd!="/test/chat")
+			if (cmd != "/test/chat")
 			{
 				showLog("发送Socket请求: " + cmd + " " + param, true);
 			}
@@ -204,17 +208,20 @@
 	{
 		return window.socketIsConnected && !!$("#cmdTxt").val() && !!$("#paramTxt").val();
 	}
-	
+
 	function formatData($data)
 	{
-		if($data.charAt(0)=="{" && $data.charAt($data.length-1)=="}")
+		if ($data.charAt(0) == "{" && $data.charAt($data.length - 1) == "}")
 		{
-			try{
-				$data=JSON.parse($data);
+			try
+			{
+				$data = JSON.parse($data);
 			}
-			catch(e){}
+			catch (e)
+			{
+			}
 		}
-		
+
 		return $data || "";
 	}
 

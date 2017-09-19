@@ -42,6 +42,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		this.managerType = "Http";
 		this.server = null;
 		this.header = __merge(_header, this.param.header, true);
 		this.port = this.param.port || _defaultPort;
@@ -72,7 +73,7 @@ module.exports = class extends Manager {
 		server.listen(this.port);
 		this.server = server;
 		g.data.server.addServer("http:" + this.port, this.server);
-		log.info("[Http] " + this.name + ": Server runing at port: " + this.port);
+		log.info(this.getMsg("Server runing at port:", this.port));
 	}
 }
 
@@ -120,7 +121,7 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 	}
 	else
 	{
-		log._warn("[Http] Not Found Func: ", $pathName);
+		log._warn(this.getMsg("Not Found Func-", $pathName));
 		writeOut(404, null, $request, $response);
 	}
 }

@@ -9,6 +9,7 @@ var _keyHash = {};
 module.exports = class extends Manager {
 	init()
 	{
+		this.managerType = "MySql";
 		var serverKey = MysqlServer.getString(this.param);
 		if (!_keyHash[serverKey])
 		{

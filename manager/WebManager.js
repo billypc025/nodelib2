@@ -12,6 +12,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		this.managerType = "Web";
 		this.port = this.param.port || _default_port;
 		this.webroot = this.param.webroot || "./";
 

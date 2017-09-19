@@ -7,6 +7,7 @@ var _module = require("../module/module");
 module.exports = class {
 	constructor($managerData)
 	{
+		this.managerType = "";
 		this.funcHash = {};
 		this._data = $managerData;
 		$managerData.update({manager: this});
@@ -78,5 +79,10 @@ module.exports = class {
 	get module()
 	{
 		return this.data.module;
+	}
+
+	getMsg(...arg)
+	{
+		return "[" + this.managerType + "] " + this.name + ": " + arg.join(" ");
 	}
 }

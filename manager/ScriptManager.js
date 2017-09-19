@@ -8,6 +8,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		this.managerType = "Script";
 		var args = getArgs();
 		args.shift();
 		args.shift();
@@ -37,35 +38,35 @@ module.exports = class extends Manager {
 			var func = this.getFunc($path);
 			if (func)
 			{
-				log.info("[Script] starting script...");
+				log.info(this.getMsg("starting script..."));
 				func($param,
 					function ($resultObj, $exit)
 					{
 						if ($resultObj)
 						{
-							log.info("[Script] the result following:")
+							log.info(this.getMsg("the result following:"));
 							trace("");
 							trace($resultObj);
 							trace("");
 						}
-						log.success("[Script] Done!");
+						log.success(this.getMsg("Done!"));
 						if ($exit)
 						{
 							process.exit();
 						}
 					}, function ($errorMsg)
 					{
-						log.error("[Script] Error:" + $errorMsg)
+						log.error(this.getMsg("Error:", $errorMsg));
 					})
 			}
 			else
 			{
-				log.error("[Script] not found script: " + $path);
+				log.error(this.getMsg("not found script:", $path));
 			}
 		}
 		else
 		{
-			log.error("[Script] 没有指定脚本名称！");
+			log.error(this.getMsg("没有指定脚本名称！"));
 		}
 	}
 }
