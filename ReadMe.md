@@ -128,6 +128,10 @@ info是一个服务列表，所有需要启动的服务，其配置都放在info
 	"pingTimeout": 5000,         //心跳超时
 	"cookie": false,             //服务端cookie
 	"transports": ["websocket", "polling"],     //传输方式
+	"requireLogin": {               //是否强制登录验证   支持单个参数,支持直接写值
+        "timeout": 5000,            //登录验证超时时间
+    	"module": "/test/login"     //登录模块路径 （连接后需要发送login及相关信息到服务端）
+    },
 	"redis": {                    //是否启用redis保存共享连接
 	  "port": 6379,
 	  "host": "127.0.0.1"
