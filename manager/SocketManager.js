@@ -11,6 +11,7 @@ g.data.clientPool = require("../data/SocketClientPool");
 module.exports = class extends Manager {
 	init()
 	{
+		this.disconnectCallList = [];
 		this.managerType = "Socket";
 		this.clientPool = g.data.clientPool.get(this.name);
 		this.server = null;
@@ -44,6 +45,14 @@ module.exports = class extends Manager {
 	{
 		this.initServer();
 		super.start();
+	}
+
+	addListener($type, $target, $func)
+	{
+		if ($type == "disconnect")
+		{
+			this.disconnectCallList.push([$target, $func]);
+		}
 	}
 
 	initServer()
@@ -87,16 +96,17 @@ module.exports = class extends Manager {
 				//返回结构如下：
 				//{type:2,nsp:'/',data:[eventType,params]};
 //				log.log("[Socket] " + this.name + "[recieved]", $data)
-				if (!this.requireLogin || this.clientPool.get($client.id).isLogin)
+				var clientData = this.clientPool.get($client.id);
+				if (!this.requireLogin || clientData.isLogin)
 				{
-					go(this, $data, $client);
+					go(this, $data, clientData);
 				}
 				else if ($data.data.length > 0 && $data.data[0] == "login")
 				{
 					//这里应该使用一个标准回调，module里面只负责逻辑
 					$data.data.shift();
 					$data.data.unshift(this.loginModule);
-					go(this, $data, $client, ($returnData, $client)=>
+					go(this, $data, clientData, ($returnData, $client)=>
 					{
 						this.clientPool.addList($client.id);
 						this.removeLoginCheckList($client.id);
@@ -111,9 +121,16 @@ module.exports = class extends Manager {
 
 			$client.on('disconnect', ()=>
 			{
+				for (var i = 0; i < this.disconnectCallList.length; i++)
+				{
+					var target = this.disconnectCallList[i][0];
+					var func = this.disconnectCallList[i][1];
+					func.call(target, $client.id);
+				}
 				this.clientPool.remove($client.id);
 //				trace(Date.now() - startTime);
 //				trace("[disconnect]", $client.client.id);
+
 			});
 		});
 
@@ -211,7 +228,7 @@ module.exports = class extends Manager {
 	}
 }
 
-function go($mgr, $data, $client, $callBack, $errorBack)
+function go($mgr, $data, $clientData, $callBack, $errorBack)
 {
 	var nsp = $data.nsp;
 	var type = $data.type;
@@ -224,18 +241,18 @@ function go($mgr, $data, $client, $callBack, $errorBack)
 		var func = $mgr.getFunc(dataType);
 		if (func)
 		{
-			func(dataArr[1], function successBack($returnObj)
+			func(dataArr[1], function successBack($returnObj, $cmd)
 				{
 //					trace("[success]", dataType);
-					$callBack && $callBack($returnObj, $client);
-					$client.emit("data", formatResponse(dataType, $returnObj));
+					$callBack && $callBack($returnObj, $clientData);
+					$clientData.client.emit("data", formatResponse($cmd || dataType, $returnObj));
 				},
 				function errorBack($dataObj)
 				{
 //					trace("[error]", dataType);
-					$errorBack && $errorBack($dataObj, $client);
-					$client.emit("data", formatResponse(dataType, null, $returnObj));
-				}, $client);
+					$errorBack && $errorBack($dataObj, $clientData);
+					$clientData.client.emit("data", formatResponse(dataType, null, $returnObj));
+				}, $clientData);
 		}
 		else
 		{
