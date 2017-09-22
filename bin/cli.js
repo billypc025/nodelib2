@@ -161,6 +161,12 @@ function init()
 		trace("Create File: " + getProjPath("./package.json"));
 	}
 
+	if (!projExist("./.gitignore"))
+	{
+		copyFile("./.gitignore", "./.gitignore");
+		trace("Create File: " + getProjPath("./.gitignore"));
+	}
+
 	for (var i = 0; i < dirList.length; i++)
 	{
 		var dirName = dirList[i];
