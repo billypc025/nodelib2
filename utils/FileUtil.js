@@ -629,3 +629,4 @@ function isUTF8(text)
 	return true;
 }
 exports.isUTF8 = isUTF8;
+

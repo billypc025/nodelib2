@@ -6,6 +6,11 @@ var fs = require("fs");
 
 var _fileHash = new Map();
 
+/**
+ * 读取文件/文件集
+ * @param $path 目录路径
+ * @param $option {containChildren:true/false, filters:*全部/[]扩展名列表}
+ */
 exports.add = function ($path, $option)
 {
 	$option = formatOption($option);
@@ -33,7 +38,7 @@ exports.add = function ($path, $option)
 		else
 		{
 			var pathObj = path.parse($_path);
-			if ($option.filters.indexOf("*") >= 0 || $option.filters.indexOf(pathObj.ext) >= 0)
+			if (!$option.filters || $option.filters.indexOf("*") >= 0 || $option.filters.indexOf(pathObj.ext) >= 0)
 			{
 				_fileHash.set(pathObj.base, fs.readFileSync($_path).toString());
 			}
@@ -45,26 +50,26 @@ exports.get = function ($fileName, $options)
 {
 	if (_fileHash.has($fileName))
 	{
-		return replaceSql(_fileHash.get($fileName), $options);
+		return replaceVal(_fileHash.get($fileName), $options);
 	}
 	else
 	{
 		this.add($fileName);
 	}
 
-	function replaceSql($content, $option)
+	function replaceVal($content, $option)
 	{
 		if ($option && getType($option) == "Object")
 		{
 			for (var k in $option)
 			{
-				$content = replaceSqlByKey($content, k, $option[k]);
+				$content = replaceValByKey($content, k, $option[k]);
 			}
 		}
 		return $content;
 	}
 
-	function replaceSqlByKey($content, $key, $value)
+	function replaceValByKey($content, $key, $value)
 	{
 		var r = new RegExp("\\{\\$" + $key + "\\}", "g");
 		return $content.replace(r, $value);

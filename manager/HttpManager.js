@@ -8,6 +8,7 @@ var url = require('url');
 var qs = require('querystring');
 var _module = require("../module/module");
 var Manager = require("./Manager");
+var cookie = require("node-cookie");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
@@ -37,6 +38,7 @@ var _header = {
 	'Access-Control-Allow-Methods': "PUT,POST,GET,DELETE,OPTIONS",
 	"Access-Control-Allow-Headers": "X-Requested-With",
 }
+g.cookie = cookie;
 
 module.exports = class extends Manager {
 
@@ -116,8 +118,8 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 				{
 					$errorObj = formatResponse($pathName, null, $errorObj);
 				}
-				writeOut(200, $errorObj, $request, $response, $headerObj, $header);
-			}, $request);
+				writeOut(200, $errorObj, $request, $response, $headerObj, "", $header);
+			}, $request, $response);
 	}
 	else
 	{

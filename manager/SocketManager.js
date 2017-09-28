@@ -251,7 +251,7 @@ function go($mgr, $data, $clientData, $callBack, $errorBack)
 				{
 //					trace("[error]", dataType);
 					$errorBack && $errorBack($dataObj, $clientData);
-					$clientData.client.emit("data", formatResponse(dataType, null, $returnObj));
+					$clientData.client.emit("data", formatResponse(dataType, null, $dataObj));
 				}, $clientData);
 		}
 		else
