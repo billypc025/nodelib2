@@ -168,6 +168,12 @@ module.exports = class extends Manager {
 		}
 	}
 
+	push($client, $cmd, $dataObj)
+	{
+		//识别$client为  client / clientId / clientIds
+		trace(getType($client));
+	}
+
 	addLoginCheckList($id)
 	{
 		this.loginTimeoutList.push($id);
@@ -243,6 +249,12 @@ function go($mgr, $data, $clientData, $callBack, $errorBack)
 		{
 			func(dataArr[1], function successBack($returnObj, $cmd)
 				{
+					//这里是否有什么办法，让回调可以直接进行一个单方的，或者多方的推送
+					//因为socket主要是用于推送的
+					//这里的推送分为，针对单人，针对多人
+					//如果能根据id进行推送就会方便的很
+					//所以这个回调就仅仅用于回调
+					//另外再追加一个用于推送的
 //					trace("[success]", dataType);
 					$callBack && $callBack($returnObj, $clientData);
 					$clientData.client.emit("data", formatResponse($cmd || dataType, $returnObj));
