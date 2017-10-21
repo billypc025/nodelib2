@@ -474,3 +474,21 @@ function getValueByKey($obj, $key, $defaultValue)
 }
 global.getArgs = getArgs;
 global.getValueByKey = getValueByKey;
+
+function hasData($obj, ...arg)
+{
+	if (isEmpty($obj))
+	{
+		return false;
+	}
+
+	for (var i = 0; i < arg.length; i++)
+	{
+		if (!$obj.hasOwnProperty(arg[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
