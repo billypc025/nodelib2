@@ -500,7 +500,7 @@ function filterSql($value)
 	{
 		for (var i = 0; i < $value.length; i++)
 		{
-			$value[i] = fliterSql($value[i]);
+			$value[i] = filterSql($value[i]);
 		}
 		return $value;
 	}
@@ -508,7 +508,7 @@ function filterSql($value)
 	{
 		for (var k in $value)
 		{
-			$value[k] = fliterSql($value[k]);
+			$value[k] = filterSql($value[k]);
 		}
 		return $value;
 	}
