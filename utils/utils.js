@@ -484,7 +484,7 @@ function hasData($obj, ...arg)
 
 	for (var i = 0; i < arg.length; i++)
 	{
-		if (!$obj.hasOwnProperty(arg[i]))
+		if (Object.getOwnPropertyNames($obj).indexOf(arg[i]) < 0)
 		{
 			return false;
 		}
@@ -517,6 +517,8 @@ function filterSql($value)
 		$value = $value.replace(/ /g, "");
 		$value = $value.replace(/\(/g, "");
 		$value = $value.replace(/\)/g, "");
+		$value = $value.replace(/'/g, "");
+		$value = $value.replace(/"/g, "");
 		return $value;
 	}
 
