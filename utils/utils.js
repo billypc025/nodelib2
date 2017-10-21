@@ -493,3 +493,33 @@ function hasData($obj, ...arg)
 	return true;
 }
 global.hasData = hasData;
+
+function fliterSql($value)
+{
+	if (Array.isArray($value))
+	{
+		for (var i = 0; i < $value.length; i++)
+		{
+			$value[i] = fliterSql($value[i]);
+		}
+		return $value;
+	}
+	if (typeof $value == "object")
+	{
+		for (var k in $value)
+		{
+			$value[k] = fliterSql($value[k]);
+		}
+		return $value;
+	}
+	else if (typeof $value == "string")
+	{
+		$value = $value.replace(/ /g, "");
+		$value = $value.replace(/\(/g, "");
+		$value = $value.replace(/\)/g, "");
+		return $value;
+	}
+
+	return $value;
+}
+global.fliterSql = fliterSql;
