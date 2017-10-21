@@ -134,7 +134,7 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 	header = __merge(header, $headerObj, true);
 	if (header["Access-Control-Allow-Origin"] && header["Access-Control-Allow-Origin"] == "{origin}")
 	{
-		header["Access-Control-Allow-Origin"] = $request.headers.origin;
+		header["Access-Control-Allow-Origin"] = $request.headers.origin || "*";
 	}
 
 	$response.writeHead($status, header);
