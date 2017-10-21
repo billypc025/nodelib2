@@ -123,7 +123,7 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 	}
 	else
 	{
-		log._warn(this.getMsg("Not Found Func-", $pathName));
+//		log._warn(this.getMsg("Not Found Func-", $pathName));
 		writeOut(404, null, $request, $response);
 	}
 }
