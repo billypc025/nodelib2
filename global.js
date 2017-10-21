@@ -15,4 +15,6 @@ exports.mark = require("./utils/mark");
 exports.localHost = require("./utils/localhost");
 
 exports.md5 = require("md5");
+exports.aes = require("./utils/aes");
+
 global.g = exports;
