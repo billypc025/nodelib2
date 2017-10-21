@@ -494,7 +494,7 @@ function hasData($obj, ...arg)
 }
 global.hasData = hasData;
 
-function fliterSql($value)
+function filterSql($value)
 {
 	if (Array.isArray($value))
 	{
@@ -522,4 +522,4 @@ function fliterSql($value)
 
 	return $value;
 }
-global.fliterSql = fliterSql;
+global.filterSql = filterSql;
