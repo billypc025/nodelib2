@@ -492,3 +492,4 @@ function hasData($obj, ...arg)
 
 	return true;
 }
+global.hasData = hasData;
