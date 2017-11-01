@@ -48,19 +48,32 @@ module.exports = class {
 //		trace("this.isConnected:" + this.isConnected);
 //		if (this.isConnected)
 //		{
-		this.connection.query($sql, (err, rows, fields)=>
+		if ($sql)
 		{
-			if (err)
+			try
 			{
-				trace(err)
-				$errorBack && $errorBack(err);
+				this.connection.query($sql, (err, rows, fields)=>
+				{
+					if (err)
+					{
+						trace(err.sqlMessage)
+						$errorBack && $errorBack(err);
+					}
+					else
+					{
+						$callBack && $callBack(rows, fields);
+					}
+				});
 			}
-			else
+			catch (e)
 			{
-				$callBack && $callBack(rows, fields);
+				$errorBack && $errorBack(e);
 			}
-		});
-
+		}
+		else
+		{
+			$errorBack && $errorBack("Query was empty");
+		}
 //		}
 //		else
 //		{
