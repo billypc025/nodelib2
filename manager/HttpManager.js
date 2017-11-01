@@ -141,17 +141,24 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 
 	if ($responseType == "download")
 	{
-		$resultObj.on("data", (chunk) => $response.write(chunk, "binary"));
-		$resultObj.on("end", function ()
-		{
-			$response.end();
-		});
+//		$resultObj.on("data", (chunk) =>
+//		{
+//			trace(123123)
+//			$response.write(chunk, "binary")
+//		});
+//		$resultObj.on("end", function ()
+//		{
+//			$response.end();
+//		});
+
+		var fileStream = g.fs.createReadStream($resultObj.data);
+		fileStream.pipe($response);
 	}
 	else
 	{
 		$response.write(JSON.stringify($resultObj), "utf8", function ()
 		{
+			$response.end();
 		});
-		$response.end();
 	}
 }
