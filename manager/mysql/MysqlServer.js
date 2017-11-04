@@ -56,6 +56,7 @@ module.exports = class {
 				{
 					if (err)
 					{
+						trace(err.sql);
 						trace(err.sqlMessage)
 						$errorBack && $errorBack(err);
 					}
