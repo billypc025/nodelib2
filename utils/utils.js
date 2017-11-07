@@ -488,6 +488,11 @@ function hasData($obj, ...arg)
 		{
 			return false;
 		}
+
+		if ($obj[arg[i]] == null || $obj[arg[i]] == NaN)
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -514,6 +519,31 @@ function filterSql($value)
 	}
 	else if (typeof $value == "string")
 	{
+		if ($value == "undefined")
+		{
+			return undefined;
+		}
+
+		if ($value == "null")
+		{
+			return null;
+		}
+
+		if ($value == "NaN")
+		{
+			return NaN;
+		}
+
+		if ($value == "")
+		{
+			return "";
+		}
+
+		if ($value == "0")
+		{
+			return 0;
+		}
+
 		$value = $value.replace(/ /g, "");
 		$value = $value.replace(/\(/g, "");
 		$value = $value.replace(/\)/g, "");
