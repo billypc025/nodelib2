@@ -33,6 +33,11 @@ module.exports = class extends Manager {
 
 	startScript($path, $param)
 	{
+		if ($path == "noscript")
+		{
+			return;
+		}
+
 		if ($path)
 		{
 			var func = this.getFunc($path);
@@ -40,7 +45,7 @@ module.exports = class extends Manager {
 			{
 				log.info(this.getMsg("starting script..."));
 				func($param,
-					function ($resultObj, $exit)
+					($resultObj, $exit)=>
 					{
 						if ($resultObj)
 						{
@@ -54,7 +59,7 @@ module.exports = class extends Manager {
 						{
 							process.exit();
 						}
-					}, function ($errorMsg)
+					}, ($errorMsg)=>
 					{
 						log.error(this.getMsg("Error:", $errorMsg));
 					})
@@ -66,7 +71,7 @@ module.exports = class extends Manager {
 		}
 		else
 		{
-			log.error(this.getMsg("没有指定脚本名称！"));
+			log.error(this.getMsg("no script path！"));
 		}
 	}
 }

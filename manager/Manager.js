@@ -22,19 +22,29 @@ module.exports = class {
 	init()
 	{
 		this.initModule();
-		this.start();
 	}
 
 	initModule()
 	{
+		var list = [];
 		for (var routerPath in this.module)
 		{
 			var modulePath = this.module[routerPath];
 			var moduleClass = require(g.path.join(global.projPath || "", modulePath));
-			var moduleItem = _module.addModule(routerPath, moduleClass, this.data);
+			var promise = _module.addModule(routerPath, moduleClass, this.data);
 
-			this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
+			list.push(promise);
 		}
+
+		Promise.all(list).then(($list)=>
+		{
+
+			for (var moduleItem of $list)
+			{
+				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
+			}
+			this.start();
+		})
 	}
 
 	start($success)

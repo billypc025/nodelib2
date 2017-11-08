@@ -7,52 +7,74 @@ var _nameList = [];
 
 function addModule($modName, $moduleClass, $managerData)
 {
-	var isGlobalModule = false;
-	var managerType = $managerData.type;
-	managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
-	var managerName = $managerData.name;
+	var promise = new Promise((resloved, reject)=>
+	{
+		var isGlobalModule = false;
+		var managerType = $managerData.type;
+		managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
+		var managerName = $managerData.name;
 
-	if (!$modName)
-	{
-		log.warn("[" + managerType + "] " + managerName + " 发现空模块名，请检查配置！");
-		return;
-	}
-	if ($modName.indexOf("@") == 0)
-	{
-		isGlobalModule = true;
-		$modName = $modName.substr(1);
-	}
-	else
-	{
-		$modName += "";
-	}
-
-	_nameList.push($modName);
-
-	var moduleItem;
-	if (!isGlobalModule || !_hash[$modName])
-	{
-		$moduleClass.prototype.add = addFunc($modName);
-		moduleItem = new $moduleClass();
-		moduleItem.data = $managerData;
-		moduleItem.funcList = moduleItem.funcList || [];
-		moduleItem.funcHash = moduleItem.funcHash || {};
-		moduleItem.isGlobal = isGlobalModule;
-		if (moduleItem.init)
+		if (!$modName)
 		{
-			moduleItem.init();
+			log.warn("[" + managerType + "] " + managerName + " 发现空模块名，请检查配置！");
+			return;
 		}
-		if (isGlobalModule && !_hash[$modName])
+		if ($modName.indexOf("@") == 0)
 		{
-			_hash[$modName] = moduleItem;
+			isGlobalModule = true;
+			$modName = $modName.substr(1);
 		}
-	}
-	else
-	{
-		moduleItem = _hash[$modName];
-	}
+		else
+		{
+			$modName += "";
+		}
 
-	return moduleItem;
+		_nameList.push($modName);
+
+		var moduleItem;
+		var mustInit = false;
+		if (!isGlobalModule || !_hash[$modName])
+		{
+			$moduleClass.prototype.add = addFunc($modName);
+			moduleItem = new $moduleClass();
+			moduleItem.data = $managerData;
+			moduleItem.funcList = moduleItem.funcList || [];
+			moduleItem.funcHash = moduleItem.funcHash || {};
+			moduleItem.isGlobal = isGlobalModule;
+			if (moduleItem.init)
+			{
+				mustInit = true;
+			}
+			if (isGlobalModule && !_hash[$modName])
+			{
+				_hash[$modName] = moduleItem;
+			}
+		}
+		else
+		{
+			moduleItem = _hash[$modName];
+		}
+
+		if (mustInit)
+		{
+			if (moduleItem.init.length > 0)
+			{
+				moduleItem.init(()=>
+				{
+					resloved(moduleItem);
+				});
+			}
+			else
+			{
+				resloved(moduleItem);
+			}
+		}
+		else
+		{
+			resloved(moduleItem);
+		}
+	})
+	return promise;
 }
 
 function addFunc($modName)
