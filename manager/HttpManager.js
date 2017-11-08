@@ -124,7 +124,7 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 	else
 	{
 //		log._warn(this.getMsg("Not Found Func-", $pathName));
-		writeOut(404, null, $request, $response);
+		writeOut(404, "", $request, $response);
 	}
 }
 
@@ -151,14 +151,26 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 //			$response.end();
 //		});
 
-		var fileStream = g.fs.createReadStream($resultObj.data);
+		let fileStream = g.fs.createReadStream($resultObj.data);
 		fileStream.pipe($response);
+	}
+	else if ($responseType == "downloadBuff")
+	{
+		let fileStream = $resultObj.data;
+		fileStream.pipe($response).on("finish", () => $response.end());
 	}
 	else
 	{
-		$response.write(JSON.stringify($resultObj), "utf8", function ()
+		if ($status == 404)
 		{
 			$response.end();
-		});
+		}
+		else
+		{
+			$response.write(JSON.stringify($resultObj), "utf8", function ()
+			{
+				$response.end();
+			});
+		}
 	}
 }
