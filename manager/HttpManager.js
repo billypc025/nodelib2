@@ -87,16 +87,23 @@ var doMethod = {
 	},
 	POST: function ($func, $pathName, $request, $response, $header)
 	{
-		var postData = "";
-		$request.addListener("data", function (data)
+		if ($pathName.indexOf("/upload") > 0)
 		{
-			postData += data.toString();
-		});
-		$request.addListener("end", function ()
+			doRequest($func, $pathName, "", $request, $response, $header);
+		}
+		else
 		{
-			let query = qs.parse(postData);
-			doRequest($func, $pathName, query, $request, $response, $header);
-		});
+			var postData = "";
+			$request.addListener("data", function (data)
+			{
+				postData += data.toString();
+			});
+			$request.addListener("end", function ()
+			{
+				let query = qs.parse(postData);
+				doRequest($func, $pathName, query, $request, $response, $header);
+			});
+		}
 	}
 }
 
@@ -105,16 +112,16 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 	if ($pathFunc)
 	{
 		$pathFunc($dataObj,
-			function ($resultObj, $headerObj, $responseType, $toFormat)
+			function ($resultObj, $headerObj, $responseType, $noFormat)
 			{
-				if (!$toFormat)
+				if (!$noFormat)
 				{
 					$resultObj = formatResponse($pathName, $resultObj);
 				}
 				writeOut(200, $resultObj, $request, $response, $headerObj, $responseType, $header);
-			}, function ($errorObj, $headerObj, $toFormat)
+			}, function ($errorObj, $headerObj, $noFormat)
 			{
-				if (!$toFormat)
+				if (!$noFormat)
 				{
 					$errorObj = formatResponse($pathName, null, $errorObj);
 				}
@@ -158,6 +165,13 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 	{
 		let fileStream = $resultObj.data;
 		fileStream.pipe($response).on("finish", () => $response.end());
+	}
+	else if ($responseType == "text")
+	{
+		$response.write($resultObj, "utf8", function ()
+		{
+			$response.end();
+		});
 	}
 	else
 	{
