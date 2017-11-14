@@ -48,6 +48,24 @@ module.exports = class extends Manager {
 		this.server = null;
 		this.header = __merge(_header, this.param.header, true);
 		this.port = this.param.port || _defaultPort;
+		if (this.param.htmlTemplate)
+		{
+			var templatePath = __projpath(this.param.htmlTemplate);
+			if (g.file.exists(templatePath))
+			{
+				this.filePool = g.data.file.get("/template");
+				this.filePool.add(templatePath, {containChildren: true});
+			}
+			else
+			{
+				log.error(this.getMsg("htmlTemplate does not exist", templatePath));
+			}
+
+			if (this.param.router)
+			{
+				this.router = this.param.router;
+			}
+		}
 		super.init();
 	}
 
@@ -68,7 +86,7 @@ module.exports = class extends Manager {
 			{
 				var paramObj = url.parse(request.url);
 				var func = this.getFunc(paramObj.pathname);
-				doMethod[request.method](func, paramObj.pathname, request, response, this.header);
+				doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
 			}
 		});
 
@@ -80,16 +98,16 @@ module.exports = class extends Manager {
 }
 
 var doMethod = {
-	GET: function ($func, $pathName, $request, $response, $header)
+	GET: function ($router, $func, $pathName, $request, $response, $header)
 	{
 		let query = url.parse($request.url, true).query;
-		doRequest($func, $pathName, query, $request, $response, $header);
+		doRequest($router, $func, $pathName, query, $request, $response, $header);
 	},
-	POST: function ($func, $pathName, $request, $response, $header)
+	POST: function ($router, $func, $pathName, $request, $response, $header)
 	{
 		if ($pathName.indexOf("/upload") > 0)
 		{
-			doRequest($func, $pathName, "", $request, $response, $header);
+			doRequest($router, $func, $pathName, "", $request, $response, $header);
 		}
 		else
 		{
@@ -101,13 +119,13 @@ var doMethod = {
 			$request.addListener("end", function ()
 			{
 				let query = qs.parse(postData);
-				doRequest($func, $pathName, query, $request, $response, $header);
+				doRequest($router, $func, $pathName, query, $request, $response, $header);
 			});
 		}
 	}
 }
 
-function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
+function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response, $header)
 {
 	if ($pathFunc)
 	{
@@ -130,8 +148,24 @@ function doRequest($pathFunc, $pathName, $dataObj, $request, $response, $header)
 	}
 	else
 	{
+		if ($router && $router[$pathName])
+		{
+			var path = $router[$pathName];
+			var fileType = getFileType(path);
+			if (fileType != "none")
+			{
+				var content = g.data.file.get("/template").get(path);
+				if (content)
+				{
+					writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
+				}
+			}
+		}
+		else
+		{
 //		log._warn(this.getMsg("Not Found Func-", $pathName));
-		writeOut(404, "", $request, $response);
+			writeOut(404, "", $request, $response);
+		}
 	}
 }
 
@@ -187,4 +221,18 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 			});
 		}
 	}
+}
+
+var _fileTypeHash = {
+	"txt": "text",
+	"html": "text/html",
+	"htm": "text/html",
+	"js": "text/javascript",
+	"json": "application/json; charset=utf-8"
+};
+function getFileType($fileName)
+{
+	var pathObj = g.path.parse($fileName);
+	var ext = pathObj.ext.substr(1);
+	return _fileTypeHash[ext] || "none";
 }

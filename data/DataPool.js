@@ -33,5 +33,6 @@ exports.removeAll = function ()
 }
 
 exports.file = require("./FilePool");
+exports.oldfile = require("./FilePool_old");
 exports.manager = require("./ManagerPool");
 exports.server = require("./ServerInfo");
