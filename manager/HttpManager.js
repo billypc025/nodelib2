@@ -86,7 +86,10 @@ module.exports = class extends Manager {
 			{
 				var paramObj = url.parse(request.url);
 				var func = this.getFunc(paramObj.pathname);
-				doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+				if (request.method && doMethod[request.method])
+				{
+					doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+				}
 			}
 		});
 
