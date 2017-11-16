@@ -15,11 +15,11 @@ exports.getLocalIp = function ()
 	var netList = os.networkInterfaces();
 	if (platform == "win32")
 	{
-		trace(netList)
 		netList = netList['本地连接']
 	}
 	else
 	{
+		trace(netList)
 		netList = netList['en0'] || netList['eth0'];
 	}
 
