@@ -43,7 +43,7 @@ module.exports = function ($routerName)
 	{
 		return g.path.join(global.__projdir, $path);
 	}
-	
+
 	var routerPath;
 	if ($routerName)
 	{
@@ -132,6 +132,7 @@ function showRouterList($basePath)
 
 function start()
 {
-	log.success("start at:" + g.localHost.getLocalIp());
+	global.ip = g.localHost.getLocalIp();
+	log.success("start at:" + global.ip);
 	serverManager.start(options);
 }
