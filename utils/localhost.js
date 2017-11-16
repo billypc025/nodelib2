@@ -19,7 +19,6 @@ exports.getLocalIp = function ()
 	}
 	else
 	{
-		trace(netList)
 		netList = netList['en0'] || netList['eth0'];
 	}
 
