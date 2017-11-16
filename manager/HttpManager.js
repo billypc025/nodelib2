@@ -135,11 +135,23 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 		$pathFunc($dataObj,
 			function ($resultObj, $headerObj, $responseType, $noFormat)
 			{
-				if (!$noFormat)
+				if ($responseType == "template")
 				{
-					$resultObj = formatResponse($pathName, $resultObj);
+					$resultObj = __merge($resultObj || {}, {host: $request.headers.host || ""})
+					var content = g.data.file.get("/template").get($headerObj, $resultObj);
+					if (content)
+					{
+						writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
+					}
 				}
-				writeOut(200, $resultObj, $request, $response, $headerObj, $responseType, $header);
+				else
+				{
+					if (!$noFormat)
+					{
+						$resultObj = formatResponse($pathName, $resultObj);
+					}
+					writeOut(200, $resultObj, $request, $response, $headerObj, $responseType, $header);
+				}
 			}, function ($errorObj, $headerObj, $noFormat)
 			{
 				if (!$noFormat)
@@ -157,7 +169,7 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 			var fileType = getFileType(path);
 			if (fileType != "none")
 			{
-				var content = g.data.file.get("/template").get(path);
+				var content = g.data.file.get("/template").get(path, {host: $request.headers.host || ""});
 				if (content)
 				{
 					writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
