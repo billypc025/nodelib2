@@ -43,7 +43,9 @@ function exe($callBack, $errorBack)
 		}
 		else
 		{
-			exec(this.cmdList.join(" "), function ($error, $stdout, $stderr)
+			var cmdStr = this.cmdList.join(" ");
+			this.cmdList = [];
+			exec(cmdStr, function ($error, $stdout, $stderr)
 			{
 				if ($error)
 				{
