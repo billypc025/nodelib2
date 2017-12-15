@@ -141,6 +141,7 @@ var projPath = "";
 	addCmd.add("router", addRouter);
 	addCmd.add("server", addServer);
 	addCmd.add("module", addModule);
+	addCmd.add("test", addTest);
 	addCmd.add("bin", addBin);
 })()
 
@@ -422,10 +423,10 @@ function addServer($routerName, $serverType)
 		globalCmd.log("Server Type Added: " + serverType);
 
 		var testFilePath = getCliPath("./bin/cli-template/test.js");
-		if (!projExist("./module/test.js"))
+		if (!projExist("./module/template.js"))
 		{
-			copyFile("./bin/cli-template/test.js", "./module/test.js");
-			trace("Create File:" + getProjPath("./module/test.js"));
+			copyFile("./bin/cli-template/test.js", "./module/template.js");
+			trace("Create File:" + getProjPath("./module/template.js"));
 		}
 		process.exit();
 	}
@@ -476,6 +477,50 @@ function addModule($moduleName)
 	{
 		copyFile("./bin/cli-template/module-template.js", "./module/" + $moduleName);
 		trace("Create File:" + getProjPath("./module/" + $moduleName));
+		process.exit();
+	}
+}
+
+function addTest($testDir)
+{
+	if ($testDir)
+	{
+		$testDir = $testDir.replace(/ /g, "");
+	}
+
+	if (!$testDir)
+	{
+		showMsg("please input a name for test directory：", function ($input)
+		{
+			$testDir = $input;
+			checkName();
+		});
+	}
+	else
+	{
+		checkName();
+	}
+
+	function checkName()
+	{
+		if (!$testDir)
+		{
+			process.exit();
+		}
+
+		if (projExist("./module/" + $testDir))
+		{
+			log.warn("Module is Existd: " + getProjPath("./module/" + $testDir));
+			process.exit();
+		}
+
+		addTestByName();
+	}
+
+	function addTestByName()
+	{
+		copyFile("./bin/cli-template/test-template", "./module/" + $testDir);
+		trace("Create Directory:" + getProjPath("./module/" + $testDir));
 		process.exit();
 	}
 }

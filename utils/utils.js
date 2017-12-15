@@ -555,3 +555,19 @@ function filterSql($value)
 	return $value;
 }
 global.filterSql = filterSql;
+
+function makeMap($str, $expectsLowerCase = true)
+{
+	var map = Object.create(null);
+	var list = $str.split(",");
+	for (let i = 0; i < list.length; i++)
+	{
+		map[list[i]] = true;
+	}
+	return $expectsLowerCase
+		? ($key) => map[$key.toLowerCase()]
+		: ($key) => map[$key];
+}
+global.makeMap = makeMap;
+
+global.deindent = require("./deindent");

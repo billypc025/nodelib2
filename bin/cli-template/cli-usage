@@ -23,6 +23,7 @@ server [router] [type]  新增一个服务类型
                 script  用于脚本编写
                 express 按照express框架建立web服务
 module [name]           新增一个模块，用于服务调用
+test   [name]           新增一个用例目录，用于接口测试
 bin <name>              新增命令，用于命令行调用
 
 ========================================================

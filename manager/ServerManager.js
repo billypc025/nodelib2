@@ -3,7 +3,7 @@
  */
 var g = require("../global");
 
-var _serverTypes = ["http", "socket", "web", "mysql", "redis", "express", "script"];
+var _serverTypes = ["http", "socket", "web", "mysql", "redis", "express", "script", "test"];
 var _managerInitNum = 0;
 var _routerObj = null;
 
