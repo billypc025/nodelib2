@@ -3,8 +3,11 @@
  */
 var _req = require("superagent");
 var EventEmitter = require("events").EventEmitter;
-
 var _emiter = new EventEmitter();
+var formatParam = require("./formatAddParam");
+var formatCheckParam = require("./formatChechParam");
+var equalParam = require("./equalParam");
+
 var _param;
 var _list = [];
 var _cookies = [];
@@ -30,6 +33,7 @@ _httpInfo.errorMsg = {
 global.addMsg = addMsg;
 global.addTest = addTest;
 global.addModule = addModule;
+global.check = check;
 
 exports.init = function ($param)
 {
@@ -88,96 +92,38 @@ exports.on = function (...arg)
 //$func, $callBack    "" ()
 
 //$msg
-var _overloadHash = {
-	"h'{}()": ["url", "func", "param", "callback"],
-	"h''()": ["url", "func", "method", "callback"],
-	"h'{}'": ["url", "func", "param", "method"],
-	"''{}'": ["func", "param", "method", "callback"],
 
-	"h'()": ["url", "func", "callback"],
-	"h''": ["url", "func", "method"],
-	"h'{}": ["url", "func", "param"],
-	"'{}()": ["func", "param", "callback"],
-	"'{}'": ["func", "param", "method"],
-	"''()": ["func", "method", "callback"],
-
-	"h'": ["url", "func"],
-	"'{}": ["func", "param"],
-	"''": ["func", "method"],
-	"'()": ["func", "callback"],
-
-	"'": ["msg"]
-}
-
-function formatParam()
+function check($param, $targetParam, returnObj, successObj, $callBack)
 {
-	var obj = {};
-	var arg = [];
-	for (var i = 0, l = arguments.length; i < l; i++)
+	if (equalParam($param, $targetParam))
 	{
-		if (arguments[i] != null && arguments[i] != undefined)
+		if (typeof successObj == "function")
 		{
-			arg.push(arguments[i]);
+			successObj(__merge({}, returnObj))
 		}
-	}
-
-	var typeStr = arg.map(function (v)
-	{
-		return getType(v);
-	}).join("");
-
-	if (arg.length == 5)
-	{
-		obj.url = arg[0];
-		obj.func = arg[1];
-		obj.param = arg[2];
-		obj.method = arg[3];
-		obj.callback = arg[4];
-	}
-	else if (arg.length > 1)
-	{
-		obj.url = "";
-		obj.func = "";
-		obj.param = {};
-		obj.method = "";
-		obj.callback = null;
-		var list = _overloadHash[typeStr];
-		if (list)
+		else
 		{
-			for (var i = 0; i < list.length; i++)
+			var access = equalParam(returnObj, successObj);
+
+			if ($callBack && typeof $callBack == "function")
 			{
-				obj[list[i]] = arg[i];
+				$callBack(access, returnObj);
+			}
+			else
+			{
+				if (access)
+				{
+					//返回值符合预期
+					success("     ", "ok -", $param);
+				}
+				else
+				{
+					//返回值不符合预期
+					error("     ", "err -", $param, returnObj);
+				}
 			}
 		}
 	}
-	else
-	{
-		return arg[0] + "";
-	}
-
-	return obj;
-}
-
-function getType($obj)
-{
-	if (typeof $obj == "string")
-	{
-		if ($obj.indexOf("http") >= 0)
-		{
-			return "h";
-		}
-		return "'";
-	}
-	else if (typeof $obj == "function")
-	{
-		return "()";
-	}
-	else if (typeof $obj == "object")
-	{
-		return "{}";
-	}
-
-	return 0;
 }
 
 function addModule($path)
@@ -211,43 +157,47 @@ function addTest($url, $func, $param, $method, $callBack)
 
 		for (var i = 0; i < list.length; i++)
 		{
-			paramObj = list[i];
-			var obj = {};
+			list[i] = createItemObj(list[i]);
 
-			obj.url = paramObj.url || _param.url;
-			obj.url = obj.url + "/" + paramObj.func;
-			obj.func = paramObj.func;
-			obj.method = paramObj.method || _param.method || "post";
-			obj.method = obj.method.toLowerCase();
-			obj.callback = paramObj.callback;
-
-			if (obj.method == "post")
-			{
-				obj.param = paramObj.param;
-			}
-			else if (obj.method == "get")
-			{
-				if (paramObj.param && Object.keys(paramObj.param).length > 0)
-				{
-					obj.url += "?";
-					for (var k in  paramObj.param)
-					{
-						obj.url += k + "=" + encodeURI(paramObj.param[k]);
-					}
-				}
-			}
-
-			obj.callback = paramObj.callback;
 			if (_isRunning)
 			{
-				_list.splice(1, 0, obj)
+				_list.splice(1, 0, list[i])
 			}
 			else
 			{
-				_list.push(obj);
+				_list.push(list[i]);
 			}
 		}
 	}
+}
+
+function createItemObj($paramObj)
+{
+	var obj = {};
+	obj.url = $paramObj.url || _param.url;
+	obj.url = obj.url + "/" + $paramObj.func;
+	obj.func = $paramObj.func;
+	obj.method = $paramObj.method || _param.method || "post";
+	obj.method = obj.method.toLowerCase();
+	obj.callback = $paramObj.callback;
+
+	if (obj.method == "post")
+	{
+		obj.param = $paramObj.param;
+	}
+	else if (obj.method == "get")
+	{
+		if ($paramObj.param && Object.keys($paramObj.param).length > 0)
+		{
+			obj.url += "?";
+			for (var k in  $paramObj.param)
+			{
+				obj.url += k + "=" + encodeURI($paramObj.param[k]);
+			}
+		}
+	}
+	obj.callback = $paramObj.callback;
+	return obj;
 }
 
 function createObj(obj)
@@ -275,6 +225,7 @@ function createObj(obj)
 		for (var i = 0; i < arrKey.length; i++)
 		{
 			var key = arrKey[i];
+			delete tObj.param[key];
 			var index = arrIndex[i];
 			value = obj.param[key][index];
 			var newKey = key.replace("$", "");
@@ -316,23 +267,47 @@ exports.startTest = function ()
 	}
 }
 
+var _lastFunc = "";
+function info(count, func)
+{
+	if (_lastFunc == func)
+	{
+		return;
+	}
+
+	_lastFunc = func;
+	log.info(count + " " + func);
+}
 function success(...arg)
 {
-	log.success("[" + _count + "] " + arg.join(" "));
+	arg = arg.map(function (v)
+	{
+		if (typeof v == "object")
+		{
+			return JSON.stringify(v);
+		}
+		return v;
+	});
+
+	log.success(arg.join(" "));
 }
 function error(...arg)
 {
-	log.error("[" + _count + "] " + arg.join(" "));
+	arg = arg.map(function (v)
+	{
+		if (typeof v == "object")
+		{
+			return JSON.stringify(v);
+		}
+		return v;
+	});
+	log.error(arg.join(" "));
 }
 
 function startNext()
 {
 	this.end = function ($err)
 	{
-		if ($err)
-		{
-			error(_list[0].func, $err);
-		}
 		_list.shift();
 		_count++;
 		startNext();
@@ -350,6 +325,8 @@ function startNext()
 		{
 			callTest(_list[0]).then((d)=>
 			{
+				info("[" + _count + "]", _list[0].func);
+
 				var __result = _httpInfo.result.k;
 				var __success = _httpInfo.result.v;
 				var __data = _httpInfo.data.k;
@@ -357,40 +334,50 @@ function startNext()
 				var __errorMsg = _httpInfo.errorMsg.k;
 
 				var obj = _list[0];
-				if (d[__result] == __success)
+				if (obj.callback)
 				{
-					success(_list[0].func, "success");
-
-					if (obj.callback)
+					if (d[__result] == __success)
 					{
-						obj.callback.call(this, d.data, obj.param, _cookies);
-//				this.callback = obj.callback.bind(this);
-//				this.callback(d.data, obj.param, _cookies);
+						obj.callback.call(this, true, d.data, obj.param, (...arg)=>
+							{
+								arg.unshift(obj.param);
+								arg.unshift("ok -");
+								arg.unshift("     ");
+								success.apply(null, arg);
+							}, (...arg)=>
+							{
+								arg.unshift(obj.param);
+								arg.unshift("err - ");
+								arg.unshift("     ");
+								error.apply(null, arg);
+							},
+							_cookies
+						);
 					}
 					else
 					{
-
-						this.end();
+						obj.callback.call(this, false, d[__errorMsg], obj.param, (...arg)=>
+						{
+							arg.unshift(obj.param);
+							arg.unshift("ok - ");
+							arg.unshift("     ");
+							success.apply(null, arg);
+						}, (...arg)=>
+						{
+							arg.unshift(obj.param);
+							arg.unshift("err - ");
+							arg.unshift("     ");
+							error.apply(null, arg);
+						}, _cookies);
 					}
-				}
-				else
-				{
-					this.end(JSON.stringify(d[__errorMsg]));
+//				this.callback = obj.callback.bind(this);
+//				this.callback(d.data, obj.param, _cookies);
 				}
 				//这中间可能要调用sql去数据库查询最终数据，所以这里也是异步的
 			}, (d)=>
 			{
-				var obj = _list[0];
-				if (obj.callback)
-				{
-					obj.callback.call(this, d.data, obj.param, _cookies);
-//				this.callback = obj.callback.bind(this);
-//				this.callback(d.data, obj.param, _cookies);
-				}
-				else
-				{
-					this.end();
-				}
+				error("[" + _count + "]", _list[0].func, "fail");
+				this.end();
 			});
 		}
 	}
@@ -402,6 +389,27 @@ function startNext()
 }
 
 function callTest($obj)
+{
+	return createNet($obj);
+	/*
+	 var list = [];
+	 if (Array.isArray($obj))
+	 {
+	 $obj.map(function (v)
+	 {
+	 return createNet(v);
+	 });
+	 }
+	 else
+	 {
+	 $obj = [$obj];
+	 }
+
+	 return Promise.all($obj);
+	 */
+}
+
+function createNet($obj)
 {
 	var promise = new Promise((resloved, reject)=>
 	{

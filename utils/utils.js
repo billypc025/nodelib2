@@ -457,6 +457,7 @@ function getArgs($index, $defaultValue)
 	}
 	return args;
 }
+global.getArgs = getArgs;
 
 function getValueByKey($obj, $key, $defaultValue)
 {
@@ -472,7 +473,6 @@ function getValueByKey($obj, $key, $defaultValue)
 
 	return $defaultValue;
 }
-global.getArgs = getArgs;
 global.getValueByKey = getValueByKey;
 
 function hasData($obj, ...arg)
@@ -570,4 +570,85 @@ function makeMap($str, $expectsLowerCase = true)
 }
 global.makeMap = makeMap;
 
-global.deindent = require("./deindent");
+function equal(...arg)
+{
+	var type = getType(arg[0]);
+	var value = "";
+
+	for (var i = 1; i < arg.length; i++)
+	{
+		if (getType(arg[i]) != type)
+		{
+			return false;
+		}
+	}
+
+	value = getObjectStr(arg[0]);
+	for (var i = 0; i < arg.length; i++)
+	{
+		if (getObjectStr(arg[i]) != value)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+global.equal = equal;
+
+function getObjectStr($dObj)
+{
+	if (getType($dObj) == "Object")
+	{
+		var arr = [];
+		for (var key in $dObj)
+		{
+			if (($dObj.hasOwnProperty && $dObj.hasOwnProperty(key)) || !$dObj.hasOwnProperty)
+			{
+				arr.push({
+					name: key,
+					value: $dObj[key]
+				});
+			}
+		}
+
+		arr.sort((a, b)=>
+		{
+			if (a.name <= b.name)
+			{
+				return -1;
+			}
+			return 1;
+		})
+		arr = arr.map((a)=>
+		{
+			return a.name + ":" + getObjectStr(a.value);
+		})
+		return "{" + arr.join(",") + "}";
+	}
+	else
+	{
+		return JSON.stringify($dObj);
+	}
+}
+global.getObjectStr = getObjectStr;
+
+function __mergeAll(target)
+{
+	var len = arguments.length;
+	var cover = true;
+	if (getType(arguments[arguments.length - 1]) == "Boolean")
+	{
+		cover = arguments[arguments.length - 1];
+		len--;
+	}
+	for (var i = 1, j = len; i < j; i++)
+	{
+		__merge(target, arguments[i], cover);
+	}
+
+	return target;
+}
+global.__mergeAll = __mergeAll;
+
+
+//global.deindent = require("./deindent");
