@@ -30,6 +30,16 @@ _httpInfo.errorMsg = {
 	k: "errorMsg",
 };
 
+var __result;
+var __success;
+var __data;
+var __error;
+var __errorMsg;
+
+var _currObj;
+var _currData;
+var _isEnd = false;
+
 global.addMsg = addMsg;
 global.addTest = addTest;
 global.addModule = addModule;
@@ -65,6 +75,12 @@ exports.init = function ($param)
 		}
 	}
 	delete _param.rep;
+
+	__result = _httpInfo.result.k;
+	__success = _httpInfo.result.v;
+	__data = _httpInfo.data.k;
+	__error = _httpInfo.error.k;
+	__errorMsg = _httpInfo.errorMsg.k;
 }
 
 exports.on = function (...arg)
@@ -95,7 +111,9 @@ exports.on = function (...arg)
 
 function check($param, $targetParam, returnObj, successObj, $callBack)
 {
-	if (equalParam($param, $targetParam))
+	var isEqual = equalParam($param, $targetParam);
+
+	if (isEqual)
 	{
 		if (typeof successObj == "function")
 		{
@@ -124,6 +142,8 @@ function check($param, $targetParam, returnObj, successObj, $callBack)
 			}
 		}
 	}
+
+	return isEqual;
 }
 
 function addModule($path)
@@ -306,77 +326,103 @@ function error(...arg)
 
 function startNext()
 {
-	this.end = function ($err)
+	var next = ()=>
 	{
 		_list.shift();
 		_count++;
 		startNext();
 	}
+	this.end = (...arg)=>
+	{
+		if (_isEnd)
+		{
+			return;
+		}
+
+		if (arg.length > 0)
+		{
+			arg.unshift(_currObj.param);
+			if (_currData[__result] == __success)
+			{
+				arg.splice(2, 0, _currData[__data]);
+			}
+			else
+			{
+				arg.splice(2, 0, _currData[__errorMsg]);
+			}
+			if (check.apply(null, arg))
+			{
+				_isEnd = true;
+				next();
+			}
+		}
+		else
+		{
+			_isEnd = true;
+			success.apply(null, ["     ", "ok -", _currObj.param]);
+			next();
+		}
+	}
 
 	if (_list.length > 0)
 	{
-		if (typeof _list[0] == "string")
+		_currObj = _list[0];
+		if (typeof _currObj == "string")
 		{
-			log.info(_list[0]);
+			log.info(_currObj);
 			_list.shift();
 			startNext();
 		}
 		else
 		{
-			callTest(_list[0]).then((d)=>
+			callTest(_currObj).then((d)=>
 			{
-				info("[" + _count + "]", _list[0].func);
+				_currData = d;
+				_isEnd = false;
+				info("[" + _count + "]", _currObj.func);
 
-				var __result = _httpInfo.result.k;
-				var __success = _httpInfo.result.v;
-				var __data = _httpInfo.data.k;
-				var __error = _httpInfo.error.k;
-				var __errorMsg = _httpInfo.errorMsg.k;
-
-				var obj = _list[0];
-				if (obj.callback)
+				if (_currObj.callback)
 				{
 					if (d[__result] == __success)
 					{
-						obj.callback.call(this, true, d.data, obj.param, (...arg)=>
+						_currObj.callback.call(this, true, d[__data], _currObj.param, (...arg)=>
 							{
-								arg.unshift(obj.param);
+								arg.unshift(_currObj.param);
 								arg.unshift("ok -");
 								arg.unshift("     ");
 								success.apply(null, arg);
 							}, (...arg)=>
 							{
-								arg.unshift(obj.param);
+								arg.unshift(_currObj.param);
 								arg.unshift("err - ");
 								arg.unshift("     ");
 								error.apply(null, arg);
 							},
-							_cookies
-						);
+							_cookies);
 					}
 					else
 					{
-						obj.callback.call(this, false, d[__errorMsg], obj.param, (...arg)=>
+						_currObj.callback.call(this, false, d[__errorMsg], _currObj.param, (...arg)=>
 						{
-							arg.unshift(obj.param);
+							arg.unshift(_currObj.param);
 							arg.unshift("ok - ");
 							arg.unshift("     ");
 							success.apply(null, arg);
 						}, (...arg)=>
 						{
-							arg.unshift(obj.param);
+							arg.unshift(_currObj.param);
 							arg.unshift("err - ");
 							arg.unshift("     ");
 							error.apply(null, arg);
 						}, _cookies);
 					}
-//				this.callback = obj.callback.bind(this);
-//				this.callback(d.data, obj.param, _cookies);
+//				this.callback = _currObj.callback.bind(this);
+//				this.callback(d.data, _currObj.param, _cookies);
 				}
 				//这中间可能要调用sql去数据库查询最终数据，所以这里也是异步的
 			}, (d)=>
 			{
-				error("[" + _count + "]", _list[0].func, "fail");
+				error("[" + _count + "]", _currObj.func, "fail");
 				this.end();
 			});
 		}

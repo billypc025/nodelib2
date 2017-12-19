@@ -16,7 +16,7 @@ module.exports = class extends Manager {
 			_keyHash[serverKey] = new MysqlServer(this.param);
 		}
 		this.server = _keyHash[serverKey];
-
+		g.data.server.addServer(this.name, this.server);
 		super.init();
 	}
 

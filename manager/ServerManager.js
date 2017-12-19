@@ -2,10 +2,13 @@
  * Created by billy on 2017/8/23.
  */
 var g = require("../global");
+var EventEmitter = require("events").EventEmitter;
 
 var _serverTypes = ["http", "socket", "web", "mysql", "redis", "express", "script", "test"];
 var _managerInitNum = 0;
 var _routerObj = null;
+
+global.emiter = new EventEmitter();
 
 exports.start = function ($options)
 {
@@ -67,6 +70,7 @@ function initManager()
 	else
 	{
 		log.success("--------------- All INITED ---------------");
+		global.emiter.emit("ALL_INITED");
 		trace("");
 	}
 }

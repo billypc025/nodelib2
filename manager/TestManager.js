@@ -4,6 +4,7 @@
 var g = require("../global");
 var Manager = require("./Manager");
 var _testCore = require("./test/core");
+var _sqlCore = require("./test/sqlCore");
 
 //这里其实还是用module的方式进行模块化安装
 
@@ -14,6 +15,7 @@ module.exports = class extends Manager {
 		this.managerType = "Test";
 		this.list = [];
 		this.step = 0;
+		_sqlCore.init();
 		super.init();
 	}
 
@@ -50,7 +52,6 @@ module.exports = class extends Manager {
 			//这里要判断路径是目录还是文件，那么这里是否支持，将单个文件进行屏蔽的功能
 		}
 		this.start();
-
 		//我昨天怎么想的来着
 		//首先router得有mysql支持
 		//的能生成本次的日志
@@ -105,7 +106,11 @@ module.exports = class extends Manager {
 	{
 		super.start();
 		this.initTest(); //此处有一个不断执行的逻辑，放在哪一层级比较合理？
-		this.startTest();
+
+		global.emiter.addListener("ALL_INITED", ()=>
+		{
+			this.startTest();
+		});
 	}
 
 	initTest()
@@ -123,6 +128,7 @@ module.exports = class extends Manager {
 	{
 		if (this.step >= this.list.length)
 		{
+			log.success("--------------------------- All Test Done! ---------------------------");
 			process.exit();
 		}
 		else

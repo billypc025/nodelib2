@@ -79,6 +79,20 @@ function getManager($name)
 }
 exports.getManager = getManager;
 
+function getNameByType($type)
+{
+	var list = [];
+	for (var k in _hash)
+	{
+		if (_hash[k].type == $type)
+		{
+			list.push(_hash[k].name);
+		}
+	}
+	return list;
+}
+exports.getNameByType = getNameByType;
+
 defineProperty(exports, "nameList", function ()
 {
 	return _nameList;

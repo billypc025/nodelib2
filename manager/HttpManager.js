@@ -95,7 +95,7 @@ module.exports = class extends Manager {
 
 		server.listen(this.port);
 		this.server = server;
-		g.data.server.addServer("http:" + this.port, this.server);
+		g.data.server.addServer(this.name, this.server);
 		log.info(this.getMsg("Server runing at port:", this.port));
 	}
 }

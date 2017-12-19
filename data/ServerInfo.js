@@ -32,7 +32,31 @@ exports.addServer = function ($serverKey, $server)
 
 exports.getServer = function ($serverKey)
 {
-	return _serverHash[$serverKey];
+	if (typeof $serverKey == "string")
+	{
+		return _serverHash[$serverKey];
+	}
+	else
+	{
+		$serverKey = $serverKey.filter(function (v)
+		{
+			if (_serverHash[v])
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		});
+
+		$serverKey = $serverKey.map(function (v)
+		{
+			return _serverHash[v];
+		});
+
+		return $serverKey;
+	}
 }
 
 defineProperty(exports, "name", function ()

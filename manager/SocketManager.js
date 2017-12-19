@@ -58,6 +58,7 @@ module.exports = class extends Manager {
 	initServer()
 	{
 		this.server = require("socket.io")(this.param);
+		g.data.server.addServer(this.name, this.server);
 		if (this.param.redis && !isEmpty(this.param.redis))
 		{
 			try

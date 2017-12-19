@@ -27,6 +27,7 @@ module.exports = class extends Manager {
 			this.monitor = this.param.monitor;
 			this.server.monitor(($err, $monitor)=>
 			{
+				g.data.server.addServer(this.name, this.server);
 				$monitor.on('monitor', ($time, $args, $source, $database)=>
 				{
 					if ($args.indexOf("exec") == 0)
