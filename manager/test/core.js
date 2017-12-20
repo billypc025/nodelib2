@@ -36,14 +36,53 @@ var __data;
 var __error;
 var __errorMsg;
 
+var _lastFunc = "";
 var _currObj;
 var _currData;
 var _isEnd = false;
+var _log = "";
 
 global.addMsg = addMsg;
 global.addTest = addTest;
 global.addModule = addModule;
 global.check = check;
+global.end = end;
+global.info = function (...arg)
+{
+	if (typeof _currObj != "function")
+	{
+		arg.unshift.apply(arg, ["     ", "ok -", _currObj.func, _currObj.param]);
+	}
+	else
+	{
+		arg.unshift.apply(arg, ["     ", "fun -"]);
+	}
+	info.apply(null, arg);
+}
+global.success = function (...arg)
+{
+	if (typeof _currObj != "function")
+	{
+		arg.unshift.apply(arg, ["     ", "ok -", _currObj.func, _currObj.param]);
+	}
+	else
+	{
+		arg.unshift.apply(arg, ["     ", "fun -"]);
+	}
+	success.apply(null, arg);
+}
+global.error = function (...arg)
+{
+	if (typeof _currObj != "function")
+	{
+		arg.unshift.apply(arg, ["     ", "err -", _currObj.func, _currObj.param]);
+	}
+	else
+	{
+		arg.unshift.apply(arg, ["     ", "fun -"]);
+	}
+	error.apply(null, arg);
+}
 
 exports.init = function ($param)
 {
@@ -132,12 +171,12 @@ function check($param, $targetParam, returnObj, successObj, $callBack)
 				if (access)
 				{
 					//返回值符合预期
-					success("     ", "ok -", $param);
+					success("\t", "ok -", $param);
 				}
 				else
 				{
 					//返回值不符合预期
-					error("     ", "err -", $param, returnObj);
+					error("\t", "err -", $param, returnObj);
 				}
 			}
 		}
@@ -158,6 +197,12 @@ function addMsg($msg)
 
 function addTest($url, $func, $param, $method, $callBack)
 {
+	if (typeof $url == "function")
+	{
+		_list.push($url);
+		return;
+	}
+
 	var paramObj = formatParam($url, $func, $param, $method, $callBack);
 
 	if (typeof paramObj == "string")
@@ -287,16 +332,39 @@ exports.startTest = function ()
 	}
 }
 
-var _lastFunc = "";
-function info(count, func)
+function setLog($log)
+{
+	_log += $log + "\r\n";
+}
+
+function showInfo(count, func)
 {
 	if (_lastFunc == func)
 	{
+		_count--;
 		return;
 	}
 
 	_lastFunc = func;
+	log.info("");
 	log.info(count + " " + func);
+	setLog("");
+	setLog(count + " " + func);
+}
+function info(...arg)
+{
+	arg = arg.map(function (v)
+	{
+		if (typeof v == "object")
+		{
+			return JSON.stringify(v);
+		}
+		return v;
+	});
+
+	var $log = arg.join(" ");
+	log.info($log);
+	setLog($log);
 }
 function success(...arg)
 {
@@ -309,7 +377,9 @@ function success(...arg)
 		return v;
 	});
 
-	log.success(arg.join(" "));
+	var $log = arg.join(" ");
+	log.success($log);
+	setLog($log);
 }
 function error(...arg)
 {
@@ -321,57 +391,78 @@ function error(...arg)
 		}
 		return v;
 	});
-	log.error(arg.join(" "));
+	var $log = arg.join(" ");
+	log.error($log);
+	setLog($log);
+}
+
+function next()
+{
+	if (typeof _currObj != "function" && typeof _currObj != "string")
+	{
+		_count++;
+	}
+	_list.shift();
+	setTimeout(startNext, 200);
+}
+
+function end(...arg)
+{
+	if (_isEnd)
+	{
+		return;
+	}
+
+	if (typeof _currObj == "function")
+	{
+		if (arg.length > 0)
+		{
+			arg.unshift.apply(arg, ["\t", "fun -"]);
+			info.apply(null, arg);
+		}
+		next();
+		return;
+	}
+
+	if (arg.length > 0)
+	{
+		arg.unshift(_currObj.param);
+		if (_currData[__result] == __success)
+		{
+			arg.splice(2, 0, _currData[__data]);
+		}
+		else
+		{
+			arg.splice(2, 0, _currData[__errorMsg]);
+		}
+		if (check.apply(null, arg))
+		{
+			_isEnd = true;
+			next();
+		}
+	}
+	else
+	{
+		_isEnd = true;
+		success.apply(null, ["\t", "ok -", _currObj.param]);
+		next();
+	}
 }
 
 function startNext()
 {
-	var next = ()=>
-	{
-		_list.shift();
-		_count++;
-		startNext();
-	}
-	this.end = (...arg)=>
-	{
-		if (_isEnd)
-		{
-			return;
-		}
-
-		if (arg.length > 0)
-		{
-			arg.unshift(_currObj.param);
-			if (_currData[__result] == __success)
-			{
-				arg.splice(2, 0, _currData[__data]);
-			}
-			else
-			{
-				arg.splice(2, 0, _currData[__errorMsg]);
-			}
-			if (check.apply(null, arg))
-			{
-				_isEnd = true;
-				next();
-			}
-		}
-		else
-		{
-			_isEnd = true;
-			success.apply(null, ["     ", "ok -", _currObj.param]);
-			next();
-		}
-	}
-
 	if (_list.length > 0)
 	{
 		_currObj = _list[0];
 		if (typeof _currObj == "string")
 		{
-			log.info(_currObj);
+			info(_currObj);
 			_list.shift();
 			startNext();
+		}
+		else if (typeof _currObj == "function")
+		{
+			_currObj();
 		}
 		else
 		{
@@ -379,7 +470,7 @@ function startNext()
 			{
 				_currData = d;
 				_isEnd = false;
-				info("[" + _count + "]", _currObj.func);
+				showInfo("[" + _count + "]", _currObj.func);
 
 				if (_currObj.callback)
 				{
@@ -389,13 +480,13 @@ function startNext()
 							{
 								arg.unshift(_currObj.param);
 								arg.unshift("ok -");
-								arg.unshift("     ");
+								arg.unshift("\t");
 								success.apply(null, arg);
 							}, (...arg)=>
 							{
 								arg.unshift(_currObj.param);
 								arg.unshift("err - ");
-								arg.unshift("     ");
+								arg.unshift("\t");
 								error.apply(null, arg);
 							},
 							_cookies);
@@ -406,13 +497,13 @@ function startNext()
 						{
 							arg.unshift(_currObj.param);
 							arg.unshift("ok - ");
-							arg.unshift("     ");
+							arg.unshift("\t");
 							success.apply(null, arg);
 						}, (...arg)=>
 						{
 							arg.unshift(_currObj.param);
 							arg.unshift("err - ");
-							arg.unshift("     ");
+							arg.unshift("\t");
 							error.apply(null, arg);
 						}, _cookies);
 					}
@@ -430,7 +521,7 @@ function startNext()
 	else
 	{
 		_isRunning = false;
-		_emiter.emit("COMPLETE");
+		_emiter.emit("COMPLETE", _log);
 	}
 }
 
@@ -469,29 +560,30 @@ function createNet($obj)
 			req = _req.post($obj.url);
 		}
 
-		if (_cookies.length)
+		if (_cookies.length > 0)
 		{
-			req.set('Cookie', _cookies);
+			req.set('Cookie', _cookies[0]);
 		}
 		req.set("Content-Type", "application/json")
 			.type("form")
 			.send($obj.param)
 			.end((err, res)=>
 			{
+//				trace(res.text)
 				if (err)
 				{
 					reject(err);
 				}
 				else
 				{
+//					trace(res.header);
 					if (res.headers.hasOwnProperty("set-cookie"))
 					{
 						_cookies = _cookies.concat(res.headers["set-cookie"]);
 					}
 					resloved(JSON.parse(res.text));
 				}
-			})
-
+			});
 	})
 	return promise;
 }

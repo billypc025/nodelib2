@@ -40,7 +40,7 @@ module.exports = class extends Manager {
 						};
 						if (this.logNum >= this.logLimit)
 						{
-							g.fs.writeFile(g.path.resolve(this.param.monitor) + "log_" + timeTool.getNowStamp() + ".txt", this.log);
+							g.fs.writeFileSync(g.path.resolve(this.param.monitor) + "log_" + timeTool.getNowStamp() + ".txt", this.log);
 							this.logNum = 0;
 							this.log = "";
 						}

@@ -5,6 +5,9 @@ var g = require("../global");
 var Manager = require("./Manager");
 var _testCore = require("./test/core");
 var _sqlCore = require("./test/sqlCore");
+var _timeTool = require("../utils/TimeTool");
+var _log = "";
+var _errorLog = "";
 
 //这里其实还是用module的方式进行模块化安装
 
@@ -109,19 +112,26 @@ module.exports = class extends Manager {
 
 		global.emiter.addListener("ALL_INITED", ()=>
 		{
-			this.startTest();
+			this.startDataInit();
 		});
 	}
 
 	initTest()
 	{
 		_testCore.init(this.data.param);
-		_testCore.on("COMPLETE", (d)=>
+		_testCore.on("COMPLETE", ($log)=>
 		{
+			_log += "[Module] - " + this.list[this.step][0] + "\r\n";
+			_log += $log;
 			this.step++;
 			this.startTest();
 		})
 		log.info("[Test] " + this.name);
+	}
+
+	startDataInit()
+	{
+		this.startTest();
 	}
 
 	startTest()
@@ -129,6 +139,10 @@ module.exports = class extends Manager {
 		if (this.step >= this.list.length)
 		{
 			log.success("--------------------------- All Test Done! ---------------------------");
+
+			var time = _timeTool.getFullDate();
+			time = time.replace(/:/g, ".");
+			g.fs.writeFileSync(__projpath("./log/" + time + ".txt"), _log);
 			process.exit();
 		}
 		else
