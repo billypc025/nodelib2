@@ -46,7 +46,7 @@ module.exports = class extends Manager {
 		//list文件就是模块
 		//最后清理掉所有过程中产生的测试数据
 		//所以这里就需要准备一个addModule方法
-		for (var routerPath of this.module)
+		for (var routerPath in this.module)
 		{
 			var modulePath = this.module[routerPath];
 			modulePath = __projpath(modulePath);
