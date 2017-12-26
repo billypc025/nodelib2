@@ -87,9 +87,9 @@ module.exports = class extends Manager {
 			{
 				var a0 = a.substr(0, a.indexOf(".")) - 0;
 				var b0 = a.substr(0, b.indexOf(".")) - 0;
-				if (isNaN(a0) || isNaN(b0))
+				if (isNaN(a0) && isNaN(b0))
 				{
-					return compareString(a0, b0);
+					return compareString(a, b);
 				}
 				else
 				{
