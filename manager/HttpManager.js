@@ -110,7 +110,8 @@ var doMethod = {
 	{
 		if ($pathName.indexOf("/upload") > 0)
 		{
-			doRequest($router, $func, $pathName, "", $request, $response, $header);
+			let query = url.parse($request.url, true).query;
+			doRequest($router, $func, $pathName, query, $request, $response, $header);
 		}
 		else
 		{

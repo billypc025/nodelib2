@@ -358,24 +358,6 @@ function exec(cmd)
 }
 global.exec = exec;
 
-function formatResponse($cmd, $dataObj, error)
-{
-	var result = {
-		cmd: $cmd,
-		status: 1,
-		data: $dataObj,
-	};
-
-	if (error)
-	{
-		result.error = error;
-		result.status = 0;
-	}
-
-	return result;
-}
-global.formatResponse = formatResponse;
-
 function isString($str)
 {
 	return typeof $str == "string";

@@ -46,6 +46,29 @@ function initData()
 {
 	g.data.server.init(_routerObj);
 	g.data.manager.init(_routerObj.info);
+
+	var cmdName = "cmd";
+	var statusName = "status";
+	var dataName = "data";
+	var errorName = "error";
+
+	global.formatResponse = function ($cmd, $dataObj, error)
+	{
+		var result = {
+			cmd: $cmd,
+			status: 1,
+			data: $dataObj,
+		};
+
+		if (error)
+		{
+			result.error = error;
+			result.status = 0;
+		}
+
+		return result;
+	}
+	;
 }
 
 function initManager()

@@ -23,8 +23,8 @@
 	  }
 	}
   },
-  "module": {
-	"case1": "./module/case1"
-  },
+  "module": [
+	"./module/case1"
+  ],
   "enabled": true
 }

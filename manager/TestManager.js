@@ -46,12 +46,12 @@ module.exports = class extends Manager {
 		//list文件就是模块
 		//最后清理掉所有过程中产生的测试数据
 		//所以这里就需要准备一个addModule方法
-		for (var routerPath in this.module)
+		for (var routerPath of this.module)
 		{
 			var modulePath = this.module[routerPath];
 			modulePath = __projpath(modulePath);
 
-			this.addModule(routerPath, modulePath);
+			this.addModule(routerPath + 1, modulePath);
 			//这里要判断路径是目录还是文件，那么这里是否支持，将单个文件进行屏蔽的功能
 		}
 		this.start();
@@ -64,6 +64,7 @@ module.exports = class extends Manager {
 
 	addModule($name, $path)
 	{
+		$name += "";
 		if (g.file.isDirectory($path))
 		{
 			if (!g.file.exists($path))
@@ -82,6 +83,36 @@ module.exports = class extends Manager {
 				}
 			}
 
+			fileList.sort(function (a, b)
+			{
+				var i = 0;
+				var r = 0;
+				while (true)
+				{
+					if (a === b)
+					{
+						break;
+					}
+
+					var a0 = a.charCodeAt(i);
+					var b0 = b.charCodeAt(i);
+
+					if (a0 != b0 || isNaN(a0) || isNaN(b0))
+					{
+						if (isNaN(a0) || isNaN(b0))
+						{
+							r = isNaN(a0) ? -1 : 1;
+						}
+						else
+						{
+							r = a0 - b0;
+						}
+						break;
+					}
+					i++;
+				}
+				return r;
+			})
 			this.list.push([$name, fileList]);
 		}
 		else
