@@ -632,5 +632,42 @@ function __mergeAll(target)
 }
 global.__mergeAll = __mergeAll;
 
+function sortByName($list)
+{
+	$list.sort(compareString);
+	return $list;
+}
+global.sortByName = sortByName;
 
+function compareString(a, b)
+{
+	var i = 0;
+	var r = 0;
+	while (true)
+	{
+		if (a === b)
+		{
+			break;
+		}
+
+		var a0 = a.charCodeAt(i);
+		var b0 = b.charCodeAt(i);
+
+		if (a0 != b0 || isNaN(a0) || isNaN(b0))
+		{
+			if (isNaN(a0) || isNaN(b0))
+			{
+				r = isNaN(a0) ? -1 : 1;
+			}
+			else
+			{
+				r = a0 - b0;
+			}
+			break;
+		}
+		i++;
+	}
+	return r;
+}
+global.compareString = compareString;
 //global.deindent = require("./deindent");

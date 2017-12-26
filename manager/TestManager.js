@@ -85,33 +85,23 @@ module.exports = class extends Manager {
 
 			fileList.sort(function (a, b)
 			{
-				var i = 0;
-				var r = 0;
-				while (true)
+				var a0 = a.substr(0, a.indexOf(".")) - 0;
+				var b0 = a.substr(0, b.indexOf(".")) - 0;
+				if (isNaN(a0) || isNaN(b0))
 				{
-					if (a === b)
-					{
-						break;
-					}
-
-					var a0 = a.charCodeAt(i);
-					var b0 = b.charCodeAt(i);
-
-					if (a0 != b0 || isNaN(a0) || isNaN(b0))
-					{
-						if (isNaN(a0) || isNaN(b0))
-						{
-							r = isNaN(a0) ? -1 : 1;
-						}
-						else
-						{
-							r = a0 - b0;
-						}
-						break;
-					}
-					i++;
+					return compareString(a0, b0);
 				}
-				return r;
+				else
+				{
+					if (!isNaN(a0) && !isNaN(b0))
+					{
+						return a0 - b0;
+					}
+					else
+					{
+						return isNaN(a0) ? 1 : -1;
+					}
+				}
 			})
 			this.list.push([$name, fileList]);
 		}
