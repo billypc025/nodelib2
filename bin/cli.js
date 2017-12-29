@@ -147,8 +147,11 @@ var projPath = "";
 
 if (!globalCmd.exe.apply(globalCmd.exe, getArgs()))
 {
-	showUsage();
-	process.exit();
+	if (process.argv[1] && process.argv[1].indexOf("cli.js") == process.argv[1].length - 6)
+	{
+		showUsage();
+		process.exit();
+	}
 }
 
 function init()
@@ -292,6 +295,8 @@ function start($routerName)
 	checkInit();
 	require("./server")($routerName);
 }
+
+exports.start = start;
 
 function addRouter($routerName, $serverType)
 {
