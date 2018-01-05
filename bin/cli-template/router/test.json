@@ -16,10 +16,6 @@
 	  "error": {
 		"name": "status",
 		"type": "number"
-	  },
-	  "errorMsg": {
-		"name": "error",
-		"type": "string"
 	  }
 	}
   },

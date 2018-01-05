@@ -44,6 +44,64 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		var statusName = "status";
+		var successStatus = 1;
+		var failStatus = 0;
+		var dataName = "data";
+		var errorName = "error";
+		var errorMsg = "";
+
+		if (this.param && this.param.hasOwnProperty("req"))
+		{
+			if (this.param.req.result)
+			{
+				statusName = this.param.req.result.name || statusName;
+				successStatus = this.param.req.result.success || successStatus;
+				failStatus = this.param.req.result.fail || failStatus;
+			}
+			if (this.param.req.data)
+			{
+				dataName = this.param.req.data.name || dataName;
+			}
+			if (this.param.req.error)
+			{
+				errorName = this.param.req.error.name || errorName;
+			}
+			if (this.param.req.errorMsg)
+			{
+				errorMsg = this.param.req.errorMsg.name || errorMsg;
+			}
+
+			//不对，这里应该是将程序里面返回的{code:222}，进行分割处理
+			//但是这些error其实是业务逻辑自己返回的，所以其实是可以定义的
+			//那么其中一种就可以是对status字段进行覆盖处理
+		}
+
+		global.formatResponse = function ($cmd, $dataObj, error)
+		{
+			var result = {cmd: $cmd};
+			result[statusName] = successStatus;
+			result[dataName] = $dataObj;
+
+			//这里就需要对结构进行定义
+			result.status = failStatus;
+			result[errorName] = error;
+
+			if (errorMsg)
+			{
+				if (errorMsg.indexOf(".") > 0)
+				{
+
+				}
+				else
+				{
+					result[errorMsg] = error.msg;
+				}
+			}
+
+			return result;
+		}
+
 		this.managerType = "Http";
 		this.server = null;
 		this.header = __merge(_header, this.param.header, true);
