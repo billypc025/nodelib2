@@ -417,6 +417,10 @@ function getTimeStampByDate($date)
 		}
 		else
 		{
+			if ($date.length == 10)
+			{
+				return Number($date) * 1000;
+			}
 			return Number($date);
 		}
 	}
@@ -426,6 +430,10 @@ function getTimeStampByDate($date)
 	}
 	else if (typeof $date == "number")
 	{
+		if (($date + "").length == 10)
+		{
+			return $date * 1000;
+		}
 		return $date;
 	}
 }
