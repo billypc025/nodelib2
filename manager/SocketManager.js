@@ -172,7 +172,7 @@ module.exports = class extends Manager {
 	push($client, $cmd, $dataObj)
 	{
 		//识别$client为  client / clientId / clientIds
-		trace(getType($client));
+//		trace(getType($client));
 	}
 
 	addLoginCheckList($id)

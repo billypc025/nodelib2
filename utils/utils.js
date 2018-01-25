@@ -671,3 +671,34 @@ function compareString(a, b)
 }
 global.compareString = compareString;
 //global.deindent = require("./deindent");
+
+/**
+ * 返回客户端Ip
+ * @param $request
+ * @returns {*|string[]|string}
+ */
+function getClientIp($request)
+{
+	if ($request)
+	{
+		var ipAddress = "";
+		if ($request.headers)
+		{
+			ipAddress = $request.headers['x-real-ip'] || $request.headers['x-forwarded-for']
+		}
+
+		if (!ipAddress && $request.connection)
+		{
+			ipAddress = $request.connection.remoteAddress || "";
+		}
+
+		if (!ipAddress && $request.socket)
+		{
+			ipAddress = $request.socket.remoteAddress || $request.connection.socket.remoteAddress;
+		}
+
+		return ipAddress.split(":")[3];
+	}
+	return "";
+}
+global.getClientIp = getClientIp;

@@ -84,11 +84,11 @@ module.exports = class extends Manager {
 			result[dataName] = $dataObj;
 
 			//这里就需要对结构进行定义
-			result.status = failStatus;
-			result[errorName] = error;
-
-			if (errorMsg)
+			if (error)
 			{
+				result.status = failStatus;
+				result[errorName] = error;
+
 				if (errorMsg.indexOf(".") > 0)
 				{
 
@@ -98,7 +98,6 @@ module.exports = class extends Manager {
 					result[errorMsg] = error.msg;
 				}
 			}
-
 			return result;
 		}
 
