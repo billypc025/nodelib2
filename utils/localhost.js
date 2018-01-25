@@ -58,3 +58,58 @@ exports.portIsFree = function ($port, $callback, $errorBack)
 		})
 	});
 }
+
+/**
+ * 获取本机ip列表
+ * @returns ip[]
+ */
+exports.getLocalIpList = function ()
+{
+	var ipList = [];
+	var platform = os.platform();
+	var netList = os.networkInterfaces();
+	if (platform == "win32")
+	{
+		netList = netList['本地连接']
+	}
+	else
+	{
+		netList = netList['en0'] || netList['eth0'];
+	}
+
+	for (var i = 0; i < netList.length; i++)
+	{
+		if (netList[i].family == 'IPv4')
+		{
+			ipList.push(netList[i].address);
+		}
+	}
+
+	return ipList;
+}
+
+/**
+ * 获取本机所有ip列表
+ * @returns {[name:string]:ip[]}
+ */
+exports.getAllIpList = function ()
+{
+	var ipHash = {};
+	var platform = os.platform();
+	var netHash = os.networkInterfaces();
+
+	for (var netName in netHash)
+	{
+		ipHash[netName] = [];
+		var netList = netHash[netName];
+		for (var i = 0; i < netList.length; i++)
+		{
+			if (netList[i].family == 'IPv4')
+			{
+				ipHash[netName].push(netList[i].address);
+			}
+		}
+	}
+
+	return ipHash;
+}

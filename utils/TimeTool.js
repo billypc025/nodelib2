@@ -391,3 +391,41 @@ function getWeekNum(...arg)
 	return Math.ceil(dayNum / 7) + 1;
 }
 exports.getWeekNum = getWeekNum;
+
+/**
+ * 获取两个日期的间隔天数
+ * @param $date1 日期1 格式可以是 1时间戳(数字/字符串) 2数组 3日期字符串
+ * @param $date2 日期2 格式可以是 1时间戳(数字/字符串) 2数组 3日期字符串
+ */
+function getOffset($date1, $date2)
+{
+	var time1 = getTimeStampByDate($date1);
+	var time2 = getTimeStampByDate($date2);
+
+	return parseInt((time2 - time1) / 86400000);
+}
+exports.getOffset = getOffset;
+
+function getTimeStampByDate($date)
+{
+	if (typeof $date == "string")
+	{
+		if (Number($date) != $date - 0)
+		{
+			var dateArr = $date.split(" ")[0].split("-");
+			return new Date(dateArr).getTime();
+		}
+		else
+		{
+			return Number($date);
+		}
+	}
+	else if (Array.isArray($date))
+	{
+		return new Date($date).getTime();
+	}
+	else if (typeof $date == "number")
+	{
+		return $date;
+	}
+}

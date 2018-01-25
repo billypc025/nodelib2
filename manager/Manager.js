@@ -38,7 +38,6 @@ module.exports = class {
 
 		Promise.all(list).then(($list)=>
 		{
-
 			for (var moduleItem of $list)
 			{
 				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);

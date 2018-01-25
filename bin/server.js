@@ -33,13 +33,13 @@ module.exports = function ($routerName)
 
 	global.libPath = g.path.resolve(__dirname);
 	global.projPath = projPath;
-	global.__libdir = libPath;
-	global.__projdir = projPath;
-	global.__libpath = function ($path)
+	global.__libdir = libPath;   //nodeLib库路径
+	global.__projdir = projPath; //项目目录路径
+	global.__libpath = function ($path)  //以nodeLib库目录为根节点，获取绝对路径
 	{
 		return g.path.join(global.__libdir, $path);
 	}
-	global.__projpath = function ($path)
+	global.__projpath = function ($path) //以项目目录为根节点，获取绝对路径
 	{
 		return g.path.join(global.__projdir, $path);
 	}
