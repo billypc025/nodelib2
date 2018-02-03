@@ -3,7 +3,7 @@
  */
 
 var g = require("nodeLib");
-var _timeTool = require("../../../utils/TimeTool");
+var _timeTool = require("../TimeTool");
 
 function hhhhhhhh()
 {
