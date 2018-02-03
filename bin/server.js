@@ -46,7 +46,7 @@ module.exports = function ($routerName)
 	global.__utilsdir = __projpath("./utils/");
 	global.__utilspath = function ($path)
 	{
-		return exports.utils + $path;
+		return __utilsdir + $path;
 	}
 
 	var routerPath;
