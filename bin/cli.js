@@ -3,6 +3,7 @@ require('shelljs/global');
 var g = require("../global");
 var fs = require("fs");
 var path = require("path");
+var OS = require("os");
 var opener = require("opener");
 var timeTool = require("../utils/TimeTool");
 var exec = require("child_process").exec;
@@ -13,6 +14,8 @@ var addCmd = require("../utils/actionPool")();
 var libPath = path.join(__dirname, "../");
 var currPath = path.resolve("./");
 var projPath = "";
+
+var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 
 (function ()
 {
@@ -223,7 +226,7 @@ function update()
 		{
 			trace("Update nodeLib Complete.");
 
-			var editInfo = require("os").platform().indexOf("win32") >= 0 ? "#" + "!" + "node" : "#" + "!" + "/usr/bin/env" +
+			var editInfo = os == "win" ? "#" + "!" + "node" : "#" + "!" + "/usr/bin/env" +
 			" node";
 			var packageJson = require("../package.json");
 			if (packageJson.bin && Object.keys(packageJson.bin).length > 0)
@@ -262,7 +265,7 @@ function update()
 				}
 			}
 			trace("开始导入库, 耐心等待...");
-			require("child_process").execSync("cd " + libPath + " && npm link");
+			require("child_process").execSync("npm link", {cwd: libPath});
 
 			if (projPath != "")
 			{
