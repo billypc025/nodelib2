@@ -6,5 +6,5 @@
 ./utils/Timer.js
 ./utils/TimeTool.js
 ./utils/WorkList.js
-./model/Upload.js
-./model/upload
+./utils/Upload.js
+./utils/upload
