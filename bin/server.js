@@ -7,6 +7,7 @@ var options = {router: ""};
 
 module.exports = function ($routerName)
 {
+	global.g = g;
 	var currPath = g.path.resolve("./");
 	var projPath = "";
 
