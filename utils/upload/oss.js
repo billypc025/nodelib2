@@ -58,12 +58,12 @@ class OSSClient extends EventEmitter {
 					targetPath = g.path.join($targetPath, targetPath);
 				}
 
-				promiseList.push(this.doUpload(list[i], targetPath));
+				promiseList.push(doUpload(this.client, list[i], targetPath));
 			}
 		}
 		else
 		{
-			if (g.path.parse($targetPath).ext == "")
+			if (g.path.parse($targetPath).ext == "") //支持目标路径是一个目录
 			{
 				if ($targetPath.charAt($targetPath.length - 1) != "/")
 				{
@@ -72,7 +72,7 @@ class OSSClient extends EventEmitter {
 				$targetPath = $targetPath + g.path.parse($path).base
 			}
 
-			promiseList.push(this.doUpload($targetPath, $path));
+			promiseList.push(doUpload(this.client, $targetPath, $path));
 		}
 
 		return Promise.all(promiseList).then(()=>
@@ -81,41 +81,61 @@ class OSSClient extends EventEmitter {
 		})
 	}
 
-	doUpload($path, $targetPath)
+	delete($fileName)
 	{
-		var promise = new Promise((resolved, reject)=>
+		var promiseList = [];
+		if (typeof $url == "string")
 		{
-			let client = this.client;
-			co(function*()
+			promiseList.push(doDelete(this.client, $url));
+		}
+		else
+		{
+			for (var url of $url)
 			{
-				var result = yield client.put($path, $targetPath);
-				resolved();
-			}).catch(function (err)
-			{
-				log.error(err);
-			});
+				promiseList.push(doDelete(this.client, url));
+			}
+		}
+		return Promise.all(promiseList).then(()=>
+		{
+			this.emit("COMPLETE", this);
 		})
-
-		return promise;
 	}
+}
 
-	del($fileName)
+function doUpload($client, $path, $targetPath)
+{
+	let client = $client;
+	var promise = new Promise((resolved, reject)=>
 	{
-		var promise = new Promise((resolved, reject)=>
+		co(function*()
 		{
-//			var targetPath = _param.basePath + $fileName;
-			let client = this.client;
-			co(function*()
-			{
-				var result = yield client.delete($fileName);
-				resolved();
-			}).catch(function (err)
-			{
-			});
+			var result = yield client.put($path, $targetPath);
+			resolved();
+		}).catch(function (err)
+		{
+			log.error(err);
 		});
+	})
 
-		return promise;
-	}
+	return promise;
+}
+
+function doDelete($client, $url)
+{
+	let client = $client;
+	var promise = new Promise((resolved, reject)=>
+	{
+//		var targetPath = _param.basePath + $fileName;
+		co(function*()
+		{
+			var result = yield client.delete($fileName);
+			resolved();
+		}).catch(function (err)
+		{
+		});
+	});
+
+	return promise;
 }
 
 function error($error)

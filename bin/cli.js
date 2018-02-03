@@ -23,7 +23,7 @@ var projPath = "";
 		{
 			if (require(tempPath).proj == "nodecli")
 			{
-				projPath = g.file.getDirectory(tempPath);
+				projPath = path.join(g.file.getDirectory(tempPath), "");
 			}
 			break;
 		}
@@ -58,7 +58,21 @@ var projPath = "";
 
 	global.copyFile = function ($libPath, $projPath)
 	{
-		cp('-Rf', getCliPath($libPath), getProjPath($projPath));
+		var sourcePath = getCliPath($libPath);
+		var targetPath = getProjPath($projPath);
+		if (g.file.isDirectory(sourcePath))
+		{
+			var list = g.file.getDirectoryListing(sourcePath);
+			for (var i = 0; i < list.length; i++)
+			{
+				var temppath = g.path.resolve(list[i]).replace(sourcePath, "");
+				copyFile(sourcePath + temppath, targetPath + temppath);
+			}
+		}
+		else
+		{
+			cp('-Rf', sourcePath, targetPath);
+		}
 	}
 
 	global.writeFile = function ($path, $data)
@@ -258,7 +272,6 @@ function update()
 			process.exit();
 		});
 	});
-
 }
 
 function updateFile()
@@ -273,11 +286,17 @@ function updateFile()
 	for (var i = 0; i < fileList.length; i++)
 	{
 		var targetFilePath = getProjPath(fileList[i]);
-		var targetDir = g.file.getDirectory(targetFilePath);
+		var pathObj = g.path.parse(targetFilePath);
+		var targetDir = pathObj.dir;
+		if (pathObj.ext == "")
+		{
+			targetDir += "\\" + pathObj.base;
+		}
 		if (!projExist(targetDir))
 		{
 			g.file.createDirectory(targetDir);
 		}
+
 		copyFile(fileList[i], fileList[i]);
 		trace("Copy File: " + getProjPath(fileList[i]));
 	}

@@ -62,3 +62,18 @@ function hhhhhhhh()
 //				});
 
 }
+
+function del()
+{
+	if (typeof fileName == "string")
+	{
+		this.delFile(fileName);
+	}
+	else
+	{
+		for (var url of fileName)
+		{
+			this.delFile(url);
+		}
+	}
+}

@@ -7,7 +7,7 @@ var LocalClient = require("./upload/local");
 
 var _freeHash = {};
 
-class UpFileLoader {
+class FileUpLoader {
 	constructor($param, $type)
 	{
 		this.param = $param;
@@ -19,9 +19,9 @@ class UpFileLoader {
 		return this.getClient().upload($path, $targetPath);
 	}
 
-	del($fileName)
+	delete($fileName)
 	{
-		return this.getClient().del($fileName);
+		return this.getClient().delete($fileName);
 	}
 
 	getClient()
@@ -77,4 +77,4 @@ function createClient($param, $type)
 	return client;
 }
 
-module.exports = UpFileLoader;
+module.exports = FileUpLoader;
