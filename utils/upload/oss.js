@@ -9,7 +9,7 @@ var EventEmitter = require("events").EventEmitter;
 var co = require("co");
 var OSS = require("ali-oss");
 var g = require("nodeLib");
-var _timeTool = require("../../../utils/TimeTool");
+var _timeTool = require("../TimeTool");
 
 var _freeList = [];
 
