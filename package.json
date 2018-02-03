@@ -17,9 +17,11 @@
   "license": "ISC",
   "dependencies": {
     "aes256": "^1.0.2",
+    "ali-oss": "^4.12.2",
     "bluebird": "^3.5.0",
     "clean-css": "^4.1.8",
     "cli-color": "^1.2.0",
+    "cos-nodejs-sdk-v5": "^2.2.6",
     "cross-env": "^5.0.5",
     "debug": "^2.6.8",
     "express": "^4.15.2",
