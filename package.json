@@ -26,6 +26,7 @@
     "cross-env": "^5.0.5",
     "debug": "^2.6.8",
     "express": "^4.15.2",
+    "formidable": "^1.1.1",
     "grunt": "~0.4.1",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-concat": "~0.3.0",
