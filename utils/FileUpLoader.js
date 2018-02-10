@@ -10,6 +10,27 @@ var _freeHash = {};
 class FileUpLoader {
 	constructor($param, $type)
 	{
+		/* $type = OSS 入参配置
+		 {
+		 "region": "oss-cn-hangzhou",
+		 "accessKeyId": "LTAIPkIl4nhxftbf",
+		 "accessKeySecret": "vUKqMwQUsHOPbOp5HsxD5dwxLM6nhb",
+		 "bucket": "chachadian-test",
+		 "basePath": "boms/upload/"
+		 }
+		 */
+
+		/* $type = COS 入参配置
+		 {
+		 "Region": "ap-shanghai",
+		 "SecretId": "AKIDqUt3xbz7zauxiCmLzMTJs9F4cw1qNlri",
+		 "SecretKey": "kGWXJp68vSlocBcolTwA8rLaZJo69wUn",
+		 "Bucket": "zhuawawa-1251508536",
+		 "basePath": "test_inside/",
+		 "baseUrl": "https://zhuawawa-1251508536.cos.ap-shanghai.myqcloud.com/test_inside/"
+		 }
+		 */
+
 		this.param = $param;
 		this.type = $type;
 	}

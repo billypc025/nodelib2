@@ -1,7 +1,4 @@
 /**
- * Created by billy on 2018/2/1.
- */
-/**
  * Created by billy on 2017/11/9.
  */
 var fs = require("fs");
@@ -10,8 +7,6 @@ var co = require("co");
 var OSS = require("ali-oss");
 var g = require("nodeLib");
 var _timeTool = require("../TimeTool");
-
-var _freeList = [];
 
 class OSSClient extends EventEmitter {
 	constructor($param)

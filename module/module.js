@@ -36,7 +36,16 @@ function addModule($modName, $moduleClass, $managerData)
 		if (!isGlobalModule || !_hash[$modName])
 		{
 			$moduleClass.prototype.add = addFunc($modName);
-			moduleItem = new $moduleClass();
+			try
+			{
+				moduleItem = new $moduleClass();
+			}
+			catch (e)
+			{
+				log.error("模块加载出错： " + $modName)
+				trace(e);
+				process.exit(0);
+			}
 			moduleItem.data = $managerData;
 			moduleItem.funcList = moduleItem.funcList || [];
 			moduleItem.funcHash = moduleItem.funcHash || {};

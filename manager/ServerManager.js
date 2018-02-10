@@ -37,7 +37,8 @@ function initRouter($router)
 	}
 	catch (e)
 	{
-		log.error($routerPath + "不是有效的json文件");
+		log.error(routerPath + "不是有效的json文件");
+		log.error(e.toString().split("\n")[0]);
 		process.exit(0);
 	}
 }
