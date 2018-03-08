@@ -76,7 +76,7 @@ class OSSClient extends EventEmitter {
 		})
 	}
 
-	delete($fileName)
+	delete($url)
 	{
 		var promiseList = [];
 		if (typeof $url == "string")
