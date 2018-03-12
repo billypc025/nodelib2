@@ -57,7 +57,9 @@ module.exports = class {
 					if (err)
 					{
 						log.error(err.sql);
-						log.error(err.sqlMessage)
+						log.error(err.sqlMessage);
+						var date = _timeTool.getDate(0, true);
+						
 						$errorBack && $errorBack(err);
 					}
 					else
