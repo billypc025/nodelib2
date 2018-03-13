@@ -58,8 +58,7 @@ module.exports = class {
 					{
 						log.error(err.sql);
 						log.error(err.sqlMessage);
-						var date = _timeTool.getDate(0, true);
-						
+						g.log.out(err);
 						$errorBack && $errorBack(err);
 					}
 					else
@@ -70,11 +69,13 @@ module.exports = class {
 			}
 			catch (e)
 			{
+				g.log.out(e);
 				$errorBack && $errorBack(e);
 			}
 		}
 		else
 		{
+			g.log.out("Query was empty");
 			$errorBack && $errorBack("Query was empty");
 		}
 //		}

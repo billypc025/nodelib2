@@ -17,4 +17,8 @@ exports.localHost = require("./utils/localhost");
 exports.md5 = require("md5");
 exports.aes = require("./utils/aes");
 
+var LogManager = require("./manager/LogManager");
+exports.log = new LogManager({name: "system"});
+exports.LogManager = LogManager;
+
 global.g = exports;
