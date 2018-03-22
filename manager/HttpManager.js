@@ -4,6 +4,7 @@
 
 var g = require("../global");
 var http = require('http');
+var https = require('https');
 var url = require('url');
 var qs = require('querystring');
 var _module = require("../module/module");
@@ -105,6 +106,7 @@ module.exports = class extends Manager {
 		this.server = null;
 		this.header = __merge(_header, this.param.header, true);
 		this.port = this.param.port || _defaultPort;
+		this.protocol = this.param.protocol || "http";
 		if (this.param.htmlTemplate)
 		{
 			var templatePath = __projpath(this.param.htmlTemplate);
@@ -134,21 +136,45 @@ module.exports = class extends Manager {
 
 	initServer()
 	{
-		var server = http.createServer((request, response)=>
+		var server;
+		if (this.protocol == "https" && this.param.protocol && this.param.protocol.key && this.param.protocol.cert)
 		{
-			if (!this.param.hasOwnProperty("method")
-				|| this.param.method == ""
-				|| this.param.method == "*"
-				|| this.param.method.tolowercase() == request.method.tolowercase())
+			this.param.protocol.key = g.fs.readFileSync(this.param.protocol.key);
+			this.param.protocol.cert = g.fs.readFileSync(this.param.protocol.cert);
+			server = https.createServer(this.param.protocol, (request, response)=>
 			{
-				var paramObj = url.parse(request.url);
-				var func = this.getFunc(paramObj.pathname);
-				if (request.method && doMethod[request.method])
+				if (!this.param.hasOwnProperty("method")
+					|| this.param.method == ""
+					|| this.param.method == "*"
+					|| this.param.method.tolowercase() == request.method.tolowercase())
 				{
-					doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+					var paramObj = url.parse(request.url);
+					var func = this.getFunc(paramObj.pathname);
+					if (request.method && doMethod[request.method])
+					{
+						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+					}
 				}
-			}
-		});
+			});
+		}
+		else
+		{
+			server = http.createServer((request, response)=>
+			{
+				if (!this.param.hasOwnProperty("method")
+					|| this.param.method == ""
+					|| this.param.method == "*"
+					|| this.param.method.tolowercase() == request.method.tolowercase())
+				{
+					var paramObj = url.parse(request.url);
+					var func = this.getFunc(paramObj.pathname);
+					if (request.method && doMethod[request.method])
+					{
+						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+					}
+				}
+			});
+		}
 
 		server.listen(this.port);
 		this.server = server;
