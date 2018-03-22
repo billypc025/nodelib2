@@ -137,6 +137,7 @@ module.exports = class extends Manager {
 	initServer()
 	{
 		var server;
+		trace(this.protocol == "https" && this.param.protocol && this.param.protocol.key && this.param.protocol.cert)
 		if (this.protocol == "https" && this.param.protocol && this.param.protocol.key && this.param.protocol.cert)
 		{
 			this.param.protocol.key = g.fs.readFileSync(this.param.protocol.key);
