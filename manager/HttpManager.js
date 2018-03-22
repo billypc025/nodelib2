@@ -141,6 +141,7 @@ module.exports = class extends Manager {
 		{
 			this.param.protocol.key = g.fs.readFileSync(this.param.protocol.key);
 			this.param.protocol.cert = g.fs.readFileSync(this.param.protocol.cert);
+			trace(this.param.protocol.key)
 			server = https.createServer(this.param.protocol, (request, response)=>
 			{
 				if (!this.param.hasOwnProperty("method")
