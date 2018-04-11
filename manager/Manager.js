@@ -9,6 +9,7 @@ module.exports = class {
 	{
 		this.managerType = "";
 		this.funcHash = {};
+		this.moduleHash = {};
 		this._data = $managerData;
 		$managerData.update({manager: this});
 	}
@@ -40,6 +41,7 @@ module.exports = class {
 		{
 			for (var moduleItem of $list)
 			{
+				this.moduleHash[moduleItem.name] = moduleItem;
 				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
 			}
 			this.start();
@@ -63,6 +65,19 @@ module.exports = class {
 	getFunc($pathName)
 	{
 		return this.funcHash[$pathName];
+	}
+
+	call($moduleName, $funName, ...arg)
+	{
+		var moduleItem = this.moduleHash[$moduleName];
+		if (moduleItem)
+		{
+			var fun = moduleItem[$funName];
+			if (fun)
+			{
+				fun.apply(moduleItem, arg);
+			}
+		}
 	}
 
 	get data()

@@ -46,6 +46,7 @@ function addModule($modName, $moduleClass, $managerData)
 				trace(e);
 				process.exit(0);
 			}
+			moduleItem.name = $modName;
 			moduleItem.data = $managerData;
 			moduleItem.funcList = moduleItem.funcList || [];
 			moduleItem.funcHash = moduleItem.funcHash || {};
