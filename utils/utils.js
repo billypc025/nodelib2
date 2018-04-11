@@ -409,6 +409,10 @@ function isEmpty($obj)
 {
 	if (typeof $obj == "number" || typeof $obj == "boolean" || typeof $obj == "string")
 	{
+		if ($obj == "")
+		{
+			return true;
+		}
 		return false;
 	}
 
