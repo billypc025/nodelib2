@@ -468,9 +468,10 @@ function hasData($obj, ...arg)
 		return false;
 	}
 
+	var nameList = Object.getOwnPropertyNames($obj);
 	for (var i = 0; i < arg.length; i++)
 	{
-		if (Object.getOwnPropertyNames($obj).indexOf(arg[i]) < 0)
+		if (nameList.indexOf(arg[i]) < 0)
 		{
 			return false;
 		}
