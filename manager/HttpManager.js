@@ -213,14 +213,18 @@ var doMethod = {
 					try
 					{
 						query = JSON.parse(postData);
+						trace(query)
+						trace("-------------")
 					}
 					catch (e)
 					{
+						trace("aaaa")
 						query = qs.parse(postData);
 					}
 				}
 				else
 				{
+					trace("bbbbbbb")
 					query = qs.parse(postData);
 				}
 				doRequest($router, $func, $pathName, query, $request, $response, $header);
