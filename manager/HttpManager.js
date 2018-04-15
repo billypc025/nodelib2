@@ -206,7 +206,23 @@ var doMethod = {
 			});
 			$request.addListener("end", function ()
 			{
-				let query = qs.parse(postData);
+				let query;
+				if ((postData.charAt(0) == "{" && postData.charAt(postData.length - 1) == "}")
+					|| (postData.charAt(0) == "[" && postData.charAt(postData.length - 1) == "]"))
+				{
+					try
+					{
+						query = JSON.parse(postData);
+					}
+					catch (e)
+					{
+						query = qs.parse(postData);
+					}
+				}
+				else
+				{
+					query = qs.parse(postData);
+				}
 				doRequest($router, $func, $pathName, query, $request, $response, $header);
 			});
 		}
