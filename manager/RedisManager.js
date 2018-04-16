@@ -12,7 +12,14 @@ module.exports = class extends Manager {
 	init()
 	{
 		this.managerType = "Redis";
-		this.server = new Redis(this.param.port, this.param.host);
+		this.server = new Redis(
+			{
+				port: this.param.port,                // Redis port
+				host: this.param.host,                // Redis host
+				family: this.param.family || 4,       // 4 (IPv4) or 6 (IPv6)
+				password: this.param.password || null,
+				db: this.param.db || 0
+			});
 		this.logLimit = this.param.logLimit || 5000;
 
 		if (this.param.monitor)
