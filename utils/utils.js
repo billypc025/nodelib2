@@ -139,6 +139,10 @@ function paramFormat(str, paramObj)
 	{
 		list = arguments;
 	}
+	if (!list.hasOwnProperty)
+	{
+		list = __merge({}, list);
+	}
 	for (var i in list)
 	{
 		if (list.hasOwnProperty(i))
