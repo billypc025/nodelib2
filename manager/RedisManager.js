@@ -5,7 +5,7 @@ var g = require("../global");
 var timeTool = require("../utils/TimeTool");
 var Manager = require("./Manager");
 var _module = require("../module/module");
-var Redis = require("ioredis");
+var Redis = require("redis");
 
 module.exports = class extends Manager {
 
