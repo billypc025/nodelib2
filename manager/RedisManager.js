@@ -12,62 +12,68 @@ module.exports = class extends Manager {
 	init()
 	{
 		this.managerType = "Redis";
-		this.server = new Redis(
-			{
-				port: this.param.port,                // Redis port
-				host: this.param.host,                // Redis host
-				family: this.param.family || 4,       // 4 (IPv4) or 6 (IPv6)
-				password: this.param.password || null,
-				db: this.param.db || 0
-			});
-		this.logLimit = this.param.logLimit || 5000;
+		this.server = Redis.createClient({
+			detect_buffers: true,
+			host: this.param.host
+		});
+		this.server.auth(this.param.password);
 
-		if (this.param.monitor)
-		{
-			this.logNum = 0;
-			this.log = "";
-			this.currLog = {
-				time: 0,
-				list: []
-			};
+		/*
+		 this.server = new Redis(
+		 {
+		 port: this.param.port,                // Redis port
+		 host: this.param.host,                // Redis host
+		 password: this.param.password
+		 });
+		 this.logLimit = this.param.logLimit || 5000;
 
-			this.monitor = this.param.monitor;
-			this.server.monitor(($err, $monitor)=>
-			{
-				g.data.server.addServer(this.name, this.server);
-				$monitor.on('monitor', ($time, $args, $source, $database)=>
-				{
-					if ($args.indexOf("exec") == 0)
-					{
-						this.logNum++;
-						this.log += this.currLog.list.join(",");
-						this.currLog = {
-							time: 0,
-							list: []
-						};
-						if (this.logNum >= this.logLimit)
-						{
-							g.fs.writeFileSync(g.path.resolve(this.param.monitor) + "log_" + timeTool.getNowStamp() + ".txt", this.log);
-							this.logNum = 0;
-							this.log = "";
-						}
-					}
-					else
-					{
-						if ($time != this.currLog.time)
-						{
-							var t0 = $time - this.currLog.time
-							this.currLog.list.push(t0 + " " + $args.join(" "));
-							this.currLog.time = $time;
-						}
-						else
-						{
-							this.currLog.list.push($args.join(" "));
-						}
-					}
-				});
-			});
-		}
+		 if (this.param.monitor)
+		 {
+		 this.logNum = 0;
+		 this.log = "";
+		 this.currLog = {
+		 time: 0,
+		 list: []
+		 };
+
+		 this.monitor = this.param.monitor;
+		 this.server.monitor(($err, $monitor)=>
+		 {
+		 g.data.server.addServer(this.name, this.server);
+		 $monitor.on('monitor', ($time, $args, $source, $database)=>
+		 {
+		 if ($args.indexOf("exec") == 0)
+		 {
+		 this.logNum++;
+		 this.log += this.currLog.list.join(",");
+		 this.currLog = {
+		 time: 0,
+		 list: []
+		 };
+		 if (this.logNum >= this.logLimit)
+		 {
+		 g.fs.writeFileSync(g.path.resolve(this.param.monitor) + "log_" + timeTool.getNowStamp() + ".txt", this.log);
+		 this.logNum = 0;
+		 this.log = "";
+		 }
+		 }
+		 else
+		 {
+		 if ($time != this.currLog.time)
+		 {
+		 var t0 = $time - this.currLog.time
+		 this.currLog.list.push(t0 + " " + $args.join(" "));
+		 this.currLog.time = $time;
+		 }
+		 else
+		 {
+		 this.currLog.list.push($args.join(" "));
+		 }
+		 }
+		 });
+		 });
+		 }
+		 */
 		super.init();
 	}
 }
