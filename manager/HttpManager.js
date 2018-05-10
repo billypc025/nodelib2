@@ -331,7 +331,6 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 		}
 		else
 		{
-			trace(1111);
 			$response.write(JSON.stringify($resultObj), "utf8", function ()
 			{
 				$response.end();
