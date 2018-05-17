@@ -139,6 +139,7 @@ function showRouterList($basePath)
 function start()
 {
 	global.ip = g.localHost.getLocalIp();
+	global.__ip = global.ip;
 	log.success("start at:" + global.ip);
 	serverManager.start(options);
 }
