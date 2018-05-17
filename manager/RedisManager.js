@@ -2,21 +2,28 @@
  * Created by billy on 2017/8/26.
  */
 var g = require("../global");
-var timeTool = require("../utils/TimeTool");
+var _timeTool = require("../utils/TimeTool");
 var Manager = require("./Manager");
 var _module = require("../module/module");
+var exec = require("child_process").exec;
 var Redis = require("redis");
 
 module.exports = class extends Manager {
 
 	init()
 	{
+		this._hash = {};
+		this._isConnected = false;
 		this.managerType = "Redis";
-		this.server = Redis.createClient({
-			detect_buffers: true,
-			host: this.param.host
-		});
-		this.server.auth(this.param.password);
+		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
+		{
+			this._isConnected = true;
+			this.server = Redis.createClient({
+				detect_buffers: true,
+				host: this.param.host
+			});
+			this.server.auth(this.param.password);
+		}
 
 		/*
 		 this.server = new Redis(
@@ -75,5 +82,38 @@ module.exports = class extends Manager {
 		 }
 		 */
 		super.init();
+	}
+
+	set($key, $value, $ex, $timeout)
+	{
+		if (this._isConnected)
+		{
+			if ($ex && $timeout)
+			{
+				this.server.set($key, $value, $ex, $timeout);
+			}
+			else
+			{
+				this.server.set($key, $value);
+			}
+		}
+		else
+		{
+			this._hash[$key] = $value;
+		}
+	}
+
+	get($key, $callBack)
+	{
+		if (this._isConnected)
+		{
+			this.server.get($key, $callBack);
+		}
+		else
+		{
+			var dObj = this._hash[$key];
+			delete this._hash[$key];
+			$callBack(null, dObj);
+		}
 	}
 }
