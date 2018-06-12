@@ -281,7 +281,7 @@ function __merge(d, b, cover)
 	{
 		for (var k in b)
 		{
-			if (typeof b[k] == "object" && (!d[k] || typeof d[k] == "object"))
+			if (typeof b[k] == "object" && (!d[k] || typeof d[k] == "object") && b[k] != null)
 			{
 				if (Array.isArray(b[k]))
 				{
