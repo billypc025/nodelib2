@@ -137,8 +137,8 @@ module.exports = class extends Manager {
 	initServer()
 	{
 		var server;
-		trace(this.protocol == "https", this.param.httpsOptions)
-		if (this.protocol == "https" && this.param.httpsOptions && this.param.httpsOptions.key && this.param.httpsOptions.cert)
+// 		trace(this.protocol == "https", this.param.httpsOptions)
+		if (this.protocol == "https" && this.param.httpsOptions && this.param.httpsOptions.key && this.param.httpsOptions.cert && !(this.param.checkLocal && ip.indexOf("192.168") == 0))
 		{
 			this.param.httpsOptions.key = g.fs.readFileSync(this.param.httpsOptions.key);
 			this.param.httpsOptions.cert = g.fs.readFileSync(this.param.httpsOptions.cert);
