@@ -71,6 +71,7 @@ function initManager()
 	else
 	{
 		log.success("--------------- All INITED ---------------");
+		log.success("start at:" + global.ip);
 		global.emiter.emit("ALL_INITED");
 		trace("");
 	}
