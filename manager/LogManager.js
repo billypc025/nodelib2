@@ -112,7 +112,7 @@ function saveLog($name, $log)
 		else
 		{
 			//文件夹路径不存在，创建文件夹
-			g.file.createDirectory(basePath, 777);
+			g.file.createDirectory(basePath);
 			if (!g.fs.existsSync(filePath))
 			{
 				g.fs.writeFile(filePath, $log);
