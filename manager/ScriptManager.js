@@ -16,8 +16,25 @@ module.exports = class extends Manager {
 		this.defaultPath = this.param.path || "";
 		this.defaultParam = this.param.param || {};
 
-		this.defaultPath = args[0] || this.defaultPath;
-		this.defaultParam = args[1] || this.defaultParam;
+		if (args[0])
+		{
+			if (args[0].indexOf(".") > 0)
+			{
+				this.defaultPath = args[0];
+				this.defaultParam = args[1] || this.defaultParam;
+			}
+			else
+			{
+				if (args[1])
+				{
+					this.defaultParam = args[1] || this.defaultParam;
+				}
+				else
+				{
+					this.defaultParam = args[0] || this.defaultParam;
+				}
+			}
+		}
 
 		super.init();
 	}
