@@ -13,6 +13,7 @@ class OSSClient extends EventEmitter {
 	{
 		super();
 		this.client = null;
+		this.param = __merge({}, $param);
 		this.update($param);
 	}
 
@@ -100,6 +101,30 @@ class OSSClient extends EventEmitter {
 	{
 		return doGetList(this.client, $url)
 	}
+
+	copy($toUrl, $fromUrl)
+	{
+		return doCopy(this.client, $toUrl, $fromUrl);
+	}
+}
+
+function doCopy($client, $toUrl, $fromUrl)
+{
+	let client = $client;
+	var promise = new Promise((resolved, reject)=>
+	{
+		co(function*()
+		{
+			// 两个Bucket之间拷贝
+			var result = yield client.copy($toUrl, $fromUrl);
+			resolved(result);
+		}).catch(function (err)
+		{
+			reject(err);
+		});
+	})
+
+	return promise;
 }
 
 function doGetList($client, $url)
