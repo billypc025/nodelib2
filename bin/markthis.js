@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/env node
 /**
  * Created by billy on 2017/9/7.
  */

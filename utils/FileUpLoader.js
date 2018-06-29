@@ -49,6 +49,11 @@ class FileUpLoader {
 	{
 		return getClient(this.param, this.type);
 	}
+
+	getList($path)
+	{
+		return this.getClient().getList($path);
+	}
 }
 
 function getClient($param, $type = "oss")

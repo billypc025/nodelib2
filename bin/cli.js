@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/env node
 require('shelljs/global');
 var g = require("../global");
 var fs = require("fs");

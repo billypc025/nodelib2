@@ -95,6 +95,49 @@ class OSSClient extends EventEmitter {
 			this.emit("COMPLETE", this);
 		})
 	}
+
+	getList($url)
+	{
+		return doGetList(this.client, $url)
+	}
+}
+
+function doGetList($client, $url)
+{
+	let client = $client;
+	var promise = new Promise((resolved, reject)=>
+	{
+		var list = [];
+		co(function*()
+		{
+			// 不带任何参数，默认最多返回1000个文件
+			var result = yield client.list({prefix: $url});
+			// 根据nextMarker继续列出文件
+// 			[ 'res', 'objects', 'prefixes', 'nextMarker', 'isTruncated' ]
+			list = list.concat(result.objects.map((v)=>
+			{
+				return v.name;
+			}))
+			if (result.isTruncated)
+			{
+				var result = yield client.list({
+					marker: result.nextMarker,
+					prefix: $url
+				});
+				list = list.concat(result.objects.map((v)=>
+				{
+					return v.name;
+				}))
+			}
+			resolved(list);
+		}).catch((err)=>
+		{
+			trace(err);
+			reject(err);
+		});
+	})
+
+	return promise;
 }
 
 function doUpload($client, $path, $targetPath)

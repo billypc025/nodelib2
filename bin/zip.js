@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/env node
 var argv = process.argv;
 var zip = require("../utils/zip");
 var color = require("cli-color");
