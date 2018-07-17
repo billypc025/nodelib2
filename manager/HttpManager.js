@@ -223,6 +223,7 @@ var doMethod = {
 				{
 					query = qs.parse(postData);
 				}
+				$request.requestData = query;
 				doRequest($router, $func, $pathName, query, $request, $response, $header);
 			});
 		}
