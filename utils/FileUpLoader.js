@@ -31,7 +31,7 @@ class FileUpLoader {
 		 }
 		 */
 
-		this.param = $param;
+		this.param = __merge({}, $param);
 		this.type = $type;
 	}
 
