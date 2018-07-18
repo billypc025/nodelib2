@@ -188,6 +188,7 @@ var doMethod = {
 	GET: function ($router, $func, $pathName, $request, $response, $header)
 	{
 		let query = url.parse($request.url, true).query;
+		$request.requestData = query;
 		doRequest($router, $func, $pathName, query, $request, $response, $header);
 	},
 	POST: function ($router, $func, $pathName, $request, $response, $header)
