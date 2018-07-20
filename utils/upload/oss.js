@@ -106,6 +106,11 @@ class OSSClient extends EventEmitter {
 	{
 		return doCopy(this.client, $toUrl, $fromUrl);
 	}
+
+	getFile($url)
+	{
+		return doGetFile(this.client, $url)
+	}
 }
 
 function doCopy($client, $toUrl, $fromUrl)
@@ -136,18 +141,22 @@ function doGetList($client, $url)
 		co(function*()
 		{
 			// 不带任何参数，默认最多返回1000个文件
-			var result = yield client.list({prefix: $url});
+			var result = yield client.list({
+				prefix: $url,
+				"max-keys": 1000
+			});
 			// 根据nextMarker继续列出文件
 // 			[ 'res', 'objects', 'prefixes', 'nextMarker', 'isTruncated' ]
 			list = list.concat(result.objects.map((v)=>
 			{
 				return v.name;
 			}))
-			if (result.isTruncated)
+			while (result.isTruncated)
 			{
 				var result = yield client.list({
 					marker: result.nextMarker,
-					prefix: $url
+					prefix: $url,
+					"max-keys": 1000
 				});
 				list = list.concat(result.objects.map((v)=>
 				{
@@ -155,6 +164,27 @@ function doGetList($client, $url)
 				}))
 			}
 			resolved(list);
+		}).catch((err)=>
+		{
+			trace(err);
+			reject(err);
+		});
+	})
+
+	return promise;
+}
+
+function doGetFile($client, $url)
+{
+	let client = $client;
+	var promise = new Promise((resolved, reject)=>
+	{
+		var list = [];
+		co(function*()
+		{
+			// 不带任何参数，默认最多返回1000个文件
+			var result = yield client.get($url);
+			resolved(result);
 		}).catch((err)=>
 		{
 			trace(err);
