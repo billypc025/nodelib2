@@ -1,6 +1,7 @@
 /**
  * Created by billy on 2017/4/25.
  */
+var co = require("co");
 
 var _hash = {};
 var _nameList = [];
@@ -89,7 +90,7 @@ function addModule($modName, $moduleClass, $managerData)
 
 function addFunc($modName)
 {
-	return function ($funcName, $func)
+	return function ($funcName, ...arg)
 	{
 		if (!this.funcList)
 		{
@@ -126,7 +127,38 @@ function addFunc($modName)
 		log.info("[Module] add: " + cmd);
 
 		this.funcList.push(cmd);
-		this.funcHash[cmd] = $func.bind(this);
+		if (arg.length == 1)
+		{
+			this.funcHash[cmd] = arg[0].bind(this);
+		}
+		else
+		{
+			this.funcHash[cmd] = function ($data, $success, $error, $client, $response)
+			{
+				co(function *()
+				{
+					for (var i = 0; i < arg.length; i++)
+					{
+						var result = arg[i].call(this, $data, $success, $error, $client, $response);
+						if (result === false)
+						{
+							break;
+						}
+						else if (result instanceof Promise)
+						{
+							var r = yield result;
+							if (r === false)
+							{
+								break;
+							}
+						}
+					}
+				}, ()=>
+				{
+					$error("");
+				})
+			}
+		}
 	};
 }
 
