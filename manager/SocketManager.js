@@ -135,7 +135,7 @@ module.exports = class extends Manager {
 			});
 		});
 
-		this.server.attach(this.port, this.param);
+		this.server.attach(g.data.server.getServer("http"), this.param);
 		log.info(this.getMsg("Server runing at port:", this.port));
 	}
 
