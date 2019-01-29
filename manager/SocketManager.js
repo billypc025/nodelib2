@@ -5,6 +5,7 @@ var g = require("../global");
 var Manager = require("./Manager");
 var time = require("../utils/TimeTool");
 var _defaultPort = 12000;
+var _defaultServer = "http";
 
 g.data.clientPool = require("../data/SocketClientPool");
 
@@ -16,6 +17,7 @@ module.exports = class extends Manager {
 		this.clientPool = g.data.clientPool.get(this.name);
 		this.server = null;
 		this.port = this.param.port || _defaultPort;
+		this.serverName = this.param.server;
 		this.requireLogin = !!this.param.requireLogin;
 		this.timeoutId = 0;
 		if (this.requireLogin)
@@ -135,7 +137,14 @@ module.exports = class extends Manager {
 			});
 		});
 
+// 		if (this.serverName)
+// 		{
+// 			this.server.attach(g.data.server.getServer(this.serverName), this.param);
+// 		}
+// 		else
+// 		{
 		this.server.attach(this.port, this.param);
+// 		}
 		log.info(this.getMsg("Server runing at port:", this.port));
 	}
 
