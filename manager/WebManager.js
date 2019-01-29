@@ -2,7 +2,8 @@
  * Created by billy on 2017/5/13.
  */
 var g = require("../global");
-var serve = require("serve");
+var serve = require("serve-handler");
+const http = require("http");
 var Manager = require("./Manager");
 
 var _default_port = 80;
@@ -36,12 +37,23 @@ module.exports = class extends Manager {
 	{
 		if (this.webroot != "")
 		{
-			this.server = serve(this.webroot, {
-				port: this.port,
-				ignore: ['node_modules']
+			this.server = http.createServer((request, response) =>
+			{
+				return handler(request, response, {
+					public: this.webroot,
+					unlisted: [
+						"/node_modules",
+						".gitignore",
+						".idea",
+						"/src"
+					]
+				});
 			})
 
-			log.info("[Web] " + this.name + ": Server runing at port: " + this.port);
+			this.server.listen(this.port, () =>
+			{
+				log.info("[Web] " + this.name + ": Server runing at port: " + this.port);
+			});
 		}
 		else
 		{
