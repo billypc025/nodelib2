@@ -99,14 +99,21 @@ function saveLog($name, $log)
 		var basePath = g.path.dirname(filePath);
 		if (g.fs.existsSync(basePath))
 		{
-			//文件夹路径存在，可以写入文件
-			if (!g.fs.existsSync(filePath))
+			try
 			{
-				g.fs.writeFile(filePath, $log);
+				//文件夹路径存在，可以写入文件
+				if (!g.fs.existsSync(filePath))
+				{
+					g.fs.writeFile(filePath, $log);
+				}
+				else
+				{
+					g.fs.appendFile(filePath, $log);
+				}
 			}
-			else
+			catch (e)
 			{
-				g.fs.appendFile(filePath, $log);
+				trace($log);
 			}
 		}
 		else

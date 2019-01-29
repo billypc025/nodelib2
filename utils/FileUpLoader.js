@@ -9,16 +9,16 @@ var _freeHash = {};
 
 class FileUpLoader {
 	constructor($param, $type)
+	/* $type = OSS 入参配置
+	 {
+	 "region": "oss-cn-hangzhou",
+	 "accessKeyId": "LTAIPkIl4nhxftbf",
+	 "accessKeySecret": "vUKqMwQUsHOPbOp5HsxD5dwxLM6nhb",
+	 "bucket": "chachadian-test",
+	 "basePath": "boms/upload/"
+	 }
+	 */
 	{
-		/* $type = OSS 入参配置
-		 {
-		 "region": "oss-cn-hangzhou",
-		 "accessKeyId": "LTAIPkIl4nhxftbf",
-		 "accessKeySecret": "vUKqMwQUsHOPbOp5HsxD5dwxLM6nhb",
-		 "bucket": "chachadian-test",
-		 "basePath": "boms/upload/"
-		 }
-		 */
 
 		/* $type = COS 入参配置
 		 {

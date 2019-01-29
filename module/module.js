@@ -153,11 +153,11 @@ function addFunc($modName)
 							}
 						}
 					}
-				}, ()=>
+				}.bind(this), ()=>
 				{
 					$error("");
 				})
-			}
+			}.bind(this);
 		}
 	};
 }

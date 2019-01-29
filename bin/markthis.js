@@ -2,8 +2,8 @@
 /**
  * Created by billy on 2017/9/7.
  */
-var g = require("../global");
 
+var g = require("../global");
 var fileName = getArgs(0, null);
 var targetName = getArgs(1, null);
 g.mark.convertFile(fileName, targetName, function ($err)
