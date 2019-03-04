@@ -78,6 +78,12 @@ module.exports = class extends Manager {
 			//那么其中一种就可以是对status字段进行覆盖处理
 		}
 
+		this.webParam = null;
+		if (this.param && this.param.hasOwnProperty("param"))
+		{
+			this.webParam = this.param.param;
+		}
+
 		global.formatResponse = function ($cmd, $dataObj, error)
 		{
 			var result = {cmd: $cmd};
@@ -153,6 +159,7 @@ module.exports = class extends Manager {
 					var func = this.getFunc(paramObj.pathname);
 					if (request.method && doMethod[request.method])
 					{
+						request.webParam = this.webParam;
 						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
 					}
 				}
@@ -171,6 +178,7 @@ module.exports = class extends Manager {
 					var func = this.getFunc(paramObj.pathname);
 					if (request.method && doMethod[request.method])
 					{
+						request.webParam = this.webParam;
 						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
 					}
 				}
