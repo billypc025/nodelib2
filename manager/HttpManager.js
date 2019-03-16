@@ -243,6 +243,7 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 {
 	if ($pathFunc)
 	{
+		formatDataObj($dataObj);
 		$pathFunc($dataObj,
 			function ($resultObj, $headerObj, $responseType, $noFormat)
 			{
@@ -361,4 +362,19 @@ function getFileType($fileName)
 	var pathObj = g.path.parse($fileName);
 	var ext = pathObj.ext.substr(1);
 	return _fileTypeHash[ext] || "none";
+}
+
+function formatDataObj($dataObj)
+{
+	for (var k in $dataObj)
+	{
+		var val = $dataObj[k];
+		if (typeof val == "string" && val.length < 11)
+		{
+			if (isNum(val))
+			{
+				$dataObj[k] = val - 0;
+			}
+		}
+	}
 }

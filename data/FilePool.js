@@ -104,10 +104,10 @@ function replaceValByKey($fileName, $content, $key, $value)
 {
 	var r = new RegExp("\\{\\$" + $key + "\\}", "g");
 
-	if ($fileName.indexOf(".sql") > 0 && typeof $value == "string")
-	{
-		$value = $value.replace(/\'/g, "\\'");
-	}
+//	if ($fileName.indexOf(".sql") > 0 && typeof $value == "string")
+//	{
+//		$value = $value.replace(/\'/g, "\\'");
+//	}
 
 	return $content.replace(r, $value);
 }
