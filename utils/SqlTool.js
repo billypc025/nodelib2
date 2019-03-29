@@ -303,7 +303,42 @@ function join(...arg)
 
 function column($columnList)
 {
-	return "`" + $columnList.join("`,`") + "`";
+	var str = "";
+	for (var columnName of $columnList)
+	{
+		if (str)
+		{
+			str += ",";
+		}
+		columnName = trim(columnName);
+		if (columnName.indexOf("(") < 0 && columnName.indexOf(" ") < 0)
+		{
+			str += "`" + columnName + "`";
+		}
+		else
+		{
+			if (columnName.indexOf(" ") > 0)
+			{
+				if (columnName.indexOf(" as ") > 0)
+				{
+					columnName = columnName.replace("as ", "as `") + "`";
+				}
+			}
+			var li = columnName.indexOf("(") + 1;
+			var ri = columnName.indexOf(")");
+			if (li > 0 && ri > 0 && li < ri)
+			{
+				var char = columnName.substring(li, ri);
+				if (char != "*")
+				{
+					columnName = columnName.replace("(", "(`");
+					columnName = columnName.replace(")", "`)");
+				}
+			}
+			str += columnName;
+		}
+	}
+	return str;
 }
 
 function groupBy($groupByObj)
