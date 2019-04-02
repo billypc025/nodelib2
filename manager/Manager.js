@@ -9,6 +9,7 @@ module.exports = class {
 	{
 		this.managerType = "";
 		this.funcHash = {};
+		this.funcMatchList = [];
 		this.moduleHash = {};
 		this._data = $managerData;
 		$managerData.update({manager: this});
@@ -42,7 +43,31 @@ module.exports = class {
 			for (var moduleItem of $list)
 			{
 				this.moduleHash[moduleItem.name] = moduleItem;
-				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
+				for (var childRouter in moduleItem.funcHash)
+				{
+					var func = moduleItem.funcHash[childRouter];
+
+					this.funcHash[childRouter] = func;
+					if (childRouter.indexOf("*") >= 0 || childRouter.indexOf("?") >= 0)
+					{
+						var regStr = childRouter;
+						if (regStr.indexOf("*") >= 0)
+						{
+							regStr = regStr.replace(/\*/g, "[^/\\r\\n]+");
+						}
+						if (regStr.indexOf("?") >= 0)
+						{
+							regStr = regStr.replace(/\?/g, ".");
+						}
+						regStr = "^" + regStr + "$";
+						var reg = new RegExp(regStr, "i")
+						this.funcMatchList.push({
+							reg: reg,
+							router: childRouter
+						});
+					}
+				}
+//				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
 			}
 			this.start();
 		})
@@ -64,7 +89,23 @@ module.exports = class {
 
 	getFunc($pathName)
 	{
-		return this.funcHash[$pathName];
+		var func = this.funcHash[$pathName];
+		if (func)
+		{
+			return func;
+		}
+
+		var matchObj = this.funcMatchList.find(function (v)
+		{
+			return v.reg.test($pathName);
+		})
+		if (matchObj)
+		{
+			var router = matchObj.router;
+			return this.funcHash[router];
+		}
+
+		return null;
 	}
 
 	call($moduleName, $funName, ...arg)
