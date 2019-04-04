@@ -116,4 +116,24 @@ module.exports = class extends Manager {
 			$callBack(null, dObj);
 		}
 	}
+
+	incrby($key,$increment,$callBack)
+	{
+		if(this._isConnected)
+		{
+			this.server.incrby($key, $increment,$callBack)
+		}
+		else
+		{
+			if(!this._hash[$key])
+			{
+				this._hash[$key] = 0
+			}
+			var dObj
+			var increment = isNaN(Number($increment))?0:Number($increment)
+			this._hash[$key] += increment
+			dObj = this._hash[$key]
+			$callBack(null, dObj);
+		}
+	}
 }
