@@ -10,6 +10,7 @@ var qs = require('querystring');
 var _module = require("../module/module");
 var Manager = require("./Manager");
 var cookie = require("node-cookie");
+var nodeLibTool = require("../module/nodelib-tool");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
@@ -175,11 +176,18 @@ module.exports = class extends Manager {
 					|| this.param.method.tolowercase() == request.method.tolowercase())
 				{
 					var paramObj = url.parse(request.url);
-					var func = this.getFunc(paramObj.pathname);
-					if (request.method && doMethod[request.method])
+					if (nodeLibTool.check(paramObj.pathname))
 					{
-						request.webParam = this.webParam;
-						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+						nodeLibTool.exe(request, response);
+					}
+					else
+					{
+						var func = this.getFunc(paramObj.pathname);
+						if (request.method && doMethod[request.method])
+						{
+							request.webParam = this.webParam;
+							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+						}
 					}
 				}
 			});
@@ -189,6 +197,19 @@ module.exports = class extends Manager {
 		this.server = server;
 		g.data.server.addServer(this.name, this.server);
 		log.info(this.getMsg("Server runing at port:", this.port));
+	}
+
+	close($callBack)
+	{
+		var promise = new Promise((resolved, reject)=>
+		{
+			if (this.server)
+			{
+				this.server.close($callBack);
+			}
+			resolved();
+		})
+		return promise;
 	}
 }
 

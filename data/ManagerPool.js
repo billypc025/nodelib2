@@ -7,6 +7,14 @@ var _hash = {};
 var _nameList = [];
 var _list = [];
 
+function clear()
+{
+	_hash = {};
+	_nameList = [];
+	_list = [];
+}
+exports.clear = clear;
+
 function init($managerList)
 {
 	if ($managerList)
@@ -36,7 +44,11 @@ function add($managerObj, skipCreat)
 	if (skipCreat)
 	{
 		var name = $managerObj.name || "manager_" + _list.length;
-		_list.push(name);
+		_list.push({
+			name: name,
+			type: $managerObj.type,
+			enabled: $managerObj.enabled
+		});
 	}
 	else
 	{
@@ -78,6 +90,21 @@ function getManager($name)
 	return null;
 }
 exports.getManager = getManager;
+
+function remove($name)
+{
+	if (!_hash[$name])
+	{
+		return;
+	}
+
+	var managerData = _hash[$name];
+	delete _hash[$name];
+	var index = _nameList.indexOf($name);
+	_list.splice(index, 1);
+	_nameList.splice(index, 1);
+}
+exports.remove = remove;
 
 function getNameByType($type)
 {

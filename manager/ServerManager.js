@@ -12,6 +12,7 @@ global.emiter = new EventEmitter();
 
 exports.start = function ($options)
 {
+	_managerInitNum = 0;
 	initRouter($options.router);
 	initData();
 	initManager();
@@ -56,16 +57,16 @@ function initManager()
 	{
 		var managerItem = managerList[_managerInitNum];
 
-		if (typeof managerItem == "string")
-		{
-			nextManager(managerItem, "Skipped");
-		}
-		else
+		if (managerItem.enabled)
 		{
 			startManager(managerList[_managerInitNum], function ($managerName, $success)
 			{
 				nextManager(managerItem.name, $success ? "Started" : "failed");
 			})
+		}
+		else
+		{
+			nextManager(managerItem, "Skipped");
 		}
 	}
 	else

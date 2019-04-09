@@ -22,9 +22,11 @@ module.exports = class {
 //		this.connection = mysql.createConnection(this.toObject());
 		this.connection = mysql.createPool(this.toObject());
 
-		this.connection.on("error", onEnd_connection.bind(this));
-		this.connection.on("end", onEnd_connection.bind(this));
-		this.connection.on("connect", onConnect_connection.bind(this));
+		this.onEnd_connection = onEnd_connection.bind(this);
+		this.onConnect_connection = onConnect_connection.bind(this);
+		this.connection.on("error", this.onEnd_connection);
+		this.connection.on("end", this.onEnd_connection);
+		this.connection.on("connect", this.onConnect_connection);
 	}
 
 	connect($callBack)
@@ -37,10 +39,22 @@ module.exports = class {
 
 	close($callBack)
 	{
-		this.connection.end(function ()
+		this._waitList = null;
+		this.connection.off("error", this.onEnd_connection);
+		this.connection.off("end", this.onEnd_connection);
+		this.connection.off("connect", this.onConnect_connection);
+		this.onEnd_connection = null;
+		this.onConnect_connection = null;
+		var promise = new Promise((resolved, reject)=>
 		{
-			$callBack && $callBack();
-		});
+			this.connection.end(()=>
+			{
+				this.connection = null;
+				$callBack && $callBack();
+				resolved();
+			});
+		})
+		return promise;
 	}
 
 	query($sql, $callBack, $errorBack)

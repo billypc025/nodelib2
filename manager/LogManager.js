@@ -104,11 +104,15 @@ function saveLog($name, $log)
 				//文件夹路径存在，可以写入文件
 				if (!g.fs.existsSync(filePath))
 				{
-					g.fs.writeFile(filePath, $log);
+					g.fs.writeFile(filePath, $log, function ()
+					{
+					});
 				}
 				else
 				{
-					g.fs.appendFile(filePath, $log);
+					g.fs.appendFile(filePath, $log, function ()
+					{
+					});
 				}
 			}
 			catch (e)

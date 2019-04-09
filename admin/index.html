@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>NodeLib-Tool Admin</title>
+	<script src="http://cdnjs.gtimg.com/cdnjs/libs/zepto/1.1.4/zepto.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+	<link rel="stylesheet" href="http://lib.lookh5.com/jslib/element-ui.css">
+	<script src="http://lib.lookh5.com/jslib/element-ui.js"></script>
+	<style>
+		h2 {
+			display: block;
+			background-color: #c0c0c0;
+			padding: 5px 0 5px 14px;
+			border-radius: 6px;
+		}
+
+		#app.div {
+			display: flex;
+			padding: 5px;
+		}
+
+		#app.div div {
+			padding: 0;
+			overflow: hidden;
+		}
+
+		#app.div div button {
+			margin: 0 5px;
+		}
+
+		#app.div label {
+			width: 150px;
+			vertical-align: middle;
+		}
+
+		#background {
+			display: none;
+			position: fixed;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+		}
+
+		#div1 {
+			background: #eeeeee;
+			width: 400px;
+			z-index: 1;
+			margin: 12% auto;
+			overflow: auto;
+		}
+
+		#div2 {
+			background: #eeeeee;
+			margin: 20px;
+			height: 300px;
+			width: 300px;
+			padding: 0 20px;
+			overflow: auto;
+		}
+
+		#close {
+			padding: 5px;
+		}
+
+		#close-button {
+			float: right;
+			font-size: 30px;
+			color: black;
+		}
+
+		ul {
+			list-style: none;
+		}
+
+		.el-table .enabled-row {
+			background-color: #fff7f7;
+			color: #bb3333;
+		}
+
+		.el-table .table-head {
+			color: #ffffff;
+			background-color: #0055cc;
+		}
+
+		.el-table {
+			border-left: 1px solid #dddddd;
+			/*border-left: 1px solid #dddddd;*/
+			/*border-top: 1px solid #dddddd;*/
+			/*border-bottom: 1px solid #dddddd;*/
+		}
+
+		.el-table .el-table__row td {
+			border-right: 1px solid #dddddd;
+			border-bottom: 1px solid #dddddd;
+		}
+
+		.server-tool {
+			padding-top: 15px;
+			padding-left: 50px;
+			border-left: 1px solid #dddddd;
+			border-right: 1px solid #dddddd;
+			border-bottom: 1px solid #dddddd;
+			display: block;
+			height: 45px;
+		}
+
+		.el-tag {
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+	<h2><p>路由配置: {{server.path}}</p>
+		<p>启动时间: {{server.startTime}} {{lastTime}}</p>
+	</h2>
+	<div>
+		<el-table ref="singleTable" :data="managerList" border
+				  header-cell-class-name="table-head" header-row-class-name="table-head"
+				  :row-class-name="tableRowClassName" style="width: 100%;">
+			<el-table-column type="index" label=" " width="50"></el-table-column>
+			<el-table-column property="type" label="服务" width="120"></el-table-column>
+			<el-table-column property="name" label="名称" width="120"></el-table-column>
+			<el-table-column property="info" label="信息">
+				<template slot-scope="scope">
+					<div v-for="infoItem of scope.row.info">
+						<div v-if="infoItem.type==1">
+							<div style="width: 40px; display: inline-block">
+								<el-tag size="mini">{{infoItem.name}}</el-tag>
+							</div>
+							{{infoItem.val}}
+						</div>
+						<div v-else>
+							<el-tag type="warning" size="mini">{{infoItem.name}}</el-tag>
+							{{infoItem.val}} <i class="el-icon-caret-bottom"
+												@click="onClick_managerRouter(scope.row,infoItem)"></i>
+						</div>
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column prop="enabled" label="操作" width="90" header-align="center" align="center">
+				<template slot-scope="scope">
+					<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
+					<el-button size="mini" plain type="success" disable-transitions v-else
+							   @click="onClick_managerItem(scope.row)"
+							   :loading="getLoading_managerItem(scope.row)">重启
+					</el-button>
+				</template>
+			</el-table-column>
+		</el-table>
+	</div>
+	<div class="server-tool">
+		<el-button size="mini" :type="isLoadingReboot?'':'primary'" @click="onClick_rebootBtn"
+				   :loading="isLoadingReboot">热重启
+		</el-button>
+	</div>
+</div>
+</body>
+</html>
+<script>
+	var _api = window.location.href;
+	_api = _api.substr(0, _api.lastIndexOf("/") + 1);
+	var Main = {
+		data() {
+			return {
+				server: {serverData},
+				lastTime: "",
+				managerList: {managerList},
+				isLoadingReboot: false,
+				isLoadingManager: {}
+			}
+		},
+
+		created ()
+		{
+			var now = parseInt(new Date().getTime() / 1000);
+			var time = now - parseInt(new Date(this.server.startTime) / 1000);
+			var lastTime = "";
+			if (time > 86400)
+			{
+				lastTime = parseInt(time / 86400) + "天";
+				time = time % 86400;
+			}
+			if (time > 3600)
+			{
+				lastTime += parseInt(time / 3600) + "小时";
+				time = time % 3600;
+			}
+			if (time > 60)
+			{
+				lastTime += parseInt(time / 60) + "分钟";
+				time = time % 60;
+			}
+			if (time > 0)
+			{
+				lastTime += time + "秒";
+			}
+			if (lastTime)
+			{
+				this.lastTime = "(" + lastTime + ")";
+			}
+			for (var managerItem of this.managerList)
+			{
+				managerItem.isLoading = false;
+			}
+		},
+
+		methods: {
+			getLoading_managerItem($managerName)
+			{
+				return $managerName.isLoading;
+			},
+
+			tableRowClassName({row, rowIndex}) {
+				if (!this.managerList[rowIndex].enabled)
+				{
+					return "enabled-row";
+				}
+				return "";
+			},
+			onClick_rebootBtn()
+			{
+				this.$confirm("是否确认重启所有服务, 继续请选择Yes?", "提示", {
+					confirmButtonText: "Yes",
+					cancelButtonText: "No",
+					type: 'warning'
+				}).then(()=>
+				{
+					this.isLoadingReboot = true;
+					var url = _api + "reboot";
+					$.post(url, ()=>
+					{
+						this.isLoadingReboot = false;
+						this.$message({
+							type: 'success',
+							message: "重启成功!"
+						});
+					});
+				})
+			},
+			onClick_managerItem($managerItem)
+			{
+				$managerItem.isLoading = true;
+				var url = _api + "update_router";
+				$.post(url, {name: $managerItem.name}, ($data)=>
+				{
+					trace($data);
+					$managerItem.isLoading = false;
+				});
+			},
+			onClick_managerRouter($managerItem, $infoItem)
+			{
+				trace($infoItem)
+			}
+//			setCurrent(row) {
+//				this.$refs.singleTable.setCurrentRow(row);
+//			},
+//			handleCurrentChange(val) {
+//				this.currentRow = val;
+//			}
+		}
+	}
+	var Ctor = Vue.extend(Main)
+	new Ctor().$mount('#app');
+
+	function trace()
+	{
+		var arr = [];
+		for (var i = 0; i < arguments.length; i++)
+		{
+			arr.push(arguments[i]);
+		}
+		console.log.apply(console, arr);
+	}
+</script>

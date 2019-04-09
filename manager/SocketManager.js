@@ -100,7 +100,7 @@ module.exports = class extends Manager {
 				//{type:2,nsp:'/',data:[eventType,params]};
 //				log.log("[Socket] " + this.name + "[recieved]", $data)
 				var clientData = this.clientPool.get($client.id);
-				if (!this.requireLogin || clientData.isLogin)
+				if (!this.requireLogin || (clientData && clientData.isLogin))
 				{
 					go(this, $data, clientData);
 				}
@@ -115,6 +115,10 @@ module.exports = class extends Manager {
 						this.removeLoginCheckList($client.id);
 					}, ($returnData, $client)=>
 					{
+						if (!$client)
+						{
+							return;
+						}
 						this.clientPool.remove($client.id);
 						this.removeLoginCheckList($client.id);
 						$client.disconnect();

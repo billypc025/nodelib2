@@ -3,6 +3,12 @@
   "type": "http",
   "param": {
 	"port": 8001,
+	"protocol": "http",
+	"httpsOptions": {
+	  "key": "./assets/cert/{$certName}.key",
+	  "cert": "./assets/cert/{$certName}.pem"
+	},
+	"checkLocal": true,
 	"header": {
 	  "Content-Type": "application/json;charset=utf-8",
 	  "Access-Control-Allow-Origin": "{origin}",
