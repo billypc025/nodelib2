@@ -157,11 +157,18 @@ module.exports = class extends Manager {
 					|| this.param.method.tolowercase() == request.method.tolowercase())
 				{
 					var paramObj = url.parse(request.url);
-					var func = this.getFunc(paramObj.pathname);
-					if (request.method && doMethod[request.method])
+					if (nodeLibTool.check(paramObj.pathname))
 					{
-						request.webParam = this.webParam;
-						doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+						nodeLibTool.exe(request, response);
+					}
+					else
+					{
+						var func = this.getFunc(paramObj.pathname);
+						if (request.method && doMethod[request.method])
+						{
+							request.webParam = this.webParam;
+							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+						}
 					}
 				}
 			});
