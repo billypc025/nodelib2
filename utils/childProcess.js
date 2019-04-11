@@ -6,7 +6,7 @@ var exec = require('child_process').exec;
 exports.get = function (...arg)
 {
 	var child = new EXEC_CHILD();
-	child.add.apply(child.add, arg);
+	child.add.apply(child, arg);
 	return child;
 }
 
@@ -22,7 +22,16 @@ function add(...arg)
 	{
 		return;
 	}
-	this.cmdList.push.apply(this.cmdList, arg);
+
+	for (var i = 0; i < arg.length; i++)
+	{
+		var cmd = arg[i];
+		if (typeof cmd == "string")
+		{
+			cmd = trim(cmd);
+		}
+		this.cmdList.push(cmd);
+	}
 }
 EXEC_CHILD.prototype.add = add;
 
@@ -62,3 +71,41 @@ function exe($callBack, $errorBack)
 	});
 }
 EXEC_CHILD.prototype.exe = exe;
+
+function exeResult()
+{
+	return new Promise((resolved, reject)=>
+	{
+		if (this.cmdList.length == 0)
+		{
+			reject({
+				state: 0,
+				msg: "requset some cmd"
+			});
+		}
+		else
+		{
+			var cmdStr = this.cmdList.join(" ");
+			this.cmdList = [];
+			exec(cmdStr, function ($error, $stdout, $stderr)
+			{
+				if ($error)
+				{
+					reject({
+						state: 0,
+						msg: $error,
+						stderr: $stderr
+					});
+				}
+				else
+				{
+					resolved({
+						state: 1,
+						stdout: $stdout
+					});
+				}
+			});
+		}
+	});
+}
+EXEC_CHILD.prototype.exeResult = exeResult;
