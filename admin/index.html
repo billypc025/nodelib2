@@ -107,6 +107,28 @@
 			height: 45px;
 		}
 
+		.git-con {
+			height: 30px;
+		}
+
+		.git-con span {
+			display: block;
+			float: left;
+		}
+
+		.git-pull-btn {
+			margin-left: 40px;
+			margin-top: -5px;
+		}
+
+		.el-message-box {
+			width: 520px;
+		}
+
+		.el-message-box__message {
+			text-align: left;
+		}
+
 		.el-tag {
 		}
 	</style>
@@ -115,6 +137,13 @@
 <div id="app">
 	<h2><p>路由配置: {{server.path}}</p>
 		<p>启动时间: {{server.startTime}} {{lastTime}}</p>
+		<p class="git-con" v-if="server.gitBranch">
+			<span>Git分支: {{server.gitBranch}}</span>
+			<span class="git-pull-btn">
+				<el-button size="mini" :loading="isLoadingGitPull" @click="onClick_gitPullBtn">git pull</el-button>
+			</span>
+		</p>
+		<p v-if="server.gitCommit">提交记录: {{server.gitCommit.id}} ({{server.gitCommit.time}})</p>
 	</h2>
 	<div>
 		<el-table ref="singleTable" :data="managerList" border
@@ -169,7 +198,7 @@
 				lastTime: "",
 				managerList: {managerList},
 				isLoadingReboot: false,
-				isLoadingManager: {}
+				isLoadingGitPull: false
 			}
 		},
 
@@ -219,6 +248,50 @@
 					return "enabled-row";
 				}
 				return "";
+			},
+			onClick_gitPullBtn()
+			{
+				var url = _api + "git_fetch";
+				this.isLoadingGitPull = true;
+				$.post(url, ($data)=>
+				{
+					if ($data)
+					{
+						$data = $data.replace(/\n/g, "<br/>")
+						$data = "<div style='height: 200px; overflow: auto'>" + $data + "</div>";
+						this.isLoadingGitPull = false;
+						this.$confirm($data, "是否拉取代码", {
+							type: "info",
+							dangerouslyUseHTMLString: true,
+							confirmButtonText: "Yes",
+							cancelButtonText: "No",
+							center: true
+						}).then(()=>
+						{
+							this.isLoadingGitPull = true;
+							var url = _api + "git_pull";
+							$.post(url, ()=>
+							{
+								this.isLoadingGitPull = false;
+								this.$alert("拉取完成", {
+									confirmButtonText: "确定",
+									callback: action =>
+									{
+										window.location.reload();
+									}
+								});
+							});
+						})
+					}
+					else
+					{
+						this.isLoadingGitPull = false;
+						this.$message({
+							message: "没有新的更新!",
+							type: "success"
+						});
+					}
+				});
 			},
 			onClick_rebootBtn()
 			{

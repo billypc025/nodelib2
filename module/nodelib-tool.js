@@ -4,13 +4,16 @@
 var co = require("co");
 var qs = require('querystring');
 var _timeTool = require("../utils/TimeTool");
-var serverManager = require("../manager/ServerManager");
-var managerPool = require("../data/ManagerPool");
+var _serverManager = require("../manager/ServerManager");
+var _managerPool = require("../data/ManagerPool");
+var _exeTool = require("../utils/childProcess");
 
 var _cmdHash = {
 	admin: admin,
 	reboot: reboot,
-	update_router: update_router
+	update_router: update_router,
+	git_pull: git_pull,
+	git_fetch: git_fetch
 }
 var _currCmd = "";
 
@@ -54,35 +57,46 @@ function exe($request, $response)
 
 function admin($request, $response)
 {
-	_currCmd = "";
-	var serverInfo = g.data.server;
-	var managerList = [];
-	for (var manager of serverInfo.managerList)
+	co(function*()
 	{
-		managerList.push({
-			name: manager.name,
-			type: manager.type,
-			info: getInfo(manager),
-			enabled: manager.enabled
-		});
-	}
+		_currCmd = "";
+		var serverInfo = g.data.server;
+		var managerList = [];
+		for (var manager of serverInfo.managerList)
+		{
+			managerList.push({
+				name: manager.name,
+				type: manager.type,
+				info: getInfo(manager),
+				enabled: manager.enabled
+			});
+		}
 
-	var html = g.fs.readFileSync(__libpath("../admin/index.html")).toString();
-	html = paramFormat(html, {
-		serverData: JSON.stringify({
-			path: serverInfo.path,
-			startTime: _timeTool.formatTime(serverInfo.startTime, true),
-		}),
-		managerList: JSON.stringify(managerList)
+		var gitBranch = yield getGitBranch();
+		var gitCommit = yield getGitCommit();
+		gitCommit.time = _timeTool.formatTime(new Date(gitCommit.time).getTime());
+		var html = g.fs.readFileSync(__libpath("../admin/index.html")).toString();
+		html = paramFormat(html, {
+			serverData: JSON.stringify({
+				path: serverInfo.path,
+				startTime: _timeTool.formatTime(serverInfo.startTime, true),
+				gitBranch: gitBranch,
+				gitCommit: gitCommit
+			}),
+			managerList: JSON.stringify(managerList),
+		})
+		response(html, $response);
+	}).catch(function ($err)
+	{
+		response("", $response);
 	})
-	response(html, $response);
 }
 
 function reboot($request, $response)
 {
 	stopAllManager();
-	managerPool.clear();
-	serverManager.start({router: g.data.server.path});
+	_managerPool.clear();
+	_serverManager.start({router: g.data.server.path});
 	global.emiter.once("ALL_INITED", ()=>
 	{
 		_currCmd = "";
@@ -104,6 +118,38 @@ function update_router($request, $response)
 
 		response($data.name, $response);
 	});
+}
+
+function git_pull($request, $response)
+{
+	var childExe = _exeTool.get("git pull");
+	childExe.exe().then(()=>
+	{
+		_currCmd = "";
+		response("", $response);
+	}, ()=>
+	{
+		_currCmd = "";
+		response("", $response);
+	});
+}
+
+function git_fetch($request, $response)
+{
+	co(function*()
+	{
+		var childExe = _exeTool.get();
+		childExe.add("git fetch origin master");
+		yield childExe.exe();
+		childExe.add("git log --name-status --pretty=oneline --no-merges master..origin/master");
+		var msg = yield childExe.exe();
+		_currCmd = "";
+		response(msg, $response);
+	}).catch(function ($err)
+	{
+		_currCmd = "";
+		response("", $response);
+	})
 }
 
 exports.check = check;
@@ -215,17 +261,24 @@ function getPostData($request)
 function response($content, $response)
 {
 	$response.writeHead(200, {"Content-Type": "text/html"});
-	$response.write($content, "utf8", function ()
+	if ($content)
+	{
+		$response.write($content, "utf8", function ()
+		{
+			$response.end();
+		});
+	}
+	else
 	{
 		$response.end();
-	});
+	}
 }
 
 function stopAllManager()
 {
 	co(function*()
 	{
-		for (var manager of managerPool.list)
+		for (var manager of _managerPool.list)
 		{
 			yield stopManager(manager);
 		}
@@ -262,5 +315,58 @@ function stopManager($manager)
 		}
 	});
 
+	return promise;
+}
+
+function getGitBranch()
+{
+	var promise = new Promise((resolved, reject)=>
+	{
+		var childExe = _exeTool.get("git branch");
+		childExe.exe().then(($data)=>
+		{
+			if ($data)
+			{
+				var matchs = $data.match(/\*.+/g);
+				if (matchs && matchs.length > 0)
+				{
+					var result = matchs[0].replace("*", "");
+					result = trim(result);
+					resolved(result);
+					return;
+				}
+			}
+			resolved("");
+		}, ()=>
+		{
+			resolved("");
+		});
+	})
+	return promise;
+}
+
+function getGitCommit()
+{
+	var promise = new Promise((resolved, reject)=>
+	{
+		var childExe = _exeTool.get("git log -n 1");
+		childExe.exe().then(($data)=>
+		{
+			if ($data)
+			{
+				$data = $data.toLowerCase();
+				var time = trim($data.match(/date:.+/g)[0].replace("date:", ""));
+				var id = trim($data.match(/commit.+/g)[0].replace("commit", ""));
+				resolved({
+					time: time,
+					id: id
+				});
+			}
+			resolved("");
+		}, ()=>
+		{
+			resolved("");
+		});
+	})
 	return promise;
 }
