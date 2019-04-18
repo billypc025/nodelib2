@@ -5,7 +5,6 @@ var fs = require("fs");
 var EventEmitter = require("events").EventEmitter;
 var co = require("co");
 var OSS = require("ali-oss");
-var g = require("nodeLib");
 var _timeTool = require("../TimeTool");
 
 class OSSClient extends EventEmitter {

@@ -1,7 +1,6 @@
 /**
  * Created by billy on 2019/3/11.
  */
-require("nodeLib")
 var _whereCheckHash = {
 	in: getWhere_in,
 	equal: getWhere_equal,

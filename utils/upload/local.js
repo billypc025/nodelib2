@@ -1,8 +1,6 @@
 /**
  * Created by billy on 2018/2/1.
  */
-
-var g = require("nodeLib");
 var _timeTool = require("../TimeTool");
 
 function hhhhhhhh()

@@ -16,6 +16,9 @@ var _cmdHash = {
 	git_fetch: git_fetch
 }
 var _currCmd = "";
+var _userHash = {};
+//管理员登录可以指定一个地址用于其他人登录,有一个地址设置界面
+//非管理员登录时,就需要验证身份,并根据用户hash,写入对应的token,每次接口调用后都更新token
 
 function check($cmd)
 {

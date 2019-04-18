@@ -1,9 +1,6 @@
 /**
  * Created by billy on 2017/4/25.
  */
-var g = require("nodeLib");
-
-
 
 //调用本工程类库
 //var timeTool = require("../utils/TimeTool");
