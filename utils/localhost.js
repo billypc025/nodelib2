@@ -12,14 +12,27 @@ exports.getLocalIp = function ()
 {
 	var localIp = "127.0.0.1";
 	var platform = os.platform();
-	var netList = os.networkInterfaces();
+	var netListHash = os.networkInterfaces();
+	var netList;
 	if (platform == "win32")
 	{
-		netList = netList['本地连接']
+		netList = netListHash['本地连接']
 	}
 	else
 	{
-		netList = netList['en0'] || netList['eth0'];
+		netList = netListHash['en0'] || netListHash['eth0'];
+		if (!netList)
+		{
+			var ethList = Object.keys(netListHash);
+			for (var ethName of ethList)
+			{
+				if (ethName != "lo")
+				{
+					netList = netListHash[ethName];
+					break;
+				}
+			}
+		}
 	}
 
 	for (var i = 0; i < netList.length; i++)
