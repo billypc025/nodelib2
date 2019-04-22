@@ -15,7 +15,6 @@ module.exports = class extends Manager {
 		this._hash = {};
 		this._isConnected = false;
 		this.managerType = "Redis";
-		trace("redis,__ip", __ip);
 		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
 		{
 			this._isConnected = true;
