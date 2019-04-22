@@ -1,6 +1,7 @@
 /**
  * Created by billy on 2019/3/11.
  */
+//require("nodeLib")
 var _whereCheckHash = {
 	in: getWhere_in,
 	equal: getWhere_equal,
@@ -197,7 +198,7 @@ function insert($formName, $obj)
 {
 	var sqlStr = join("insert into", form($formName), insertData($obj));
 	sqlStr += ";";
-//	console.log(sqlStr);
+	console.log(sqlStr);
 	return sqlStr;
 }
 
@@ -377,23 +378,45 @@ function order($orderList)
 
 function insertData($obj)
 {
+	var firstObj = $obj;
+	var objList = [$obj];
+	if (Array.isArray($obj))
+	{
+		objList = $obj;
+		firstObj = objList[0];
+	}
 	var colStr = "";
 	var valStr = "";
-	var colList = Object.keys($obj);
-	for (var i = 0; i < colList.length; i++)
+	var colList = Object.keys(firstObj);
+	for (var obj of objList)
 	{
-		var colName = colList[i];
-		var colVal = $obj[colName];
-		if (colStr)
+		var valItemStr = "";
+		for (var i = 0; i < colList.length; i++)
 		{
-			colStr += ",";
-			valStr += ",";
+			var colName = colList[i];
+			var colVal = obj[colName];
+			if (obj == firstObj)
+			{
+				if (i > 0)
+				{
+					colStr += ",";
+				}
+				colStr += "`" + colName + "`";
+			}
+			if (i > 0)
+			{
+				valItemStr += ",";
+			}
+			valItemStr += val(colVal);
 		}
-		colStr += "`" + colName + "`";
-		valStr += val(colVal);
+
+		if (valStr)
+		{
+			valStr += ","
+		}
+		valStr += "(" + valItemStr + ")";
 	}
 	colStr = "(" + colStr + ")";
-	valStr = "(" + valStr + ")";
 	return join(colStr, "values", valStr);
 }
 
@@ -787,7 +810,8 @@ exports.sql = {
 //select("user.user", ["id", "name", "type", "createTime"], {groupBy: ["type","class"]}, 1, 1);
 //select("user.user", ["id", "name", "type", "createTime"], {groupBy: "type,class"}, 1, 1);
 //select("user.user", ["id", "name", "type", "createTime"], {groupBy: "type"}, 1, 1);
-//insert("user.user", {name: "billy", age: 30, startTime: 12323534});
+//insert("user.user", {name: "billy", age: 30});
+//insert("user.user", [{name: "billy", age: 30}, {name: "tom", age: 22}]);
 //update("user.user", {avatar: "", age:3, name: "tom", phone: "13813845678"}, {id: ["=","bs87gahegr7"]});
 //update("user.user", {avatar: "", age:4, name: "tom", phone: "13813845678"}, {id: "='bs87gahegr7'"});
 //del("user.user", {age: "<3"});
