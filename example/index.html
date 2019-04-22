@@ -16,18 +16,18 @@
 <body>
 <div class="net">
 	<div class="block">
-		<label>http</label><input id="domainTxt" value="" />
-		<label>socket</label><input id="ipTxt" value="192.168.12.219:8002/test" />
+		<label>http</label><input id="domainTxt" value=""/>
+		<label>socket</label><input id="ipTxt" value="192.168.1.115:8002/test"/>
 	</div>
 	<div style="margin: 0px">
-		<br /><br />
+		<br/><br/>
 		<button id="connectBtn" class="sendBtn">连接Socket</button>
 	</div>
 </div>
 <div class="net">
 	<div class="block call">
-		<label>接口</label><input id="cmdTxt" value="/test/chat" />
-		<label>参数</label><input id="paramTxt" value="你好" />
+		<label>接口</label><input id="cmdTxt" value="login"/>
+		<label>参数</label><input id="paramTxt" value="1"/>
 	</div>
 	<div class="block" style="width: 260px">
 		<button id="sendGetBtn">Http get 请求</button>
@@ -87,7 +87,13 @@
 		}
 		var url = ip;
 		var path = "";
+		var wss = false;
 		url = url.replace("http://", "");
+		if (url.indexOf("https") >= 0)
+		{
+			wss = true;
+		}
+		url = url.replace("https://", "");
 		if (url.indexOf("/"))
 		{
 			path = url.split("/")[1];
@@ -98,7 +104,14 @@
 
 			url = url.split("/")[0];
 		}
-		url = "http://" + url;
+		if (wss)
+		{
+			url = "https://" + url;
+		}
+		else
+		{
+			url = "http://" + url;
+		}
 
 		if (!window.socketIsConnected && url)
 		{

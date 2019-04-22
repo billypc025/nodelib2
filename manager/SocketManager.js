@@ -135,7 +135,34 @@ module.exports = class extends Manager {
 			});
 		});
 
-		this.server.attach(g.data.server.getServer("http"), this.param);
+		if (this.param.protocol)
+		{
+			if (this.param.protocol == "wss" && this.param.wssOptions && this.param.wssOptions.key && this.param.wssOptions.cert && !(this.param.checkLocal && ip.indexOf("192.168") == 0))
+			{
+				this.param.wssOptions.key = g.fs.readFileSync(this.param.wssOptions.key);
+				this.param.wssOptions.cert = g.fs.readFileSync(this.param.wssOptions.cert);
+				let attachServer = require("https").createServer(this.param.wssOptions);
+				this.server.attach(attachServer, this.param);
+				this.server.listen(this.port);
+			}
+			else
+			{
+				let serverName = this.param.protocol;
+				let attachServer = g.data.server.getServer(serverName);
+				if (attachServer)
+				{
+					this.server.attach(attachServer, this.param);
+				}
+				else
+				{
+					this.server.attach(this.port, this.param);
+				}
+			}
+		}
+		else
+		{
+			this.server.attach(this.port, this.param);
+		}
 		log.info(this.getMsg("Server runing at port:", this.port));
 	}
 
@@ -207,7 +234,7 @@ module.exports = class extends Manager {
 			for (var i = 0; i < this.loginTimeoutList.length; i++)
 			{
 				var clientData = this.clientPool.get(this.loginTimeoutList[i]);
-				if (currTime - clientData.connectTime >= this.loginTimeout)
+				if (clientData && currTime - clientData.connectTime >= this.loginTimeout)
 				{
 					this.clientPool.remove(clientData.id);
 					this.loginTimeoutList.splice(i, 1);

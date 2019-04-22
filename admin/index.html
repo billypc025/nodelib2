@@ -135,55 +135,65 @@
 </head>
 <body>
 <div id="app">
-	<h2><p>路由配置: {{server.path}}</p>
-		<p>启动时间: {{server.startTime}} {{lastTime}}</p>
-		<p class="git-con" v-if="server.gitBranch">
-			<span>Git分支: {{server.gitBranch}}</span>
-			<span class="git-pull-btn">
+	<el-menu default-active="1" mode="horizontal" @select="onSelect_menu">
+		<el-menu-item index="1"><i class="el-icon-menu"></i>控制中心</el-menu-item>
+		<el-menu-item index="2"><i class="el-icon-setting"></i>用户组设置</el-menu-item>
+	</el-menu>
+	<div v-show="menuIndex==1">
+		<h2>
+			<p>路由配置: {{server.path}}</p>
+			<p>启动时间: {{server.startTime}} {{lastTime}}</p>
+			<p class="git-con" v-if="server.gitBranch">
+				<span>Git分支: {{server.gitBranch}}</span>
+				<span class="git-pull-btn">
 				<el-button size="mini" :loading="isLoadingGitPull" @click="onClick_gitPullBtn">git pull</el-button>
 			</span>
-		</p>
-		<p v-if="server.gitCommit">提交记录: {{server.gitCommit.id}} ({{server.gitCommit.time}})</p>
-	</h2>
-	<div>
-		<el-table ref="singleTable" :data="managerList" border
-				  header-cell-class-name="table-head" header-row-class-name="table-head"
-				  :row-class-name="tableRowClassName" style="width: 100%;">
-			<el-table-column type="index" label=" " width="50"></el-table-column>
-			<el-table-column property="type" label="服务" width="120"></el-table-column>
-			<el-table-column property="name" label="名称" width="120"></el-table-column>
-			<el-table-column property="info" label="信息">
-				<template slot-scope="scope">
-					<div v-for="infoItem of scope.row.info">
-						<div v-if="infoItem.type==1">
-							<div style="width: 40px; display: inline-block">
-								<el-tag size="mini">{{infoItem.name}}</el-tag>
+			</p>
+			<p v-if="server.gitCommit">提交记录: {{server.gitCommit.id}} ({{server.gitCommit.time}})</p>
+		</h2>
+		<div>
+			<el-table ref="singleTable" :data="managerList" border
+					  header-cell-class-name="table-head" header-row-class-name="table-head"
+					  :row-class-name="tableRowClassName" style="width: 100%;">
+				<el-table-column type="index" label=" " width="50"></el-table-column>
+				<el-table-column property="type" label="服务" width="120"></el-table-column>
+				<el-table-column property="name" label="名称" width="120"></el-table-column>
+				<el-table-column property="info" label="信息">
+					<template slot-scope="scope">
+						<div v-for="infoItem of scope.row.info">
+							<div v-if="infoItem.type==1">
+								<div style="width: 40px; display: inline-block">
+									<el-tag size="mini">{{infoItem.name}}</el-tag>
+								</div>
+								{{infoItem.val}}
 							</div>
-							{{infoItem.val}}
+							<div v-else>
+								<el-tag type="warning" size="mini">{{infoItem.name}}</el-tag>
+								{{infoItem.val}} <i class="el-icon-caret-bottom"
+													@click="onClick_managerRouter(scope.row,infoItem)"></i>
+							</div>
 						</div>
-						<div v-else>
-							<el-tag type="warning" size="mini">{{infoItem.name}}</el-tag>
-							{{infoItem.val}} <i class="el-icon-caret-bottom"
-												@click="onClick_managerRouter(scope.row,infoItem)"></i>
-						</div>
-					</div>
-				</template>
-			</el-table-column>
-			<el-table-column prop="enabled" label="操作" width="90" header-align="center" align="center">
-				<template slot-scope="scope">
-					<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
-					<el-button size="mini" plain type="success" disable-transitions v-else
-							   @click="onClick_managerItem(scope.row)"
-							   :loading="getLoading_managerItem(scope.row)">重启
-					</el-button>
-				</template>
-			</el-table-column>
-		</el-table>
+					</template>
+				</el-table-column>
+				<el-table-column prop="enabled" label="操作" width="90" header-align="center" align="center">
+					<template slot-scope="scope">
+						<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
+						<el-button size="mini" plain type="success" disable-transitions v-else
+								   @click="onClick_managerItem(scope.row)"
+								   :loading="getLoading_managerItem(scope.row)">重启
+						</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+		</div>
+		<div class="server-tool">
+			<el-button size="mini" :type="isLoadingReboot?'':'primary'" @click="onClick_rebootBtn"
+					   :loading="isLoadingReboot">热重启
+			</el-button>
+		</div>
 	</div>
-	<div class="server-tool">
-		<el-button size="mini" :type="isLoadingReboot?'':'primary'" @click="onClick_rebootBtn"
-				   :loading="isLoadingReboot">热重启
-		</el-button>
+	<div v-show="menuIndex==2">
+
 	</div>
 </div>
 </body>
@@ -198,7 +208,8 @@
 				lastTime: "",
 				managerList: {managerList},
 				isLoadingReboot: false,
-				isLoadingGitPull: false
+				isLoadingGitPull: false,
+				menuIndex: 1
 			}
 		},
 
@@ -237,11 +248,13 @@
 		},
 
 		methods: {
+			onSelect_menu($inx){
+				this.menuIndex = $inx;
+			},
 			getLoading_managerItem($managerName)
 			{
 				return $managerName.isLoading;
 			},
-
 			tableRowClassName({row, rowIndex}) {
 				if (!this.managerList[rowIndex].enabled)
 				{
