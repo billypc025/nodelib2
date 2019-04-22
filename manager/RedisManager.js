@@ -15,6 +15,7 @@ module.exports = class extends Manager {
 		this._hash = {};
 		this._isConnected = false;
 		this.managerType = "Redis";
+		trace("redis,__ip", __ip);
 		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
 		{
 			this._isConnected = true;
@@ -117,20 +118,20 @@ module.exports = class extends Manager {
 		}
 	}
 
-	incrby($key,$increment,$callBack)
+	incrby($key, $increment, $callBack)
 	{
-		if(this._isConnected)
+		if (this._isConnected)
 		{
-			this.server.incrby($key, $increment,$callBack)
+			this.server.incrby($key, $increment, $callBack)
 		}
 		else
 		{
-			if(!this._hash[$key])
+			if (!this._hash[$key])
 			{
 				this._hash[$key] = 0
 			}
 			var dObj
-			var increment = isNaN(Number($increment))?0:Number($increment)
+			var increment = isNaN(Number($increment)) ? 0 : Number($increment)
 			this._hash[$key] += increment
 			dObj = this._hash[$key]
 			$callBack(null, dObj);
