@@ -355,7 +355,7 @@ function stopManager($manager)
 			return;
 		}
 
-		if ($manager.type == "http" || $manager.type == "mysql")
+		if ($manager.type == "http" || $manager.type == "mysql" || $manager.type == "socket")
 		{
 			childPromise = $manager.manager.close();
 		}

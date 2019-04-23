@@ -260,6 +260,11 @@ module.exports = class extends Manager {
 			}
 		}
 	}
+
+	close()
+	{
+		this.server && this.server.close();
+	}
 }
 
 function go($mgr, $data, $clientData, $callBack, $errorBack)
