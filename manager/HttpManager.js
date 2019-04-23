@@ -215,10 +215,11 @@ module.exports = class extends Manager {
 //				this.server.close($callBack);
 				this.server.close(()=>
 				{
+					trace(arguments);
 					trace("this.server.close")
+					resolved();
 				});
 			}
-			resolved();
 		})
 		return promise;
 	}
