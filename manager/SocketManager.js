@@ -137,13 +137,13 @@ module.exports = class extends Manager {
 
 		if (this.param.protocol)
 		{
-			if (this.param.protocol == "wss" && this.param.wssOptions && this.param.wssOptions.key && this.param.wssOptions.cert && !(this.param.checkLocal && ip.indexOf("192.168") == 0))
+			if (this.param.protocol == "https" && this.param.httpsOptions && this.param.httpsOptions.key && this.param.httpsOptions.cert && !(this.param.checkLocal && ip.indexOf("192.168") == 0))
 			{
-				this.param.wssOptions.key = g.fs.readFileSync(this.param.wssOptions.key);
-				this.param.wssOptions.cert = g.fs.readFileSync(this.param.wssOptions.cert);
-				let attachServer = require("https").createServer(this.param.wssOptions);
+				this.param.httpsOptions.key = g.fs.readFileSync(this.param.httpsOptions.key);
+				this.param.httpsOptions.cert = g.fs.readFileSync(this.param.httpsOptions.cert);
+				let attachServer = require("https").createServer(this.param.httpsOptions);
 				this.server.attach(attachServer, this.param);
-				this.server.listen(this.port);
+				attachServer.listen(this.port);
 			}
 			else
 			{
