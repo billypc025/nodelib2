@@ -230,7 +230,7 @@ function getInfo($managerObj)
 			{
 				results.push(info("Port", g.data.manager.getManager(param.protocol).data.param.port));
 			}
-			if (param.port)
+			else if (param.port)
 			{
 				results.push(info("Port", param.port));
 			}
