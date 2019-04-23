@@ -39,20 +39,14 @@ module.exports = class {
 
 	close($callBack)
 	{
-		trace(1)
 		this._waitList = null;
-		trace(2)
-		trace(this.connection)
-		trace(3)
-		trace(this.connection.off)
-		trace(4)
-		this.connection.off("error", this.onEnd_connection);
-		this.connection.off("end", this.onEnd_connection);
-		this.connection.off("connect", this.onConnect_connection);
-		trace(5)
+		trace("removeListener")
+		this.connection.removeListener("error", this.onEnd_connection);
+		this.connection.removeListener("end", this.onEnd_connection);
+		this.connection.removeListener("connect", this.onConnect_connection);
+		trace("----remove over")
 		this.onEnd_connection = null;
 		this.onConnect_connection = null;
-		trace(6)
 		var promise = new Promise((resolved, reject)=>
 		{
 			trace("mysql close")
