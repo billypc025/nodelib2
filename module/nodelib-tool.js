@@ -348,6 +348,7 @@ function stopManager($manager)
 		var childPromise;
 		if (!$manager.enabled)
 		{
+			resolved();
 			return;
 		}
 
