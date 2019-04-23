@@ -30,6 +30,7 @@ module.exports = class extends Manager {
 
 	close()
 	{
+		trace("---mysqlManager")
 		return this.server.close();
 	}
 }
