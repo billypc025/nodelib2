@@ -212,13 +212,23 @@ function getInfo($managerObj)
 		let param = $managerObj.param;
 		if (param)
 		{
+			var isHttpServer = false;
 			if (param.protocol)
 			{
 				results.push(info("Https", param.protocol));
+				if (param.protocol != "https")
+				{
+					isHttpServer = true;
+				}
 			}
 			if (param.path)
 			{
 				results.push(info("Path", param.path));
+			}
+
+			if (isHttpServer)
+			{
+				results.push(info("Port", g.data.manager.getManager(param.protocol).data.param.port));
 			}
 			if (param.port)
 			{
