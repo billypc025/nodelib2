@@ -167,8 +167,13 @@
 								</div>
 								{{infoItem.val}}
 							</div>
-							<div v-else>
+							<div v-if="infoItem.type==2">
 								<el-tag type="warning" size="mini">{{infoItem.name}}</el-tag>
+								{{infoItem.val}} <i class="el-icon-caret-bottom"
+													@click="onClick_managerRouter(scope.row,infoItem)"></i>
+							</div>
+							<div v-if="infoItem.type==3">
+								<el-tag type="success" size="mini">{{infoItem.name}}</el-tag>
 								{{infoItem.val}} <i class="el-icon-caret-bottom"
 													@click="onClick_managerRouter(scope.row,infoItem)"></i>
 							</div>
