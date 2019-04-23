@@ -338,6 +338,7 @@ function stopAllManager()
 	{
 		for (var manager of _managerPool.list)
 		{
+			trace("co", manager.type)
 			yield stopManager(manager);
 		}
 	}).catch(function (err)
