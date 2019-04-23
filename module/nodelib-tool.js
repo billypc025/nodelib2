@@ -190,7 +190,7 @@ function getInfo($managerObj)
 		{
 			if (param.protocol)
 			{
-				results.push(info("Https", param.protocol));
+				results.push(info("Https"));
 			}
 			if (param.port)
 			{
@@ -215,10 +215,14 @@ function getInfo($managerObj)
 			var isHttpServer = false;
 			if (param.protocol)
 			{
-				results.push(info("Https", param.protocol));
 				if (param.protocol != "https")
 				{
 					isHttpServer = true;
+					results.push(info("Https", param.protocol));
+				}
+				else
+				{
+					results.push(info("Https"));
 				}
 			}
 			if (param.path)
