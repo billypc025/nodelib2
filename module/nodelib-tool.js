@@ -101,7 +101,6 @@ function reboot($request, $response)
 	{
 		for (var manager of _managerPool.list)
 		{
-			trace("co", manager.type)
 			yield stopManager(manager);
 		}
 		_managerPool.clear();
@@ -352,10 +351,8 @@ function stopManager($manager)
 			return;
 		}
 
-		trace(1, $manager.type)
 		if ($manager.type == "http" || $manager.type == "mysql" || $manager.type == "socket")
 		{
-			trace(2, $manager.type)
 			childPromise = $manager.manager.close();
 		}
 
