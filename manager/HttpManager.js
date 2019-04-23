@@ -208,13 +208,17 @@ module.exports = class extends Manager {
 
 	close($callBack)
 	{
+		trace("http close 1")
 		var promise = new Promise((resolved, reject)=>
 		{
+			trace("http close 2")
 			if (this.server)
 			{
+				trace("http close 3")
 //				this.server.close($callBack);
 				this.server.close(()=>
 				{
+					trace("http close 4")
 					trace(arguments);
 					trace("this.server.close")
 					resolved();
