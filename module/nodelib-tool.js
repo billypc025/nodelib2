@@ -190,7 +190,7 @@ function getInfo($managerObj)
 		{
 			if (param.protocol)
 			{
-				results.push(info("Protocol", param.protocol));
+				results.push(info("Https", param.protocol));
 			}
 			if (param.port)
 			{
@@ -214,7 +214,7 @@ function getInfo($managerObj)
 		{
 			if (param.protocol)
 			{
-				results.push(info("Protocol", param.protocol));
+				results.push(info("Https", param.protocol));
 			}
 			if (param.path)
 			{
