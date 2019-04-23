@@ -188,6 +188,38 @@ function getInfo($managerObj)
 		let param = $managerObj.param;
 		if (param)
 		{
+			if (param.protocol)
+			{
+				results.push(info("Protocol", param.protocol));
+			}
+			if (param.port)
+			{
+				results.push(info("Port", param.port));
+			}
+		}
+		let module = $managerObj.module;
+		if (module)
+		{
+			let arr = Object.keys(module);
+			for (var modName of arr)
+			{
+				results.push(mod(modName, module[modName]));
+			}
+		}
+	}
+	else if ($managerObj.type == "socket")
+	{
+		let param = $managerObj.param;
+		if (param)
+		{
+			if (param.protocol)
+			{
+				results.push(info("Protocol", param.protocol));
+			}
+			if (param.path)
+			{
+				results.push(info("Path", param.path));
+			}
 			if (param.port)
 			{
 				results.push(info("Port", param.port));
