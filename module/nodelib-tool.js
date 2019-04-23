@@ -97,14 +97,23 @@ function admin($request, $response)
 
 function reboot($request, $response)
 {
-	stopAllManager();
-	_managerPool.clear();
-	_serverManager.start({router: g.data.server.path});
-	global.emiter.once("ALL_INITED", ()=>
+	co(function*()
 	{
-		_currCmd = "";
-		response("ok", $response);
-	})
+		for (var manager of _managerPool.list)
+		{
+			trace("co", manager.type)
+			yield stopManager(manager);
+		}
+		_managerPool.clear();
+		_serverManager.start({router: g.data.server.path});
+		global.emiter.once("ALL_INITED", ()=>
+		{
+			_currCmd = "";
+			response("ok", $response);
+		})
+	}).catch(function (err)
+	{
+	});
 }
 
 function update_router($request, $response)
@@ -330,20 +339,6 @@ function response($content, $response)
 	{
 		$response.end();
 	}
-}
-
-function stopAllManager()
-{
-	co(function*()
-	{
-		for (var manager of _managerPool.list)
-		{
-			trace("co", manager.type)
-			yield stopManager(manager);
-		}
-	}).catch(function (err)
-	{
-	});
 }
 
 function stopManager($manager)
