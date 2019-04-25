@@ -7,6 +7,7 @@
 	<script src="https://lib.lookh5.com/jslib/vue.2.6.10.min.js"></script>
 	<link rel="stylesheet" href="https://lib.lookh5.com/jslib/element-ui.css">
 	<script src="https://lib.lookh5.com/jslib/element-ui.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 	<style>
 		h2 {
 			display: block;
@@ -27,6 +28,10 @@
 
 		#app.div div button {
 			margin: 0 5px;
+		}
+
+		.el-button + .el-button {
+			margin-left: 0px;
 		}
 
 		#app.div label {
@@ -131,13 +136,51 @@
 
 		.el-tag {
 		}
+
+		.content-div {
+			margin-top: 30px;
+			padding: 0 20px 0;
+		}
+
+		.config-form .el-input {
+			width: 680px;
+		}
+
+		.copyBtn span {
+			margin-left: 0px !important;
+		}
+
+		.copyBtn div {
+			display: block;
+			width: 50px;
+			height: 0px;
+			padding: 0
+		}
+
+		.copyBtn.el-button {
+			padding: 12px 0px !important;
+		}
+
+		.el-table .disabled-row {
+			background: #f7f7f7;
+			color: #c5c5c5;
+		}
+
+		.config-conf .el-button {
+			margin-top: 20px;
+		}
+
+		.config-conf .el-textarea__inner {
+			font-size: 24px;
+		}
 	</style>
 </head>
 <body>
 <div id="app">
-	<el-menu default-active="1" mode="horizontal" @select="onSelect_menu">
+	<el-menu :default-active="menuIndex" mode="horizontal" @select="onSelect_menu">
 		<el-menu-item index="1"><i class="el-icon-menu"></i>控制中心</el-menu-item>
 		<el-menu-item index="2"><i class="el-icon-setting"></i>用户组设置</el-menu-item>
+		<el-menu-item index="3"><i class="el-icon-setting"></i>手动配置</el-menu-item>
 	</el-menu>
 	<div v-show="menuIndex==1">
 		<h2>
@@ -198,28 +241,148 @@
 		</div>
 	</div>
 	<div v-show="menuIndex==2">
-
+		<div class="config-form content-div">
+			<el-form label-position="left" label-width="80px">
+				<el-form-item label="管理地址">
+					<el-input v-model="adminUrl" maxlength="25" id="txt" suffix-icon="el-icon-edit">
+						<template slot="prepend">{{baseUrl}}</template>
+						<template slot="append">/index</template>
+					</el-input>
+					<el-button plain v-show="!isShowCopyUrlBtn" @click="onClick_setUrlBtn(0)"
+							   icon="el-icon-close"></el-button>
+					<el-button plain v-show="!isShowCopyUrlBtn" @click="onClick_setUrlBtn(1)"
+							   icon="el-icon-check"></el-button>
+					<el-button plain class="copyBtn" v-show="isShowCopyUrlBtn" icon="el-icon-document"
+							   @click="onClick_copyUrlBtn"
+							   :data-clipboard-text="baseUrl+adminUrl+'/index'">
+						<el-tooltip ref="copyTips" content="Copied" effect="dark" hide-after="1500">
+							<div></div>
+						</el-tooltip>
+					</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+		<div class="config-user content-div">
+			<el-table :data="adminUserList" border height="300" :row-class-name="getRowClassName">
+				<el-table-column type="index" width="50" align="center"></el-table-column>
+				<el-table-column prop="name" label="账号" width="180"></el-table-column>
+				<el-table-column prop="pass" label="密码" width="180">
+					<template slot-scope="scope">
+						{{scope.row.pass}}
+						<el-button style="float:right" size="mini" plain icon="el-icon-edit"
+								   @click="onClick_editUserBtn(scope.row)"></el-button>
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" align="right">
+					<template slot="header" slot-scope="scope">
+						<el-button size="mini" plain type="primary" icon="el-icon-plus"
+								   @click="onClick_addUserBtn"></el-button>
+					</template>
+					<template slot-scope="scope">
+						<el-switch :value="scope.row.enabled" active-color="#13ce66" inactive-color="#a9a9a9"
+								   :active-value="1" :inactive-value="0" width="45"
+								   @change="onChange_switch(scope.row)"></el-switch>
+						<el-button size="mini" plain type="info" icon="el-icon-delete"
+								   @click="onClick_delUserBtn(scope.row)"></el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+		</div>
+	</div>
+	<div v-show="menuIndex==3">
+		<div class="content-div config-conf">
+			<el-input type="textarea" rows="20" resize="none" v-model="confStr"></el-input>
+			<el-button type="primary" @click="onClick_saveConfBtn">保存</el-button>
+		</div>
 	</div>
 </div>
 </body>
 </html>
 <script>
+	var g = {};
+	Object.defineProperty(g, "query", {
+		get: function ()
+		{
+			var query = {};
+			var url = window.location.href;
+			if (url.indexOf("?") > 0)
+			{
+				var queryStr = url.substr(url.indexOf("?") + 1);
+				queryStr.split('&').forEach(function (param)
+				{
+					var parts = param.replace(/\+/g, ' ').split('=')
+					var key = decodeURIComponent(parts.shift())
+					var val = parts.length > 0
+							? decodeURIComponent(parts.join('='))
+							: null
+
+					if (query[key] === undefined)
+					{
+						query[key] = val
+					}
+					else if (Array.isArray(query[key]))
+					{
+						query[key].push(val)
+					}
+					else
+					{
+						query[key] = [query[key], val]
+					}
+				})
+			}
+			return query;
+		},
+		set: function ($obj)
+		{
+			var str = "";
+			for (var k in $obj)
+			{
+				str && (str += "&");
+				str += k + "=" + $obj[k];
+			}
+			history.replaceState(null, null, "index?" + str);
+		},
+		enumerable: true,
+		configurable: false
+	})
 	var _api = window.location.href;
 	_api = _api.substr(0, _api.lastIndexOf("/") + 1);
+	var _loading;
+
 	var Main = {
 		data() {
 			return {
 				server: {serverData},
 				lastTime: "",
 				managerList: {managerList},
-				isLoadingReboot: false,
+				isLoadingReboot: {isRestarting},
 				isLoadingGitPull: false,
-				menuIndex: 1
+				menuIndex: 1,
+				baseUrl: "",
+				adminConf: {adminConf},
+				adminUrl: "",
+				adminUserList: [],
+				isShowCopyUrlBtn: false,
+				confStr: "",
+				currConfStr: ""
 			}
 		},
-
+		watch: {
+			adminUrl: function ($val)
+			{
+				if (this.adminConf.admin_url)
+				{
+					this.isShowCopyUrlBtn = $val == this.adminConf.admin_url;
+				}
+				return false;
+			}
+		},
 		created ()
 		{
+			new ClipboardJS(".copyBtn");
+			var baseUrl = window.location.href;
+			baseUrl = baseUrl.substr(0, baseUrl.indexOf("/nodelib-tool/")) + "/nodelib-tool/";
+			this.baseUrl = baseUrl;
 			var now = parseInt(new Date().getTime() / 1000);
 			var time = now - parseInt(new Date(this.server.startTime) / 1000);
 			var lastTime = "";
@@ -250,11 +413,31 @@
 			{
 				managerItem.isLoading = false;
 			}
+			this.menuIndex = g.query.menuIndex || 1;
+			this.adminUrl = this.adminConf.admin_url;
+			this.adminUserList = this.adminConf.user_list;
+			if (this.isLoadingReboot)
+			{
+				setTimeout(function ()
+				{
+					window.location.reload();
+				}, 3000);
+			}
+
+			if (this.menuIndex == 3)
+			{
+				this.getConf();
+			}
 		},
 
 		methods: {
 			onSelect_menu($inx){
 				this.menuIndex = $inx;
+				g.query = {menuIndex: $inx};
+				if (this.menuIndex == 3)
+				{
+					this.getConf();
+				}
 			},
 			getLoading_managerItem($managerName)
 			{
@@ -269,9 +452,8 @@
 			},
 			onClick_gitPullBtn()
 			{
-				var url = _api + "git_fetch";
 				this.isLoadingGitPull = true;
-				$.post(url, ($data)=>
+				callNet("git_fetch").then(($data)=>
 				{
 					if ($data)
 					{
@@ -287,8 +469,7 @@
 						}).then(()=>
 						{
 							this.isLoadingGitPull = true;
-							var url = _api + "git_pull";
-							$.post(url, ()=>
+							callNet("git_pull").then(()=>
 							{
 								this.isLoadingGitPull = false;
 								this.$alert("拉取完成", {
@@ -313,15 +494,14 @@
 			},
 			onClick_rebootBtn()
 			{
-				this.$confirm("是否确认重启所有服务, 继续请选择Yes?", "提示", {
-					confirmButtonText: "Yes",
-					cancelButtonText: "No",
+				this.$confirm("是否确认重启所有服务?", "系统提示", {
+					confirmButtonText: "确定",
+					cancelButtonText: "取消",
 					type: 'warning'
 				}).then(()=>
 				{
 					this.isLoadingReboot = true;
-					var url = _api + "reboot";
-					$.post(url, ()=>
+					callNet("reboot").then(()=>
 					{
 						this.isLoadingReboot = false;
 						this.$message({
@@ -334,8 +514,7 @@
 			onClick_managerItem($managerItem)
 			{
 				$managerItem.isLoading = true;
-				var url = _api + "update_router";
-				$.post(url, {name: $managerItem.name}, ($data)=>
+				callNet("update_router", {name: $managerItem.name}).then(($data)=>
 				{
 					trace($data);
 					$managerItem.isLoading = false;
@@ -344,17 +523,248 @@
 			onClick_managerRouter($managerItem, $infoItem)
 			{
 				trace($infoItem)
+			},
+			onClick_setUrlBtn($type) {
+				if ($type == 0)
+				{
+					//取消
+					this.adminUrl = this.adminConf.admin_url;
+				}
+				else
+				{
+					//设置
+					this.adminConf.admin_url = this.adminUrl;
+					this.isShowCopyUrlBtn = true;
+					callNet("admin_seturl", {url: this.adminConf.admin_url}).then(($data)=>
+					{
+
+					});
+				}
+			},
+			onClick_copyUrlBtn()
+			{
+				window.tip = this.$refs.copyTips;
+				this.$refs.copyTips.show();
+			},
+			onClick_addUserBtn()
+			{
+				$("#userName").val("");
+				$("#userPassTxt").val("");
+				let h = this.$createElement;
+				this.$msgbox({
+					title: "添加管理员",
+					message: h("div", null, [
+						h("input", {
+							staticClass: "el-input__inner",
+							attrs: {
+								type: "text",
+								placeholder: "账号 (不能更改)",
+								id: "userNameTxt",
+								value: ""
+							}
+						}, ""),
+						h("input", {
+							staticClass: "el-input__inner",
+							staticStyle: {marginTop: "10px"},
+							attrs: {
+								type: "text",
+								placeholder: "密码",
+								id: "userPassTxt",
+								value: ""
+							}
+						}, ""),
+					]),
+					showCancelButton: true,
+					confirmButtonText: "确定",
+					cancelButtonText: "取消",
+					beforeClose: (action, instance, done) =>
+					{
+						if (action === 'confirm')
+						{
+							var userName = $("#userNameTxt").val();
+							var userPass = $("#userPassTxt").val();
+							instance.confirmButtonLoading = true;
+							callNet("admin_adduser", {
+								name: userName,
+								pass: userPass
+							}).then(($data)=>
+							{
+								this.adminUserList.push($data.data);
+								done();
+								instance.confirmButtonLoading = false;
+							});
+						}
+						else
+						{
+							done();
+						}
+					}
+				});
+			},
+			onClick_editUserBtn($userObj){
+				$("#userPassTxt").val($userObj.pass || "");
+				let h = this.$createElement;
+				this.$msgbox({
+					title: "添加管理员",
+					message: h("div", null, [
+						h("el-input", {
+							attrs: {
+								value: $userObj.name,
+								disabled: true
+							}
+						}, ""),
+						h("input", {
+							staticClass: "el-input__inner",
+							staticStyle: {marginTop: "10px"},
+							attrs: {
+								type: "text",
+								placeholder: "密码",
+								id: "userPassTxt",
+								value: $userObj.pass || "",
+								"data-value": $userObj.pass || ""
+							}
+						}, $userObj.pass || ""),
+					]),
+					showCancelButton: true,
+					confirmButtonText: "确定",
+					cancelButtonText: "取消",
+					beforeClose: (action, instance, done) =>
+					{
+						if (action === 'confirm')
+						{
+							var userPass = $("#userPassTxt").val();
+							instance.confirmButtonLoading = true;
+							callNet("admin_updateuser", {
+								name: $userObj.name,
+								pass: userPass
+							}).then(($data)=>
+							{
+								$userObj.pass = userPass;
+								done();
+								instance.confirmButtonLoading = false;
+							});
+						}
+						else
+						{
+							done();
+						}
+					}
+				});
+			},
+			onClick_delUserBtn($userObj){
+				this.$confirm("确定删除该账号? (删除后不能恢复)", "系统提示", {
+					confirmButtonText: "确定",
+					cancelButtonText: "取消",
+					type: "warning"
+				}).then(() =>
+				{
+					callNet("admin_deluser", $userObj).then(()=>
+					{
+						var index = this.adminUserList.indexOf($userObj);
+						this.adminUserList.splice(index, 1);
+					})
+				}).catch(() =>
+				{
+
+				});
+			},
+			onChange_switch($userObj){
+				$userObj.enabled = ($userObj.enabled + 1) % 2;
+				callNet("admin_updateuser", {
+					name: $userObj.name,
+					enabled: $userObj.enabled
+				}).then(($data)=>
+				{
+				});
+			},
+			getRowClassName($row) {
+				if ($row.row.enabled == 0)
+				{
+					return "disabled-row";
+				}
+				return "";
+			},
+			getConf(){
+				this.showLoading();
+				callNet("admin_getconf").then(($data)=>
+				{
+					this.confStr = JSON.stringify($data.data, null, "\t");
+					this.currConfStr = this.confStr;
+					this.hideLoading();
+				})
+			},
+			onClick_saveConfBtn()
+			{
+				if (this.confStr == this.currConfStr)
+				{
+					this.$message("没有修改,无需保存");
+					return;
+				}
+
+				if (this.confStr != "")
+				{
+					var obj;
+					try
+					{
+						obj = JSON.parse(this.confStr);
+					}
+					catch (e)
+					{
+						this.$message("不是有效的JSON!");
+						return;
+					}
+				}
+
+				this.showLoading();
+				callNet("admin_saveconf", obj).then(($data)=>
+				{
+					window.location.reload();
+				})
+			},
+			showLoading()
+			{
+				_loading = this.$loading({
+					lock: true,
+					text: 'Loading...',
+					spinner: 'el-icon-loading',
+					background: 'rgba(0, 0, 0, 0.7)'
+				});
+			},
+			hideLoading()
+			{
+				if (_loading)
+				{
+					_loading.close();
+					_loading = null;
+				}
 			}
-//			setCurrent(row) {
-//				this.$refs.singleTable.setCurrentRow(row);
-//			},
-//			handleCurrentChange(val) {
-//				this.currentRow = val;
-//			}
 		}
 	}
 	var Ctor = Vue.extend(Main)
 	new Ctor().$mount('#app');
+
+	function callNet($url, $data, $callBack)
+	{
+		var promise = new Promise((resolved, reject)=>
+		{
+			$.ajax({
+				type: "POST",
+				url: _api + $url,
+				contentType: "application/json",
+				dataType: "json",
+				data: $data && JSON.stringify($data) || "{}",
+				success: function ($resultData)
+				{
+					resolved($resultData);
+				},
+				error: function ($errorData)
+				{
+					reject($errorData);
+				}
+			});
+		})
+		return promise;
+	}
 
 	function trace()
 	{

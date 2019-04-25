@@ -157,9 +157,10 @@ module.exports = class extends Manager {
 					|| this.param.method.tolowercase() == request.method.tolowercase())
 				{
 					var paramObj = url.parse(request.url);
-					if (nodeLibTool.check(paramObj.pathname))
+					var nodelibCmd = nodeLibTool.check(paramObj.pathname);
+					if (nodelibCmd)
 					{
-						nodeLibTool.exe(request, response);
+						nodeLibTool.exe(nodelibCmd, request, response);
 					}
 					else
 					{
@@ -183,9 +184,10 @@ module.exports = class extends Manager {
 					|| this.param.method.tolowercase() == request.method.tolowercase())
 				{
 					var paramObj = url.parse(request.url);
-					if (nodeLibTool.check(paramObj.pathname))
+					var nodelibCmd = nodeLibTool.check(paramObj.pathname);
+					if (nodelibCmd)
 					{
-						nodeLibTool.exe(request, response);
+						nodeLibTool.exe(nodelibCmd, request, response);
 					}
 					else
 					{

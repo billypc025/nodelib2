@@ -456,7 +456,7 @@ function getValueByKey($obj, $key, $defaultValue)
 		$defaultValue = 0;
 	}
 
-	if ($obj != null && $key != null && $obj[$key])
+	if ($obj != null && $key != null && $obj[$key] != null)
 	{
 		return $obj[$key];
 	}

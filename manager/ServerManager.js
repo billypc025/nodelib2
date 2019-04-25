@@ -10,11 +10,16 @@ var _routerObj = null;
 
 global.emiter = new EventEmitter();
 
+var nodeLibTool = require("../module/nodelib-tool");
+
 exports.start = function ($options)
 {
 	_managerInitNum = 0;
+	global.emiter.emit("START_INIT_ROUTER");
 	initRouter($options.router);
+	global.emiter.emit("START_INIT_DATA");
 	initData();
+	global.emiter.emit("START_INIT_MANAGER");
 	initManager();
 }
 
@@ -61,6 +66,7 @@ function initManager()
 		{
 			startManager(managerList[_managerInitNum], function ($managerName, $success)
 			{
+				global.emiter.emit("COMPLETED_MANAGER_ITEM", $managerName);
 				nextManager(managerItem.name, $success ? "Started" : "failed");
 			})
 		}
@@ -123,8 +129,10 @@ function startManager($managerData, $callBack)
 		process.exit();
 	}
 
+	global.emiter.emit("BEFORE_CREATE_MANAGER", $managerData);
 	managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
 	var ManagerClass = require("./" + managerType + "Manager");
 	var managerItem = new ManagerClass($managerData);
+	global.emiter.emit("BEFORE_PRESTART_MANAGER_ITEM", $managerData);
 	managerItem.preStart($callBack);
 }
