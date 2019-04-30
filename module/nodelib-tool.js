@@ -7,35 +7,38 @@ var _serverManager = require("../manager/ServerManager");
 var _managerPool = require("../data/ManagerPool");
 var url = require("url");
 var conf = require("./nodelib-tool/conf");
+var superAdmin = require("./nodelib-tool/superAdmin");
 var admin = require("./nodelib-tool/admin");
 var git = require("./nodelib-tool/git");
-var {response, getPostData}=require("./nodelib-tool/utils");
+var {response, getPostData, getManagerInfo}=require("./nodelib-tool/utils");
 
 var _superAdminHash = {
-	index: index_superAdmin,
+	index: index,
 	reboot: reboot,
 	update_router: update_router,
 	git_pull: git.pull,
 	git_fetch: git.fetch,
-	admin_seturl: admin.setUrl,
-	admin_adduser: admin.addUser,
-	admin_deluser: admin.delUser,
-	admin_updateuser: admin.updateUser,
-	admin_getconf: admin.getConf,
-	admin_saveconf: admin.saveConf
+	admin_seturl: superAdmin.setUrl,
+	admin_adduser: superAdmin.addUser,
+	admin_deluser: superAdmin.delUser,
+	admin_updateuser: superAdmin.updateUser,
+	admin_getconf: superAdmin.getConf,
+	admin_saveconf: superAdmin.saveConf
 }
 
 var _adminHash = {
-	index: index_admin,
-	reboot: reboot,
-	update_router: update_router,
-	git_pull: git.pull,
-	git_fetch: git.fetch
+	index: [admin.checkLogin_page, admin.index],
+	reboot: [admin.checkLogin, reboot],
+	update_router: [admin.checkLogin, update_router],
+	git_pull: [admin.checkLogin, git.pull],
+	git_fetch: [admin.checkLogin, git.fetch],
+	admin_login: admin.login
 }
 
-var _isRestarting = false;
-
-g.nodelib = {conf: conf};
+g.nodelib = {
+	conf: conf,
+	onRestart: false
+};
 
 function check($cmd)
 {
@@ -45,24 +48,26 @@ function check($cmd)
 	}
 
 	var cmdArr = $cmd.split("/");
-	if (cmdArr.length != 4 || cmdArr[2].length == 0 || !_superAdminHash[cmdArr[3]])
+	if (cmdArr.length != 4 || cmdArr[2].length == 0)
 	{
 		return null;
 	}
 
 	var adminUrl = cmdArr[2];
-	if (adminUrl.toUpperCase() == conf.data.admin_url.toUpperCase())
+	var cmd = cmdArr[3];
+//	trace(adminUrl.toUpperCase(), conf.data.admin_url.toUpperCase(), adminUrl.toUpperCase() == conf.data.admin_url.toUpperCase())
+	if (_adminHash[cmd] && conf.data.admin_url != "" && adminUrl.toUpperCase() == conf.data.admin_url.toUpperCase())
 	{
 		return {
 			type: "admin",
-			cmd: cmdArr[3]
+			cmd: cmd
 		};
 	}
-	if (g.md5(adminUrl).toUpperCase() == g.data.server.pass.toUpperCase())
+	if (_superAdminHash[cmd] && g.md5(adminUrl).toUpperCase() == g.data.server.pass.toUpperCase())
 	{
 		return {
 			type: "superAdmin",
-			cmd: cmdArr[3]
+			cmd: cmd
 		};
 	}
 	return null;
@@ -76,6 +81,7 @@ function exe($cmdObj, $req, $res)
 		return;
 	}
 
+	trace($cmdObj.type, $cmdObj.cmd, !!_adminHash[$cmdObj.cmd]);
 	if ($cmdObj.type == "superAdmin" && _superAdminHash[$cmdObj.cmd])
 	{
 		var query = url.parse($req.url, true).query;
@@ -84,14 +90,44 @@ function exe($cmdObj, $req, $res)
 	else if ($cmdObj.type == "admin" && _adminHash[$cmdObj.cmd])
 	{
 		var query = url.parse($req.url, true).query;
-		_adminHash[$cmdObj.cmd]($req, $res, query);
+		var func = _adminHash[$cmdObj.cmd];
+		if (Array.isArray(func))
+		{
+			co(function *()
+			{
+				for (var i = 0; i < func.length; i++)
+				{
+					var result = func[i]($req, $res, query);
+					if (result === false)
+					{
+						break;
+					}
+					else if (result instanceof Promise)
+					{
+						var r = yield result;
+						if (r === false)
+						{
+							break;
+						}
+					}
+				}
+			}, ()=>
+			{
+				response($res, 5555);
+			})
+
+		}
+		else
+		{
+			func($req, $res, query);
+		}
 	}
 
 	return;
 }
 exports.exe = exe;
 
-function index_superAdmin($req, $res, $query)
+function index($req, $res, $query)
 {
 	co(function*()
 	{
@@ -102,7 +138,7 @@ function index_superAdmin($req, $res, $query)
 			managerList.push({
 				name: manager.name,
 				type: manager.type,
-				info: getInfo(manager),
+				info: getManagerInfo(manager),
 				enabled: manager.enabled
 			});
 		}
@@ -120,45 +156,7 @@ function index_superAdmin($req, $res, $query)
 			}),
 			managerList: JSON.stringify(managerList),
 			adminConf: JSON.stringify(conf.data),
-			isRestarting: _isRestarting
-		})
-		response($res, html);
-	}).catch(function ($err)
-	{
-		response($res, 0);
-	})
-}
-
-function index_admin($req, $res, $query)
-{
-	co(function*()
-	{
-		var serverInfo = g.data.server;
-		var managerList = [];
-		for (var manager of serverInfo.managerList)
-		{
-			managerList.push({
-				name: manager.name,
-				type: manager.type,
-				info: getInfo(manager),
-				enabled: manager.enabled
-			});
-		}
-
-		var gitBranch = yield git.getBranch();
-		var gitCommit = yield git.getCommit();
-		gitCommit.time = _timeTool.formatTime(new Date(gitCommit.time).getTime());
-		var html = g.fs.readFileSync(__libpath("../admin/admin.html")).toString();
-		html = paramFormat(html, {
-			serverData: JSON.stringify({
-				path: serverInfo.path,
-				startTime: _timeTool.formatTime(serverInfo.startTime, true),
-				gitBranch: gitBranch,
-				gitCommit: gitCommit,
-			}),
-			managerList: JSON.stringify(managerList),
-			adminConf: JSON.stringify(conf.data),
-			isRestarting: _isRestarting
+			isRestarting: g.nodelib.onRestart
 		})
 		response($res, html);
 	}).catch(function ($err)
@@ -171,7 +169,7 @@ function reboot($req, $res)
 {
 	co(function*()
 	{
-		_isRestarting = true;
+		g.nodelib.onRestart = true;
 		for (var manager of _managerPool.list)
 		{
 			yield stopManager(manager);
@@ -180,7 +178,7 @@ function reboot($req, $res)
 		_serverManager.start({router: g.data.server.path});
 		global.emiter.once("ALL_INITED", ()=>
 		{
-			_isRestarting = false;
+			g.nodelib.onRestart = false;
 			response($res, "ok");
 		})
 	}).catch(function (err)
@@ -194,135 +192,29 @@ function update_router($req, $res)
 	{
 		if (!hasData($data, "name"))
 		{
-			response(9999, $res);
+			response($res, 9999);
 			return;
 		}
-		var managerName = $data.name;
 		//更新router所有数据,要重新读router文件
-		response($data.name, $res);
+
+		co(function*()
+		{
+			g.nodelib.onRestart = true;
+			var managerData = g.data.manager.get($data.name)
+			if (managerData && managerData.manager)
+			{
+				yield stopManager(managerData);
+			}
+			_serverManager.startManager(managerData, ()=>
+			{
+				g.nodelib.onRestart = false;
+				response($res, "ok");
+			});
+		}).catch(function (err)
+		{
+			response($res, "ok");
+		});
 	});
-}
-
-function getInfo($managerObj)
-{
-	var results = [];
-	if ($managerObj.type == "mysql")
-	{
-		let param = $managerObj.param;
-		results.push(info("Host", param.host));
-		results.push(info("DB", param.database));
-		results.push(info("User", param.user));
-	}
-	else if ($managerObj.type == "redis")
-	{
-		let param = $managerObj.param;
-		results.push(info("Host", param.host));
-		results.push(info("Port", param.port));
-	}
-	else if ($managerObj.type == "script")
-	{
-		let module = $managerObj.module;
-		if (module)
-		{
-			let arr = Object.keys(module);
-			results.push(mod(arr[0], module[arr[0]]));
-		}
-	}
-	else if ($managerObj.type == "http")
-	{
-		let param = $managerObj.param;
-		if (param)
-		{
-			if (param.protocol)
-			{
-				results.push(mark("Https"));
-			}
-			if (param.port)
-			{
-				results.push(info("Port", param.port));
-			}
-		}
-		let module = $managerObj.module;
-		if (module)
-		{
-			let arr = Object.keys(module);
-			for (var modName of arr)
-			{
-				results.push(mod(modName, module[modName]));
-			}
-		}
-	}
-	else if ($managerObj.type == "socket")
-	{
-		let param = $managerObj.param;
-		if (param)
-		{
-			var isHttpServer = false;
-			if (param.protocol)
-			{
-				if (param.protocol != "https")
-				{
-					isHttpServer = true;
-					results.push(mark("Https", param.protocol));
-				}
-				else
-				{
-					results.push(mark("Https"));
-				}
-			}
-			if (param.path)
-			{
-				results.push(info("Path", param.path));
-			}
-
-			if (isHttpServer)
-			{
-				results.push(info("Port", g.data.manager.getManager(param.protocol).data.param.port));
-			}
-			else if (param.port)
-			{
-				results.push(info("Port", param.port));
-			}
-		}
-		let module = $managerObj.module;
-		if (module)
-		{
-			let arr = Object.keys(module);
-			for (var modName of arr)
-			{
-				results.push(mod(modName, module[modName]));
-			}
-		}
-	}
-
-	return results;
-
-	function info($name, $val)
-	{
-		return {
-			type: 1,
-			name: $name,
-			val: $val
-		}
-	}
-
-	function mod($name, $val)
-	{
-		return {
-			type: 2,
-			name: $name,
-			val: $val
-		}
-	}
-
-	function mark($name, $val)
-	{
-		return {
-			type: 3,
-			name: $name,
-			val: $val
-		}
-	}
 }
 
 function stopManager($manager)

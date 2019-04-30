@@ -17,7 +17,7 @@
 <div class="net">
 	<div class="block">
 		<label>http</label><input id="domainTxt" value=""/>
-		<label>socket</label><input id="ipTxt" value="192.168.1.115:8002/test"/>
+		<label>socket</label><input id="ipTxt" value="https://api.lookh5.com:8002/test"/>
 	</div>
 	<div style="margin: 0px">
 		<br/><br/>
@@ -87,32 +87,12 @@
 		}
 		var url = ip;
 		var path = "";
-		var wss = false;
-		url = url.replace("http://", "");
-		if (url.indexOf("https") >= 0)
+		var lastIndex = url.lastIndexOf("/");
+		if (lastIndex > 10)
 		{
-			wss = true;
+			path = url.substring(lastIndex);
+			url = url.substr(0, lastIndex);
 		}
-		url = url.replace("https://", "");
-		if (url.indexOf("/"))
-		{
-			path = url.split("/")[1];
-			if (path)
-			{
-				path = "/" + path;
-			}
-
-			url = url.split("/")[0];
-		}
-		if (wss)
-		{
-			url = "https://" + url;
-		}
-		else
-		{
-			url = "http://" + url;
-		}
-
 		if (!window.socketIsConnected && url)
 		{
 			window.socket = io(url, {

@@ -97,7 +97,11 @@ function select($formName, $columns, $where, $groupBy, $order, $page, $pageSize)
 		}
 		else
 		{
-			var cols = Object.keys($where);
+			var cols = [];
+			if ($where)
+			{
+				Object.keys($where);
+			}
 			if (cols.length == 1 && cols[0] == "groupBy")
 			{
 				groupByObj = $where;
@@ -198,7 +202,7 @@ function insert($formName, $obj)
 {
 	var sqlStr = join("insert into", form($formName), insertData($obj));
 	sqlStr += ";";
-	console.log(sqlStr);
+//	console.log(sqlStr);
 	return sqlStr;
 }
 

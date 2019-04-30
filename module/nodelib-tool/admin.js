@@ -1,26 +1,54 @@
 /**
  * Created by billy on 2019/4/24.
  */
+var co = require("co");
+var _timeTool = require("../../utils/TimeTool");
 var conf = require("./conf");
-var {response, getPostData}=require("./utils");
+var git = require("./git");
+var {response, getPostData, getManagerInfo}=require("./utils");
+var TokenPool = require("./TokenPool");
+var _tokenPool = new TokenPool();
 
-function setUrl($req, $res, $query)
+function index($req, $res, $query)
 {
-	getPostData($req).then(($data)=>
+	co(function*()
 	{
-		if (!hasData($data, "url"))
+		var serverInfo = g.data.server;
+		var managerList = [];
+		for (var manager of serverInfo.managerList)
 		{
-			response($res, 9999);
-			return;
+			managerList.push({
+				name: manager.name,
+				type: manager.type,
+				info: getManagerInfo(manager),
+				enabled: manager.enabled
+			});
 		}
 
-		conf.setUrl($data.url);
-		response($res, {url: $data.url});
+		var gitBranch = yield git.getBranch();
+		var gitCommit = yield git.getCommit();
+		gitCommit.time = _timeTool.formatTime(new Date(gitCommit.time).getTime());
+		var html = g.fs.readFileSync(__libpath("../admin/admin_index.html")).toString();
+		html = paramFormat(html, {
+			serverData: JSON.stringify({
+				path: serverInfo.path,
+				startTime: _timeTool.formatTime(serverInfo.startTime, true),
+				gitBranch: gitBranch,
+				gitCommit: gitCommit,
+			}),
+			managerList: JSON.stringify(managerList),
+			isRestarting: g.nodelib.onRestart
+		})
+		response($res, html);
+	}).catch(function ($err)
+	{
+		trace($err)
+		response($res, 0);
 	})
 }
-exports.setUrl = setUrl;
+exports.index = index;
 
-function addUser($req, $res, $query)
+function login($req, $res, $query)
 {
 	getPostData($req).then(($data)=>
 	{
@@ -30,66 +58,63 @@ function addUser($req, $res, $query)
 			return;
 		}
 
-		if (!conf.getUser($data.name))
-		{
-			var userObj = conf.addUser($data);
-			response($res, userObj);
-			return;
-		}
-		else
-		{
-			response($res, 2001);//has user
-			return;
-		}
-	})
-}
-exports.addUser = addUser;
-
-function delUser($req, $res, $query)
-{
-	getPostData($req).then(($data)=>
-	{
-		if (!hasData($data, "name"))
-		{
-			response($res, 9999);
-			return;
-		}
-
-		conf.delUser($data.name);
-		response($res, {});
-	})
-}
-exports.delUser = delUser;
-
-function updateUser($req, $res, $query)
-{
-	getPostData($req).then(($data)=>
-	{
-		if (!hasData($data, "name"))
-		{
-			response($res, 9999);
-			return;
-		}
-
-		conf.updateUser($data);
 		var userObj = conf.getUser($data.name);
-		response($res, userObj);
+		if (!userObj || userObj.pass != $data.pass)
+		{
+			response($res, 1000);
+			return;
+		}
+		updateCookie($res, $data.name);
+		response($res, {n: 1});
 	})
 }
-exports.updateUser = updateUser;
+exports.login = login;
 
-function getConf($req, $res, $query)
+function checkLogin($req, $res)
 {
-	response($res, conf.data);
-}
-exports.getConf = getConf;
-
-function saveConf($req, $res, $query)
-{
-	getPostData($req).then(($data)=>
+	var promise = new Promise((resolved, reject)=>
 	{
-		conf.update($data)
-		response($res, {});
+		var token = g.cookie.get($req, "token");
+		var userName = _tokenPool.get(token);
+		if (!userName)
+		{
+			clearCookie($res);
+			response($res, 1000);
+			resolved(false);
+			return;
+		}
+		resolved(true);
 	})
+	return promise;
 }
-exports.saveConf = saveConf;
+exports.checkLogin = checkLogin;
+
+function checkLogin_page($req, $res)
+{
+	var promise = new Promise((resolved, reject)=>
+	{
+		var token = g.cookie.get($req, "token");
+		var userName = _tokenPool.get(token);
+		if (!userName)
+		{
+			var html = g.fs.readFileSync(__libpath("../admin/admin_login.html")).toString();
+			response($res, html);
+			resolved(false);
+			return;
+		}
+		resolved(true);
+	})
+	return promise;
+}
+exports.checkLogin_page = checkLogin_page;
+
+function updateCookie($res, $userName)
+{
+	var token = _tokenPool.add($userName);
+	g.cookie.create($res, "token", token, {path: "/"});
+}
+
+function clearCookie($res)
+{
+	g.cookie.clear($res, "chachadian_wxapp", {path: "/"});
+}

@@ -5,9 +5,9 @@
 	<title>NodeLib-Tool Admin</title>
 	<script src="https://lib.lookh5.com/jslib/zepto.1.2.0.min.js"></script>
 	<script src="https://lib.lookh5.com/jslib/vue.2.6.10.min.js"></script>
-	<link rel="stylesheet" href="https://lib.lookh5.com/jslib/element-ui.css">
-	<script src="https://lib.lookh5.com/jslib/element-ui.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+	<link rel="stylesheet" href="https://lib.lookh5.com/jslib/element-ui.2.8.2.css">
+	<script src="https://lib.lookh5.com/jslib/element-ui.2.8.2.min.js"></script>
+	<script src="https://lib.lookh5.com/jslib/clipboard.min.js"></script>
 	<style>
 		h2 {
 			display: block;
@@ -226,9 +226,8 @@
 				<el-table-column prop="enabled" label="操作" width="90" header-align="center" align="center">
 					<template slot-scope="scope">
 						<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
-						<el-button size="mini" plain type="success" disable-transitions v-else
-								   @click="onClick_managerItem(scope.row)"
-								   :loading="getLoading_managerItem(scope.row)">重启
+						<el-button :ref="'restartBtn_'+scope.row.name" size="mini" plain type="success"
+								   disable-transitions v-else @click="onClick_restartBtn(scope.row)">重启
 						</el-button>
 					</template>
 				</el-table-column>
@@ -252,7 +251,7 @@
 							   icon="el-icon-close"></el-button>
 					<el-button plain v-show="!isShowCopyUrlBtn" @click="onClick_setUrlBtn(1)"
 							   icon="el-icon-check"></el-button>
-					<el-button plain class="copyBtn" v-show="isShowCopyUrlBtn" icon="el-icon-document"
+					<el-button plain class="copyBtn" v-show="isShowCopyUrlBtn" icon="el-icon-document-copy"
 							   @click="onClick_copyUrlBtn"
 							   :data-clipboard-text="baseUrl+adminUrl+'/index'">
 						<el-tooltip ref="copyTips" content="Copied" effect="dark" hide-after="1500">
@@ -364,7 +363,8 @@
 				adminUserList: [],
 				isShowCopyUrlBtn: false,
 				confStr: "",
-				currConfStr: ""
+				currConfStr: "",
+				managerLoading: {}
 			}
 		},
 		watch: {
@@ -439,9 +439,9 @@
 					this.getConf();
 				}
 			},
-			getLoading_managerItem($managerName)
+			getLoading_managerItem($manager)
 			{
-				return $managerName.isLoading;
+				return $manager.isLoading;
 			},
 			tableRowClassName({row, rowIndex}) {
 				if (!this.managerList[rowIndex].enabled)
@@ -494,6 +494,14 @@
 			},
 			onClick_rebootBtn()
 			{
+				var successFunc = ()=>
+				{
+					this.isLoadingReboot = false;
+					this.$message({
+						type: 'success',
+						message: "重启成功!"
+					});
+				}
 				this.$confirm("是否确认重启所有服务?", "系统提示", {
 					confirmButtonText: "确定",
 					cancelButtonText: "取消",
@@ -501,24 +509,21 @@
 				}).then(()=>
 				{
 					this.isLoadingReboot = true;
-					callNet("reboot").then(()=>
-					{
-						this.isLoadingReboot = false;
-						this.$message({
-							type: 'success',
-							message: "重启成功!"
-						});
-					});
+					callNet("reboot").then(successFunc, successFunc);
 				})
 			},
-			onClick_managerItem($managerItem)
+			onClick_restartBtn($managerItem)
 			{
-				$managerItem.isLoading = true;
-				callNet("update_router", {name: $managerItem.name}).then(($data)=>
+				var successFunc = ()=>
 				{
-					trace($data);
-					$managerItem.isLoading = false;
-				});
+					this.$refs["restartBtn_" + $managerItem.name].loading = false;
+					this.$message({
+						type: 'success',
+						message: "重启成功!"
+					});
+				}
+				this.$refs["restartBtn_" + $managerItem.name].loading = true;
+				callNet("update_router", {name: $managerItem.name}).then(successFunc, successFunc);
 			},
 			onClick_managerRouter($managerItem, $infoItem)
 			{

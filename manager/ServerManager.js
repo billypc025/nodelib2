@@ -136,3 +136,4 @@ function startManager($managerData, $callBack)
 	global.emiter.emit("BEFORE_PRESTART_MANAGER_ITEM", $managerData);
 	managerItem.preStart($callBack);
 }
+exports.startManager = startManager;
