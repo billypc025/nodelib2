@@ -83,7 +83,7 @@ function exe($cmdObj, $req, $res)
 		return;
 	}
 
-	trace($cmdObj.type, $cmdObj.cmd, !!_adminHash[$cmdObj.cmd]);
+//	trace($cmdObj.type, $cmdObj.cmd, !!_adminHash[$cmdObj.cmd]);
 	if ($cmdObj.type == "superAdmin" && _superAdminHash[$cmdObj.cmd])
 	{
 		var query = url.parse($req.url, true).query;

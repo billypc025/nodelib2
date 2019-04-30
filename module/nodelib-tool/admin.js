@@ -42,7 +42,7 @@ function index($req, $res, $query)
 		response($res, html);
 	}).catch(function ($err)
 	{
-		trace($err)
+//		trace($err)
 		response($res, 0);
 	})
 }
