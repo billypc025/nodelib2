@@ -1,6 +1,7 @@
 /**
  * Created by billy on 2019/4/24.
  */
+var co = require("co");
 var conf = require("./conf");
 var {response, getPostData}=require("./utils");
 

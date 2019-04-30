@@ -1,6 +1,7 @@
 /**
  * Created by billy on 2019/4/24.
  */
+var co = require("co");
 var _exeTool = require("../../utils/childProcess");
 var {response}=require("./utils");
 
