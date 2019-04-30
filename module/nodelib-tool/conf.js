@@ -38,12 +38,12 @@ function init()
 
 	for (var managerData of g.data.manager.list)
 	{
-		if (managerData.enabled && _data[managerData.name] && managerData.param)
+		if (managerData.enabled && _data.manager[managerData.name] && managerData.param)
 		{
-			__merge(managerData.param, _data[managerData.name], true);
+			__merge(managerData.param, _data.manager[managerData.name], true);
 		}
 	}
-	trace(_data);
+//	trace(_data);
 }
 
 function update($data)
@@ -66,7 +66,8 @@ function update($data)
 	}
 
 	_userPool.update(_data.user_list);
-	g.fs.writeFileSync(_path, JSON.stringify(_data));
+	save();
+//	g.fs.writeFileSync(_path, JSON.stringify(_data));
 //	_data = $data;
 }
 exports.update = update;
@@ -105,6 +106,13 @@ function getUser($name)
 	return _userPool.getDataBy($name);
 }
 exports.getUser = getUser;
+
+function updateManager($name, $obj)
+{
+	_data.manager[$name] = $obj;
+	save();
+}
+exports.updateManager = updateManager;
 
 function save()
 {

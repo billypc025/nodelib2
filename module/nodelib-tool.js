@@ -23,7 +23,9 @@ var _superAdminHash = {
 	admin_deluser: superAdmin.delUser,
 	admin_updateuser: superAdmin.updateUser,
 	admin_getconf: superAdmin.getConf,
-	admin_saveconf: superAdmin.saveConf
+	admin_saveconf: superAdmin.saveConf,
+	admin_getmysqlconf: superAdmin.getMysqlConf,
+	admin_setmysqlconf: superAdmin.setMysqlConf
 }
 
 var _adminHash = {

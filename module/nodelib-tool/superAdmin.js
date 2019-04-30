@@ -93,3 +93,53 @@ function saveConf($req, $res, $query)
 	})
 }
 exports.saveConf = saveConf;
+
+function getMysqlConf($req, $res, $query)
+{
+	getPostData($req).then(($data)=>
+	{
+		if (!hasData($data, "name"))
+		{
+			response($res, 9999);
+			return;
+		}
+		var managerData = g.data.manager.get($data.name);
+		if (!managerData || managerData.type != "mysql")
+		{
+			response($res, 9999);
+			return;
+		}
+
+		response($res, managerData.param);
+	})
+}
+exports.getMysqlConf = getMysqlConf;
+
+function setMysqlConf($req, $res, $query)
+{
+	getPostData($req).then(($data)=>
+	{
+		if (!hasData($data, "name", "host", "user", "password", "database"))
+		{
+			response($res, 9999);
+			return;
+		}
+		var managerData = g.data.manager.get($data.name);
+		if (!managerData || managerData.type != "mysql")
+		{
+			response($res, 9999);
+			return;
+		}
+		var param = {
+			host: $data.host,
+			user: $data.user,
+			password: $data.password,
+			database: $data.database
+		}
+		managerData.param = __merge({}, param);
+
+		conf.updateManager($data.name, param);
+		response($res, {});
+	})
+}
+exports.setMysqlConf = setMysqlConf;

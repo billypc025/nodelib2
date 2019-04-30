@@ -222,12 +222,22 @@
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column prop="enabled" label="操作" width="90" header-align="center" align="center">
+				<el-table-column prop="enabled" label="操作" width="150" header-align="center" align="center">
 					<template slot-scope="scope">
-						<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
-						<el-button :ref="'restartBtn_'+scope.row.name" size="mini" plain type="success"
-								   disable-transitions v-else @click="onClick_restartBtn(scope.row)">重启
-						</el-button>
+						<el-row :gutter="10" type="flex" justify="center">
+							<el-col>
+								<el-button size="mini" plain type="info"
+										   v-if="scope.row.enabled && scope.row.type=='mysql'"
+										   @click="onClick_configtBtn(scope.row)">配置
+								</el-button>
+							</el-col>
+							<el-col>
+								<el-tag type="danger" disable-transitions v-if="!scope.row.enabled">未启</el-tag>
+								<el-button :ref="'restartBtn_'+scope.row.name" size="mini" plain type="success"
+										   disable-transitions v-else @click="onClick_restartBtn(scope.row)">重启
+								</el-button>
+							</el-col>
+						</el-row>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -348,7 +358,8 @@
 	var _loading;
 
 	var Main = {
-		data() {
+		data()
+		{
 			return {
 				server: {serverData},
 				lastTime: "",
@@ -430,7 +441,8 @@
 		},
 
 		methods: {
-			onSelect_menu($inx){
+			onSelect_menu($inx)
+			{
 				this.menuIndex = $inx;
 				g.query = {menuIndex: $inx};
 				if (this.menuIndex == 3)
@@ -442,7 +454,8 @@
 			{
 				return $manager.isLoading;
 			},
-			tableRowClassName({row, rowIndex}) {
+			tableRowClassName({row, rowIndex})
+			{
 				if (!this.managerList[rowIndex].enabled)
 				{
 					return "enabled-row";
@@ -528,7 +541,8 @@
 			{
 				trace($infoItem)
 			},
-			onClick_setUrlBtn($type) {
+			onClick_setUrlBtn($type)
+			{
 				if ($type == 0)
 				{
 					//取消
@@ -605,7 +619,8 @@
 					}
 				});
 			},
-			onClick_editUserBtn($userObj){
+			onClick_editUserBtn($userObj)
+			{
 				$("#userPassTxt").val($userObj.pass || "");
 				let h = this.$createElement;
 				this.$msgbox({
@@ -655,7 +670,8 @@
 					}
 				});
 			},
-			onClick_delUserBtn($userObj){
+			onClick_delUserBtn($userObj)
+			{
 				this.$confirm("确定删除该账号? (删除后不能恢复)", "系统提示", {
 					confirmButtonText: "确定",
 					cancelButtonText: "取消",
@@ -672,7 +688,8 @@
 
 				});
 			},
-			onChange_switch($userObj){
+			onChange_switch($userObj)
+			{
 				$userObj.enabled = ($userObj.enabled + 1) % 2;
 				callNet("admin_updateuser", {
 					name: $userObj.name,
@@ -681,14 +698,16 @@
 				{
 				});
 			},
-			getRowClassName($row) {
+			getRowClassName($row)
+			{
 				if ($row.row.enabled == 0)
 				{
 					return "disabled-row";
 				}
 				return "";
 			},
-			getConf(){
+			getConf()
+			{
 				this.showLoading();
 				callNet("admin_getconf").then(($data)=>
 				{
@@ -724,6 +743,91 @@
 				{
 					window.location.reload();
 				})
+			},
+			onClick_configtBtn($managerItem)
+			{
+				callNet("admin_getmysqlconf", {name: $managerItem.name}).then(($data)=>
+				{
+					$("#mysql_host").val("");
+					$("#mysql_user").val("");
+					$("#mysql_pass").val("");
+					$("#mysql_db").val("");
+					let h = this.$createElement;
+					this.$msgbox({
+						title: "编辑mysql配置",
+						message: h("div", null, [
+							h("input", {
+								staticClass: "el-input__inner",
+								staticStyle: {marginTop: "10px"},
+								attrs: {
+									type: "text",
+									placeholder: "host",
+									id: "mysql_host",
+									value: $data.data.host || ""
+								}
+							}, $data.data.host || ""),
+							h("input", {
+								staticClass: "el-input__inner",
+								staticStyle: {marginTop: "10px"},
+								attrs: {
+									type: "text",
+									placeholder: "user",
+									id: "mysql_user",
+									value: $data.data.user || ""
+								}
+							}, $data.data.user || ""),
+							h("input", {
+								staticClass: "el-input__inner",
+								staticStyle: {marginTop: "10px"},
+								attrs: {
+									type: "text",
+									placeholder: "password",
+									id: "mysql_pass",
+									value: $data.data.password || ""
+								}
+							}, $data.data.password || ""),
+							h("input", {
+								staticClass: "el-input__inner",
+								staticStyle: {marginTop: "10px"},
+								attrs: {
+									type: "text",
+									placeholder: "database",
+									id: "mysql_db",
+									value: $data.data.database || ""
+								}
+							}, $data.data.database || "")
+						]),
+						showCancelButton: true,
+						confirmButtonText: "确定",
+						cancelButtonText: "取消",
+						beforeClose: (action, instance, done) =>
+						{
+							if (action === 'confirm')
+							{
+								instance.confirmButtonLoading = true;
+								callNet("admin_setmysqlconf", {
+									name: $managerItem.name,
+									host: $("#mysql_host").val(),
+									user: $("#mysql_user").val(),
+									password: $("#mysql_pass").val(),
+									database: $("#mysql_db").val(),
+								}).then(($data)=>
+								{
+									done();
+									instance.confirmButtonLoading = false;
+									this.$message({
+										type: 'success',
+										message: "配置完成需要重启才能生效!"
+									});
+								});
+							}
+							else
+							{
+								done();
+							}
+						}
+					})
+				});
 			},
 			showLoading()
 			{
