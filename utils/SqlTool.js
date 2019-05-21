@@ -445,7 +445,7 @@ function val($value)
 	{
 		if ($value.indexOf("`") < 0)
 		{
-			return "'" + $value + "'";
+			return "'" + $value.replace(/'/g, "\\\'") + "'";
 		}
 	}
 	return $value;
