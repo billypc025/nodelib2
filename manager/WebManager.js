@@ -39,7 +39,7 @@ module.exports = class extends Manager {
 		{
 			this.server = http.createServer((request, response) =>
 			{
-				return handler(request, response, {
+				return serve(request, response, {
 					public: this.webroot,
 					unlisted: [
 						"/node_modules",
