@@ -266,6 +266,14 @@ var doMethod = {
 				doRequest($router, $func, $pathName, query, $request, $response, $header);
 			});
 		}
+	},
+	OPTIONS: function ($router, $func, $pathName, $request, $response, $header)
+	{
+		$response.statusCode = 204;
+		writeOut(204, "", $request, $response, {
+			"Content-Type": "application/json;charset=utf-8",
+			"Access-Control-Allow-Headers": "X-Requested-With,content-type"
+		}, "", $header);
 	}
 }
 
@@ -372,10 +380,17 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 		}
 		else
 		{
-			$response.write(JSON.stringify($resultObj), "utf8", function ()
+			if ($resultObj)
+			{
+				$response.write(JSON.stringify($resultObj), "utf8", function ()
+				{
+					$response.end();
+				});
+			}
+			else
 			{
 				$response.end();
-			});
+			}
 		}
 	}
 }
