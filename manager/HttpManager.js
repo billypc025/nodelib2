@@ -11,7 +11,7 @@ var _module = require("../module/module");
 var Manager = require("./Manager");
 var cookie = require("node-cookie");
 var nodeLibTool = require("../module/nodelib-tool");
-var _local = require("../utils/localHost");
+var _local = require("../utils/localhost");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
