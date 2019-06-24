@@ -11,6 +11,7 @@ var _module = require("../module/module");
 var Manager = require("./Manager");
 var cookie = require("node-cookie");
 var nodeLibTool = require("../module/nodelib-tool");
+var _local = require("../utils/localHost");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
@@ -168,6 +169,7 @@ module.exports = class extends Manager {
 						if (request.method && doMethod[request.method])
 						{
 							request.webParam = this.webParam;
+							request.ip = _local.getLocalIp(request);
 							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
 						}
 					}
@@ -344,7 +346,6 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 	}
 
 	$response.writeHead($status, header);
-
 	if ($responseType == "download")
 	{
 //		$resultObj.on("data", (chunk) =>
