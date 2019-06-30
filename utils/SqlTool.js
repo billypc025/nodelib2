@@ -317,7 +317,14 @@ function column($columnList)
 		columnName = trim(columnName);
 		if (columnName.indexOf("(") < 0 && columnName.indexOf(" ") < 0)
 		{
-			str += "`" + columnName + "`";
+			if (columnName != "*")
+			{
+				str += "`" + columnName + "`";
+			}
+			else
+			{
+				str += "*";
+			}
 		}
 		else
 		{
