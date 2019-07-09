@@ -100,7 +100,7 @@ function select($formName, $columns, $where, $groupBy, $order, $page, $pageSize)
 			var cols = [];
 			if ($where)
 			{
-				Object.keys($where);
+				cols = Object.keys($where);
 			}
 			if (cols.length == 1 && cols[0] == "groupBy")
 			{
@@ -252,7 +252,7 @@ function count($formName, $columaName, $where)
 {
 	$columaName = "`" + $columaName + "`";
 	var sqlStr = join("select", "count(*) as", $columaName, "from", form($formName))
-	if ($where)
+	if ($where && Object.keys($where) > 0)
 	{
 		sqlStr = join(sqlStr, "where", where($where));
 	}
