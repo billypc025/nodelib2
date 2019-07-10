@@ -252,7 +252,7 @@ function count($formName, $columaName, $where)
 {
 	$columaName = "`" + $columaName + "`";
 	var sqlStr = join("select", "count(*) as", $columaName, "from", form($formName))
-	if ($where && Object.keys($where) > 0)
+	if ($where && Object.keys($where).length > 0)
 	{
 		sqlStr = join(sqlStr, "where", where($where));
 	}
