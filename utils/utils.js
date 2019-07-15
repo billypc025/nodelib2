@@ -74,11 +74,11 @@ function random2Num()
 {
 	if (arguments.length > 1)
 	{
-		return arguments[int(Math.random() * arg.length)];
+		return arguments[int(Math.random() * arguments.length)];
 	}
 	else if (isArray(arg[0]))
 	{
-		return arguments[0][int(Math.random() * arg[0].length)];
+		return arguments[0][int(Math.random() * arguments[0].length)];
 	}
 	else
 	{
