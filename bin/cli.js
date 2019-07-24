@@ -164,8 +164,9 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 
 if (!globalCmd.exe.apply(globalCmd.exe, getArgs()))
 {
-	if (process.argv[1] && (process.argv[1].indexOf("cli.js") == process.argv[1].length - 6 ||
-		process.argv[1].indexOf("nodecli") == process.argv[1].length - 7))
+	if (process.argv[1] &&
+		(process.argv[1].indexOf("cli.js") == process.argv[1].length - 6
+		|| process.argv[1].indexOf("nodecli") == process.argv[1].length - 7))
 	{
 		showUsage();
 		process.exit();

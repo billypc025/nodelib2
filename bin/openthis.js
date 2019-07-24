@@ -5,8 +5,8 @@
 var open = require('opener');
 var localHost = require("../utils/localhost");
 require("../global");
-const handler = require('serve-handler');
-const http = require('http');
+const handler = require("serve-handler");
+const http = require("http");
 
 var localIp = localHost.getLocalIp();
 var serverPort = getArgs(0, null) || 50000;

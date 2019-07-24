@@ -12,6 +12,7 @@ var Manager = require("./Manager");
 var cookie = require("node-cookie");
 var nodeLibTool = require("../module/nodelib-tool");
 var _local = require("../utils/localhost");
+var _timeTool = require("../utils/TimeTool");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
@@ -196,6 +197,7 @@ module.exports = class extends Manager {
 						var func = this.getFunc(paramObj.pathname);
 						if (request.method && doMethod[request.method])
 						{
+							log.success(paramObj.pathname + ": " + _timeTool.getFullDate(0, true));
 							request.webParam = this.webParam;
 							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
 						}
