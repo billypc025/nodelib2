@@ -1,7 +1,7 @@
 /**
  * Created by billy on 2017/8/24.
  */
-var ManagerData = require("./item/MangerData");
+var ManagerData = require("./item/ManagerData");
 
 var _hash = {};
 var _nameList = [];
