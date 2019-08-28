@@ -29,4 +29,5 @@ exports.getWhere = getWhere;
 exports.getSql = getSql;
 global.sql = sql;
 
+global.co = require("co");
 global.g = exports;
