@@ -17,10 +17,10 @@ function testPort()
 {
 	localHost.portIsFree(serverPort, function ()
 	{
-
 		const server = http.createServer((request, response) =>
 		{
 			return handler(request, response, {
+				cleanUrls: false,
 				"unlisted": [
 					"/node_modules",
 					".gitignore",

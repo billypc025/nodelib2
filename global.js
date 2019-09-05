@@ -12,6 +12,7 @@ exports.data = require("./data/DataPool");  //数据池
 
 exports.mark = require("./utils/mark"); //markdown工具
 exports.localHost = require("./utils/localhost"); //本地网络模块
+exports.time = require("./utils/TimeTool"); //时间模块
 
 //加密,解密
 exports.md5 = require("md5");
