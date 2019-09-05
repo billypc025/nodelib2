@@ -32,7 +32,7 @@ module.exports = function ($routerName)
 		process.exit();
 	}
 
-	global.libPath = g.path.resolve(__dirname);
+	global.libPath = g.path.resolve(__dirname, "../");
 	global.projPath = projPath;
 	global.__libdir = libPath;   //nodeLib库路径
 	global.__projdir = projPath; //项目目录路径

@@ -1,26 +1,111 @@
 /**
  * Created by billy on 2017/9/7.
  */
-module.exports = function ()
+function actionPool()
 {
-	return (function (func)
+	return (function ()
 	{
 		var hash = {};
+		var childActionHash = {};
 
 		/**
 		 * 新增一个方法到方法池
-		 * @param funcName 方法名
-		 * @param func 方法实体
+		 * @param $funcName 方法名
+		 * @param $func 方法实体
+		 * @param $actionPool 子命令池
 		 */
-		function add(funcName, func)
+		function add($funcName, $func, $childFuncs)
 		{
-			if (typeof funcName == "function")
+			var funcName = $funcName;
+			var func = $func;
+			var childFuncs = $childFuncs;
+			if (typeof $funcName == "function")
 			{
-				func = funcName;
+				func = $funcName;
 				funcName = func.name;
+
+				if ($func && typeof $func == "object")
+				{
+					childFuncs = $func;
+				}
 			}
 
-			hash[funcName] = func;
+//			if (func && typeof func == "function")
+			if (!hash[funcName])
+			{
+				//禁止覆盖已有的方法
+				hash[funcName] = func;
+			}
+
+			if (childFuncs)
+			{
+				var childAction;
+				if (childActionHash[funcName])
+				{
+					childAction = childActionHash[funcName];
+				}
+				else
+				{
+					childAction = actionPool();
+					childActionHash[funcName] = childAction;
+				}
+				childAction.adds(childFuncs);
+			}
+		}
+
+		function adds($actions)
+		{
+			if (arguments.length > 1 || Array.isArray($actions))
+			{
+				var list;
+				if (arguments.length > 1)
+				{
+					//入参是...arg
+					//示例: adds(init,open,add,update);
+					list = arguments;
+				}
+				else
+				{
+					//入参是数组
+					//示例: adds([init,open,add,update]);
+					list = $actions;
+				}
+
+				for (var i = 0; i < list.length; i++)
+				{
+					var actionItem = list[i];
+					if (Array.isArray(actionItem))
+					{
+						add.apply(add, actionItem);
+					}
+					else
+					{
+						add(actionItem);
+					}
+				}
+			}
+			else if (typeof $actions == "object")
+			{
+				//入参是键值对
+				//示例: adds({init:init,open:open});
+				for (var actionName in $actions)
+				{
+					var actionItem = $actions[actionName];
+					if (Array.isArray(actionItem))
+					{
+						actionItem.unshift(actionName);
+						add.apply(add, actionItem);
+					}
+					else
+					{
+						add(actionName, actionItem);
+					}
+				}
+			}
+			else
+			{
+				add($actions);
+			}
 		}
 
 		/**
@@ -36,6 +121,11 @@ module.exports = function ()
 				var func = hash[funcName];
 				if (func)
 				{
+					var childAction = childActionHash[funcName];
+					if (childAction)
+					{
+						arg.unshift(childAction);
+					}
 					func.apply(func, arg);
 					return true;
 				}
@@ -45,7 +135,10 @@ module.exports = function ()
 
 		return {
 			add: add,
+			adds: adds,
 			exe: exe
 		}
 	})();
 }
+
+module.exports = actionPool;

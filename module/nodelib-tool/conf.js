@@ -15,7 +15,7 @@ function init()
 {
 	var pathObj = g.path.parse(g.data.server.path);
 	_path = __projpath("./" + pathObj.name + ".conf");
-	let confTemplateStr = g.fs.readFileSync(__libpath("../admin/admin.conf")).toString();
+	let confTemplateStr = g.fs.readFileSync(__libpath("./admin/admin.conf")).toString();
 	_confTemplate = JSON.parse(confTemplateStr);
 	_keyList = Object.keys(_confTemplate);
 	if (!g.file.exists(_path))

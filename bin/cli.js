@@ -9,11 +9,12 @@ var timeTool = require("../utils/TimeTool");
 var exec = require("child_process").exec;
 
 var globalCmd = require("../utils/actionPool")();
-var addCmd = require("../utils/actionPool")();
+//var addCmd = require("../utils/actionPool")();
 
 var libPath = path.join(__dirname, "../");
 var currPath = path.resolve("./");
-var projPath = "";
+var projPath = currPath;
+var self = {globalCmd};
 
 var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 
@@ -34,9 +35,19 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 	}
 })();
 
-(function ()
+(function ($scope)
 {
-	global.getProjPath = function ($path)
+	global.__libPath = libPath;   //nodeLib库路径
+	global.__$libPath = function ($path = "")  //以nodeLib库目录为根节点，获取绝对路径
+	{
+		if ($path.indexOf(libPath) < 0)
+		{
+			return path.join(libPath, $path);
+		}
+		return $path;
+	}
+	global.__projPath = projPath; //项目目录路径
+	global.__$projPath = function ($path = "")
 	{
 		if ($path.indexOf(projPath) < 0)
 		{
@@ -45,61 +56,66 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 		return $path;
 	}
 
-	global.getCliPath = function ($path)
+	global.__$projExist = function ($path)
 	{
-		if ($path.indexOf(libPath) < 0)
+		return fs.existsSync(__$projPath($path));
+	}
+
+	global.__$copy = function ($sourcePath, $targetPath)
+	{
+		if (!fs.existsSync($sourcePath))
 		{
-			return path.join(libPath, $path);
+			return;
 		}
-		return $path;
-	}
 
-	global.projExist = function ($path)
-	{
-		return fs.existsSync(getProjPath($path));
-	}
-
-	global.copyFile = function ($libPath, $projPath)
-	{
-		var sourcePath = getCliPath($libPath);
-		var targetPath = getProjPath($projPath);
-		if (g.file.isDirectory(sourcePath))
+		if (g.file.isDirectory($sourcePath))
 		{
-			var list = g.file.getDirectoryListing(sourcePath);
+			var list = g.file.getDirectoryListing($sourcePath);
 			for (var i = 0; i < list.length; i++)
 			{
-				var temppath = g.path.resolve(list[i]).replace(sourcePath, "");
-				copyFile(sourcePath + temppath, targetPath + temppath);
+				var temppath = g.path.resolve(list[i]).replace($sourcePath, "");
+				__$copy_lib2proj($sourcePath + temppath, $targetPath + temppath);
 			}
 		}
 		else
 		{
-			cp('-Rf', sourcePath, targetPath);
+			cp('-Rf', $sourcePath, $targetPath);
 		}
 	}
 
-	global.writeFile = function ($path, $data)
+	global.__$copy_lib2proj = function ($libPath, $projPath)
 	{
-		g.fs.writeFileSync(getProjPath($path), $data);
+		var sourcePath = __$libPath($libPath);
+		var targetPath = __$projPath($projPath);
+		__$copy(sourcePath, targetPath);
 	}
 
-	global.getCliFile = function ($path)
+	global.__$writeFile = function ($path, $data)
 	{
-		return fs.readFileSync(getCliPath($path)).toString();
+		g.fs.writeFileSync(__$projPath($path), $data);
 	}
 
-	global.getProjFile = function ($path)
+	global.__$readLibFile = function ($path)
 	{
-		return fs.readFileSync(getProjPath($path)).toString();
+		return fs.readFileSync(__$libPath($path)).toString();
 	}
 
-	global.showUsage = function ()
+	global.__$readProjFile = function ($path)
 	{
-		var usage = getCliFile("./bin/cli-template/cli-usage");
+		return fs.readFileSync(__$projPath($path)).toString();
+	}
+	global.__$exit = function ($code)
+	{
+		process.exit($code);
+	}
+
+	$scope.showUsage = function ()
+	{
+		var usage = __$readLibFile("./bin/cli-template/cli-usage");
 		log.info(usage);
 	}
 
-	global.showSelectList = function ($selectList, $callBack)
+	$scope.showSelectList = function ($selectList, $callBack)
 	{
 		var inquirer = require('inquirer');
 		var selectOption = {
@@ -117,7 +133,7 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 		});
 	}
 
-	global.checkInit = function ()
+	$scope.checkInit = function ()
 	{
 		if (projPath == "")
 		{
@@ -127,7 +143,7 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 		}
 	}
 
-	global.showMsg = function ($msg, $callBack)
+	$scope.showMsg = function ($msg, $callBack)
 	{
 		var inquirer = require('inquirer');
 		var question = {
@@ -141,26 +157,51 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 			$callBack($answer.value);
 		});
 	}
-})();
+})(self);
 
 (function ()
 {
-	globalCmd.add(init);
-	globalCmd.add(add);
-	globalCmd.add(update);
-	globalCmd.add(open);
-	globalCmd.add(start);
+	globalCmd.adds(init, update, open, start, run);
+	globalCmd.add(add, {
+		router: addRouter,
+		server: addServer,
+		module: addModule,
+		test: addTest,
+		bin: addBin,
+	});
+//	globalCmd.add(update);
+//	globalCmd.add(open);
+//	globalCmd.add(start);
+//	globalCmd.add(run);
 	globalCmd.log = function (...arg)
 	{
 		arg.unshift("[nodecli]")
 		global.log.info(arg.join(" "));
 	}
-	addCmd.add("router", addRouter);
-	addCmd.add("server", addServer);
-	addCmd.add("module", addModule);
-	addCmd.add("test", addTest);
-	addCmd.add("bin", addBin);
-})()
+//	addCmd.add("router", addRouter);
+//	addCmd.add("server", addServer);
+//	addCmd.add("module", addModule);
+//	addCmd.add("test", addTest);
+//	addCmd.add("bin", addBin);
+})();
+
+(function ()
+{
+	if (__$projExist("nodelib.config.js"))
+	{
+		var configJs = require(__$projPath("nodelib.config.js"));
+		if (configJs.plugins && Array.isArray(configJs.plugins))
+		{
+			for (var plugin of configJs.plugins)
+			{
+				if (typeof plugin == "object" && typeof plugin.apply == "function")
+				{
+					plugin.apply(self);
+				}
+			}
+		}
+	}
+}());
 
 if (!globalCmd.exe.apply(globalCmd.exe, getArgs()))
 {
@@ -168,7 +209,7 @@ if (!globalCmd.exe.apply(globalCmd.exe, getArgs()))
 		(process.argv[1].indexOf("cli.js") == process.argv[1].length - 6
 		|| process.argv[1].indexOf("nodecli") == process.argv[1].length - 7))
 	{
-		showUsage();
+		self.showUsage();
 		process.exit();
 	}
 }
@@ -178,24 +219,24 @@ function init()
 	var dirList = ["log", "module", "router", "node_modules"];
 	globalCmd.log("Init Project Start");
 
-	if (!projExist("./package.json"))
+	if (!__$projExist("./package.json"))
 	{
-		copyFile("./bin/cli-template/package.json", "./package.json");
-		trace("Create File: " + getProjPath("./package.json"));
+		__$copy_lib2proj("./bin/cli-template/package.json", "./package.json");
+		trace("Create File: " + __$projPath("./package.json"));
 	}
 
-	if (!projExist("./.gitignore"))
+	if (!__$projExist("./.gitignore"))
 	{
-		copyFile("./.gitignore", "./.gitignore");
-		trace("Create File: " + getProjPath("./.gitignore"));
+		__$copy_lib2proj("./.gitignore", "./.gitignore");
+		trace("Create File: " + __$projPath("./.gitignore"));
 	}
 
 	for (var i = 0; i < dirList.length; i++)
 	{
 		var dirName = dirList[i];
-		if (!projExist(dirName))
+		if (!__$projExist(dirName))
 		{
-			g.fs.mkdirSync(getProjPath(dirName));
+			g.fs.mkdirSync(__$projPath(dirName));
 			trace("Create Directory: " + dirName);
 		}
 	}
@@ -206,20 +247,20 @@ function init()
 	process.exit();
 }
 
-function add(...arg)
+function add($cmd, ...arg)
 {
-	checkInit();
+	self.checkInit();
 
-	if (!addCmd.exe.apply(addCmd.exe, arg))
+	if (!$cmd.exe.apply($cmd.exe, arg))
 	{
-		showUsage();
+//		self.showUsage();
 		process.exit();
 	}
 }
 
 function update()
 {
-//	checkInit();
+//	self.checkInit();
 
 	exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " checkout .", function (e, d)
 	{
@@ -261,7 +302,7 @@ function update()
 							fileContent = editInfo + "\n" + fileContent;
 						}
 						trace("转换bin文件：" + file);
-						fs.writeFileSync(file, fileContent);
+						__$writeFile(file, fileContent);
 					}
 				}
 			}
@@ -281,7 +322,7 @@ function update()
 function updateFile()
 {
 	var fileList = fs.readFileSync(path.join(__dirname, "./cli-template/fileList")).toString();
-	var fileList = getCliFile("./bin/cli-template/fileList");
+	var fileList = __$readLibFile("./bin/cli-template/fileList");
 	fileList = fileList.replace(/\r\n/g, "\n");
 	fileList = fileList.replace(/\r/g, "");
 	fileList = fileList.replace(/\n/g, ",");
@@ -289,20 +330,20 @@ function updateFile()
 
 	for (var i = 0; i < fileList.length; i++)
 	{
-		var targetFilePath = getProjPath(fileList[i]);
+		var targetFilePath = __$projPath(fileList[i]);
 		var pathObj = g.path.parse(targetFilePath);
 		var targetDir = pathObj.dir;
 		if (pathObj.ext == "")
 		{
 			targetDir += "\\" + pathObj.base;
 		}
-		if (!projExist(targetDir))
+		if (!__$projExist(targetDir))
 		{
 			g.file.createDirectory(targetDir);
 		}
 
-		copyFile(fileList[i], fileList[i]);
-		trace("Copy File: " + getProjPath(fileList[i]));
+		__$copy_lib2proj(fileList[i], fileList[i]);
+		trace("Copy File: " + __$projPath(fileList[i]));
 	}
 }
 
@@ -316,11 +357,34 @@ function open()
 
 function start($routerName)
 {
-	checkInit();
+	self.checkInit();
 	require("./server")($routerName);
 }
 
-exports.start = start;
+function run(...arg)
+{
+	var cmd = arg[0];
+	if (cmd && typeof cmd == "object" && cmd.exe && typeof cmd.exe == "function")
+	{
+		if (!cmd.exe.apply(cmd.exe, arg))
+		{
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	var runFunc = require("./run");
+	if (arg.length > 0)
+	{
+		runFunc.apply(runFunc, arg);
+	}
+	else
+	{
+		__$exit();
+	}
+}
 
 function addRouter($routerName, $serverType)
 {
@@ -331,7 +395,7 @@ function addRouter($routerName, $serverType)
 			$routerName = $routerName.replace(".json", "");
 		}
 
-		var routerList = g.file.getDirectoryListing(getProjPath("./router"));
+		var routerList = g.file.getDirectoryListing(__$projPath("./router"));
 		routerList = routerList.map(function (v)
 		{
 			return g.file.getFileName(v);
@@ -340,8 +404,8 @@ function addRouter($routerName, $serverType)
 		if (routerList.indexOf($routerName) < 0)
 		{
 			globalCmd.log("Add Router:", $routerName);
-			copyFile("./bin/cli-template/router.json", "./router/" + $routerName + ".json");
-			trace("Create File:" + getProjPath("./router/" + $routerName + ".json"));
+			__$copy_lib2proj("./bin/cli-template/router.json", "./router/" + $routerName + ".json");
+			trace("Create File:" + __$projPath("./router/" + $routerName + ".json"));
 			globalCmd.log("Router File Created.");
 		}
 		else
@@ -375,7 +439,7 @@ function addServer($routerName, $serverType)
 
 	if (!$routerName)
 	{
-		var routerList = g.file.getDirectoryListing(getProjPath("./router"));
+		var routerList = g.file.getDirectoryListing(__$projPath("./router"));
 		routerList = routerList.map(function (v)
 		{
 			return g.file.getFileName(v);
@@ -387,8 +451,8 @@ function addServer($routerName, $serverType)
 		}
 		else if (routerList.length > 1)
 		{
-			var routerFileList = g.file.getDirectoryListing(getProjPath("./router"));
-			showSelectList(routerFileList, function ($select)
+			var routerFileList = g.file.getDirectoryListing(__$projPath("./router"));
+			self.showSelectList(routerFileList, function ($select)
 			{
 				var routerName = g.file.getFileName($select.value);
 				toAdd(routerName, $serverType);
@@ -415,9 +479,9 @@ function addServer($routerName, $serverType)
 		routerName = g.file.getFileName(routerName);
 
 		routerName = "./router/" + routerName + ".json";
-		if (projExist(routerName))
+		if (__$projExist(routerName))
 		{
-			var routerTemplatePath = getCliPath("./bin/cli-template/router");
+			var routerTemplatePath = __$libPath("./bin/cli-template/router");
 			var serverFileList = g.file.getDirectoryListing(routerTemplatePath);
 			var serverTypeList = serverFileList.map(function (v)
 			{
@@ -430,7 +494,7 @@ function addServer($routerName, $serverType)
 			}
 			else
 			{
-				showSelectList(serverTypeList, function ($select)
+				self.showSelectList(serverTypeList, function ($select)
 				{
 					toCreate(routerName, $select.value);
 				})
@@ -445,17 +509,17 @@ function addServer($routerName, $serverType)
 
 	function toCreate(routerName, serverType)
 	{
-		var routerObj = require(getProjPath(routerName));
+		var routerObj = require(__$projPath(routerName));
 		var serverObj = require("./cli-template/router/" + serverType + ".json");
 		routerObj.info.push(serverObj);
-		writeFile(routerName, JSON.stringify(routerObj, null, 2));
+		__$writeFile(routerName, JSON.stringify(routerObj, null, 2));
 		globalCmd.log("Server Type Added: " + serverType);
 
-		var testFilePath = getCliPath("./bin/cli-template/test.js");
-		if (!projExist("./module/template.js"))
+		var testFilePath = __$libPath("./bin/cli-template/test.js");
+		if (!__$projExist("./module/template.js"))
 		{
-			copyFile("./bin/cli-template/test.js", "./module/template.js");
-			trace("Create File:" + getProjPath("./module/template.js"));
+			__$copy_lib2proj("./bin/cli-template/test.js", "./module/template.js");
+			trace("Create File:" + __$projPath("./module/template.js"));
 		}
 		process.exit();
 	}
@@ -470,7 +534,7 @@ function addModule($moduleName)
 
 	if (!$moduleName)
 	{
-		showMsg("please input a name for module file：", function ($input)
+		self.showMsg("please input a name for module file：", function ($input)
 		{
 			$moduleName = $input;
 			checkName();
@@ -493,9 +557,9 @@ function addModule($moduleName)
 			$moduleName += ".js";
 		}
 
-		if (projExist("./module/" + $moduleName))
+		if (__$projExist("./module/" + $moduleName))
 		{
-			log.warn("Module is Existd: " + getProjPath("./module/" + $moduleName));
+			log.warn("Module is Existd: " + __$projPath("./module/" + $moduleName));
 			process.exit();
 		}
 
@@ -504,8 +568,8 @@ function addModule($moduleName)
 
 	function addModuleByName()
 	{
-		copyFile("./bin/cli-template/module-template.js", "./module/" + $moduleName);
-		trace("Create File:" + getProjPath("./module/" + $moduleName));
+		__$copy_lib2proj("./bin/cli-template/module-template.js", "./module/" + $moduleName);
+		trace("Create File:" + __$projPath("./module/" + $moduleName));
 		process.exit();
 	}
 }
@@ -519,7 +583,7 @@ function addTest($testDir)
 
 	if (!$testDir)
 	{
-		showMsg("please input a name for test directory：", function ($input)
+		self.showMsg("please input a name for test directory：", function ($input)
 		{
 			$testDir = $input;
 			checkName();
@@ -537,9 +601,9 @@ function addTest($testDir)
 			process.exit();
 		}
 
-		if (projExist("./module/" + $testDir))
+		if (__$projExist("./module/" + $testDir))
 		{
-			log.warn("Module is Existd: " + getProjPath("./module/" + $testDir));
+			log.warn("Module is Existd: " + __$projPath("./module/" + $testDir));
 			process.exit();
 		}
 
@@ -548,8 +612,8 @@ function addTest($testDir)
 
 	function addTestByName()
 	{
-		copyFile("./bin/cli-template/test-template", "./module/" + $testDir);
-		trace("Create Directory:" + getProjPath("./module/" + $testDir));
+		__$copy_lib2proj("./bin/cli-template/test-template", "./module/" + $testDir);
+		trace("Create Directory:" + __$projPath("./module/" + $testDir));
 		process.exit();
 	}
 }
@@ -563,7 +627,7 @@ function addBin($binName)
 
 	if (!$binName)
 	{
-		showMsg("please input a name for bin file：", function ($input)
+		self.showMsg("please input a name for bin file：", function ($input)
 		{
 			$binName = $input;
 			checkName();
@@ -585,7 +649,7 @@ function addBin($binName)
 
 	function addBinByName()
 	{
-		var packageObj = require(getProjPath("./package.json"));
+		var packageObj = require(__$projPath("./package.json"));
 
 		if (!packageObj.bin)
 		{
@@ -595,14 +659,14 @@ function addBin($binName)
 		{
 			packageObj.bin[$binName] = "./bin/" + $binName + ".js";
 
-			if (!projExist("./bin/"))
+			if (!__$projExist("./bin/"))
 			{
-				g.file.createDirectory(getProjPath("./bin/"));
+				g.file.createDirectory(__$projPath("./bin/"));
 			}
 
-			copyFile("./bin/cli-template/bin-template.js", "./bin/" + $binName + ".js");
-			writeFile("./package.json", JSON.stringify(packageObj, null, "\t"));
-			trace("Create File: " + getProjPath("./bin/" + $binName + ".js"));
+			__$copy_lib2proj("./bin/cli-template/bin-template.js", "./bin/" + $binName + ".js");
+			__$writeFile("./package.json", JSON.stringify(packageObj, null, "\t"));
+			trace("Create File: " + __$projPath("./bin/" + $binName + ".js"));
 			process.exit();
 		}
 		else
