@@ -514,7 +514,7 @@ function where($where, $obj)
 				var hasCheck = false;
 				for (var checkStr in _whereCheckHash)
 				{
-					if (param.indexOf(checkStr) == 0)
+					if (param == checkStr)
 					{
 						hasCheck = true;
 						break;
