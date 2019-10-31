@@ -22,6 +22,10 @@ var _whereCheckHash = {
 	"[": ">=",
 	"]": "<=",
 }
+var _whereCheckList = ["in ", "between ", "like ",
+	"=", "!=",
+	">", ">=",
+	"<", "<="]
 
 /**
  * 生成查询sql语句
@@ -512,9 +516,9 @@ function where($where, $obj)
 			else if (typeof param == "string")
 			{
 				var hasCheck = false;
-				for (var checkStr in _whereCheckHash)
+				for (var checkStr of _whereCheckList)
 				{
-					if (param == checkStr)
+					if (param.indexOf(checkStr) == 0)
 					{
 						hasCheck = true;
 						break;
