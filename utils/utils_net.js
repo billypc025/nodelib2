@@ -65,7 +65,7 @@ global.$.get = function ($param, $data)
 	return doRequest(url, data, "get", headers);
 }
 
-global.$.post = function ($param, ...arg)
+global.$.post = function ($param, $data)
 {
 	var url, data, headers;
 	if (typeof $param == "object")
