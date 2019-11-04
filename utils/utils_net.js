@@ -196,7 +196,7 @@ function callGet($req, $url, $data, $headers)
 	{
 		for (var k in $data)
 		{
-			$url.searchParams.set(k, data[k]);
+			$url.searchParams.set(k, $data[k]);
 		}
 		$req.get($url.href, {headers: $headers}, (req, res) =>
 		{
