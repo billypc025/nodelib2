@@ -15,14 +15,14 @@ var _methodHash = {
 
 var _cookiePool = {};
 
-global.$.call = function ($param, ...arg)
+global.$.request = function ($param, ...arg)
 {
-	var url = "", data = {}, method = "get", headers;
+	var url, data, method, headers;
 	if (typeof $param == "object")
 	{
 		url = $param.url;
-		data = $param.url || data;
-		method = $param.method || method;
+		data = $param.data;
+		method = $param.method;
 		headers = $param.headers;
 	}
 	else if (typeof $param == "string")
@@ -32,17 +32,71 @@ global.$.call = function ($param, ...arg)
 		{
 			if (typeof arg[0] == "object")
 			{
-				data = arg[0] || data;
-				method = arg[1] || method;
+				data = arg[0];
+				method = arg[1];
 			}
 			else
 			{
-				method = arg[0] || method;
+				method = arg[0];
 			}
 		}
 	}
 
+	return doRequest(url, data, method, headers);
+}
+
+global.$.get = function ($param, $data)
+{
+	var url, data, headers;
+	if (typeof $param == "object")
+	{
+		url = $param.url;
+		data = $param.data;
+		headers = $param.headers;
+	}
+	else if (typeof $param == "string")
+	{
+		url = $param;
+		if ($data && typeof $data == "object")
+		{
+			data = $data;
+		}
+	}
+	return doRequest(url, data, "get", headers);
+}
+
+global.$.post = function ($param, ...arg)
+{
+	var url, data, headers;
+	if (typeof $param == "object")
+	{
+		url = $param.url;
+		data = $param.data;
+		headers = $param.headers;
+	}
+	else if (typeof $param == "string")
+	{
+		url = $param;
+		if ($data && typeof $data == "object")
+		{
+			data = $data;
+		}
+	}
+	return doRequest(url, data, "post", headers);
+}
+
+function doRequest($url, $data, $method, $headers)
+{
+	var url = $url, data = $data, method = $method, headers = $headers;
+
+	method = method || "get";
+	data = data || {};
 	headers = headers || {"Content-Type": "application/json"};
+
+	if (!url || typeof url != "string")
+	{
+		return;
+	}
 
 	if (!_methodHash[method])
 	{
