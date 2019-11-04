@@ -2,6 +2,8 @@
  * Created by billy on 2017/2/20.
  */
 require("./utils/utils");
+require("./utils/utils_instance");
+require("./utils/utils_net");
 
 global.log = require("./utils/log"); //控制台输出
 exports.readline = require('./utils/readLine'); //输入流
