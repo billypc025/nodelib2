@@ -162,11 +162,11 @@ function callPost($req, $url, $data, $headers)
 				}
 
 				var returnData = "";
-				req.on('data', (data) =>
+				req.on("data", (data) =>
 				{
 					returnData += data;
 				});
-				req.on('end', () =>
+				req.on("end", () =>
 				{
 					try
 					{
@@ -179,6 +179,10 @@ function callPost($req, $url, $data, $headers)
 				});
 			}
 		);
+		_req.on("error", (e) =>
+		{
+			reject(e);
+		});
 
 		if (Object.keys($data).length > 0)
 		{
@@ -198,7 +202,7 @@ function callGet($req, $url, $data, $headers)
 		{
 			$url.searchParams.set(k, $data[k]);
 		}
-		$req.get($url.href, {headers: $headers}, (req, res) =>
+		var _req = $req.get($url.href, {headers: $headers}, (req, res) =>
 		{
 			for (var k in req.headers)
 			{
@@ -210,11 +214,11 @@ function callGet($req, $url, $data, $headers)
 			}
 
 			var returnData = "";
-			req.on('data', (data) =>
+			req.on("data", (data) =>
 			{
 				returnData += data;
 			});
-			req.on('end', () =>
+			req.on("end", () =>
 			{
 				try
 				{
@@ -225,11 +229,11 @@ function callGet($req, $url, $data, $headers)
 				}
 				resolved(returnData);
 			});
-			req.on('error', (d) =>
-			{
-				reject(d)
-			})
 		});
+		_req.on("error", (e) =>
+		{
+			reject(e);
+		})
 	})
 
 	return promise;
