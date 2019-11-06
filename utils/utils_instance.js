@@ -36,3 +36,40 @@ function $($id)
 	return null;
 }
 global.$ = $;
+
+/**
+ * 创建一个promise
+ * @param $callback 回调数组/回调方法
+ * @return {*}
+ * @private
+ */
+function _promise($callback)
+{
+	if (Array.isArray($callback))
+	{
+		return Promise.all($callback);
+	}
+	return new Promise($callback);
+}
+global._promise = _promise;
+
+/**
+ * 创建一个co
+ * @param $callback 回调数组/回调方法
+ * @return {*}
+ * @private
+ */
+function _co($callback)
+{
+	co(function*()
+	{
+	}).catch(()=>
+	{
+	})
+	if (Array.isArray($callback))
+	{
+		return Promise.all($callback);
+	}
+	return new Promise($callback);
+}
+global._promise = _promise;

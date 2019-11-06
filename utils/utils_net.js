@@ -133,7 +133,7 @@ function callPost($req, $url, $data, $headers)
 	{
 		var netObj = {
 			host: $url.hostname,
-			path: $url.pathname,
+			path: $url.pathname + $url.search,
 			method: "POST",
 			headers: $headers
 		}
@@ -184,9 +184,20 @@ function callPost($req, $url, $data, $headers)
 			reject(e);
 		});
 
-		if (Object.keys($data).length > 0)
+		if (typeof $data == "object")
 		{
-			_req.write(JSON.stringify($data));
+			if (Object.keys($data).length > 0)
+			{
+				_req.write(JSON.stringify($data));
+			}
+		}
+		else
+		{
+			$data += "";
+			if ($data.length > 0)
+			{
+				_req.write($data);
+			}
 		}
 		_req.end();
 	})
@@ -202,6 +213,8 @@ function callGet($req, $url, $data, $headers)
 		{
 			$url.searchParams.set(k, $data[k]);
 		}
+//		trace($url.href)
+//		trace($headers)
 		var _req = $req.get($url.href, {headers: $headers}, (req, res) =>
 		{
 			for (var k in req.headers)
@@ -232,6 +245,7 @@ function callGet($req, $url, $data, $headers)
 		});
 		_req.on("error", (e) =>
 		{
+			trace(e)
 			reject(e);
 		})
 	})

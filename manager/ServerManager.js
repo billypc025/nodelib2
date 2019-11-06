@@ -51,6 +51,7 @@ function initRouter($router)
 
 function initData()
 {
+	global.__router = _routerObj;
 	g.data.server.init(_routerObj);
 	g.data.manager.init(_routerObj.info);
 }
