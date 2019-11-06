@@ -11,6 +11,10 @@ var _instanceHash = {};
  */
 function _($def, $options, $id)
 {
+	if (typeof $def != "function")
+	{
+		return $def;
+	}
 	var obj = new $def($options);
 	if ($id)
 	{

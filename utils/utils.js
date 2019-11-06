@@ -711,3 +711,67 @@ function getClientIp($request)
 	return "";
 }
 global.getClientIp = getClientIp;
+
+/**
+ * 根据规则深度克隆对象
+ * @param $data 待克隆对象
+ * @param $cols 可复制的字段
+ * @private
+ */
+function __clone($data, $cols)
+{
+	var obj = __merge({}, $data);
+	if (!$cols)
+	{
+		return obj;
+	}
+
+	if (!Array.isArray($cols) && typeof $cols == "object")
+	{
+		$cols = Object.keys($cols);
+	}
+	if (Array.isArray($cols) && $cols.length > 0)
+	{
+		for (var k in obj)
+		{
+			if ($cols.indexOf(k) < 0)
+			{
+				delete obj[k];
+			}
+		}
+	}
+	return obj;
+}
+global.__clone = __clone;
+
+/**
+ * 根据规则深度克隆对象
+ * @param $data 待克隆对象
+ * @param $cols 需要过滤的子弹
+ * @private
+ */
+function __cloneFilte($data, $cols)
+{
+	var obj = __merge({}, $data);
+	if (!$cols)
+	{
+		return obj;
+	}
+
+	if (!Array.isArray($cols) && typeof $cols == "object")
+	{
+		$cols = Object.keys($cols);
+	}
+	if (Array.isArray($cols) && $cols.length > 0)
+	{
+		for (var k in obj)
+		{
+			if ($cols.indexOf(k) >= 0)
+			{
+				delete obj[k];
+			}
+		}
+	}
+	return obj;
+}
+global.__cloneFilte = __cloneFilte;
