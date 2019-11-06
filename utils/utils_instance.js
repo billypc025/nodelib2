@@ -72,4 +72,4 @@ function _co($callback)
 	}
 	return new Promise($callback);
 }
-global._promise = _promise;
+global._co = _co;
