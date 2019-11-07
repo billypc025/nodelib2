@@ -57,6 +57,10 @@ function select($formName, $columns, $where, $groupBy, $order, $page, $pageSize)
 		for (var i = 2; i < arguments.length; i++)
 		{
 			var argObj = arguments[i];
+			if (!argObj)
+			{
+				break;
+			}
 			if (typeof argObj == "string")
 			{
 				columnObj.push(argObj);

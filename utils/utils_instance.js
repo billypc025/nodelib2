@@ -15,6 +15,11 @@ function _($def, $options, $id)
 	{
 		return $def;
 	}
+
+	if (!$def.prototype.constructor.name)
+	{
+		return $def;
+	}
 	var obj;
 	if (Array.isArray($options))
 	{
