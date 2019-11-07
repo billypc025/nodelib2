@@ -126,11 +126,11 @@ function saveLog($name, $log)
 			g.file.createDirectory(basePath);
 			if (!g.fs.existsSync(filePath))
 			{
-				g.fs.writeFile(filePath, $log);
+				g.fs.writeFile(filePath, $log,()=>{});
 			}
 			else
 			{
-				g.fs.appendFile(filePath, $log);
+				g.fs.appendFile(filePath, $log,()=>{});
 			}
 		}
 	}

@@ -245,7 +245,7 @@ function callGet($req, $url, $data, $headers)
 		});
 		_req.on("error", (e) =>
 		{
-			trace(e)
+//			trace(e)
 			reject(e);
 		})
 	})
