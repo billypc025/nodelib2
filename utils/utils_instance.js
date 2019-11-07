@@ -15,7 +15,15 @@ function _($def, $options, $id)
 	{
 		return $def;
 	}
-	var obj = new $def($options);
+	var obj;
+	if (Array.isArray($options))
+	{
+		obj = new $def($options[0], $options[1], $options[2], $options[3], $options[4], $options[5], $options[6], $options[7], $options[8], $options[9]);
+	}
+	else
+	{
+		obj = new $def($options);
+	}
 	if ($id)
 	{
 		_instanceHash[$id] = obj;
