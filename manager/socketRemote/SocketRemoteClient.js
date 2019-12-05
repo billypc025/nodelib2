@@ -2,6 +2,7 @@
  * Created by billy on 2019/12/4.
  */
 var io = require("socket.io-client");
+var _timeTool = require("../../utils/TimeTool");
 
 class SocketRemoteClient {
 	constructor($param, $httpManager)
@@ -28,6 +29,10 @@ class SocketRemoteClient {
 			var router = $data.router;
 			var pathName = $data.pathName;
 			var func = this.httpManager.getFunc(pathName);
+			if (func)
+			{
+				log.success(pathName + ": " + _timeTool.getFullDate(0, true));
+			}
 			doRequest(router, func, pathName, data, {headers: {cookie: ""}}, {}).then(($data)=>
 			{
 				var dataObj = {
