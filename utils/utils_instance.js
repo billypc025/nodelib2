@@ -90,3 +90,12 @@ function _co($callback)
 	return new Promise($callback);
 }
 global._co = _co;
+
+class GError extends Error {
+	constructor($data)
+	{
+		super("gError");
+		this.data = $data
+	}
+}
+global.GError = GError;

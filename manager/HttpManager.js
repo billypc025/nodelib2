@@ -13,6 +13,8 @@ var cookie = require("node-cookie");
 var nodeLibTool = require("../module/nodelib-tool");
 var _local = require("../utils/localhost");
 var _timeTool = require("../utils/TimeTool");
+var SocketRemoteServer = require("./socketRemote/SocketRemoteServer");
+var SocketRemoteClient = require("./socketRemote/SocketRemoteClient");
 var types = {
 	"css": "text/css",
 	"gif": "image/gif",
@@ -139,8 +141,25 @@ module.exports = class extends Manager {
 
 	start()
 	{
+		this.initSocketRemote();
 		this.initServer();
 		super.start();
+	}
+
+	initSocketRemote()
+	{
+		if (this.param.socketRemote)
+		{
+			if (this.param.socketRemote.type == "server")
+			{
+				//建立socket服务
+				this.socketRemoteServer = new SocketRemoteServer(this.param.socketRemote);
+			}
+			else if (this.param.socketRemote.type == "client")
+			{
+				this.socketRemoteClient = new SocketRemoteClient(this.param.socketRemote, this);
+			}
+		}
 	}
 
 	initServer()
@@ -171,7 +190,14 @@ module.exports = class extends Manager {
 						{
 							request.webParam = this.webParam;
 							request.ip = _local.getLocalIp(request);
-							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+							if (this.socketRemote && this.socketRemote.connected && request.method != "OPTIONS")
+							{
+								this.socketRemote.request(request.method, this.router, func, paramObj.pathname, request, response, this.header);
+							}
+							else
+							{
+								doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+							}
 						}
 					}
 				}
@@ -199,7 +225,15 @@ module.exports = class extends Manager {
 						{
 							log.success(paramObj.pathname + ": " + _timeTool.getFullDate(0, true));
 							request.webParam = this.webParam;
-							doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+							if (this.socketRemoteServer && this.socketRemoteServer.connected && request.method != "OPTIONS")
+							{
+								trace("to Socket remote client...");
+								this.socketRemoteServer.request(request.method, this.router, paramObj.pathname, request, response, this.header);
+							}
+							else
+							{
+								doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+							}
 						}
 					}
 				}
