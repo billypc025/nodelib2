@@ -117,7 +117,8 @@ module.exports = class {
 			user: this.user,
 			password: this.password,
 			connectTimeout: this.connectTimeout,
-			multipleStatements: this.multipleStatements
+			multipleStatements: this.multipleStatements,
+			charset: "utf8mb4"
 		}
 	}
 

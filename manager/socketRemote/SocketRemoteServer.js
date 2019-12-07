@@ -75,6 +75,7 @@ class SocketRemoteServer {
 			client.on("disconnect", () =>
 			{
 				this.connected = false;
+				this.client = null;
 				this.emiter.emit("disconnect");
 			});
 		});
