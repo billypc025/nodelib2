@@ -713,6 +713,7 @@ function getWhere_in($columnName, $value, $extValue)
  */
 function getWhere_between($columnName, $value)
 {
+	$value = $value + "";
 	var spllitIndex = $value.indexOf(",");
 	if (spllitIndex <= 0)
 	{
@@ -744,6 +745,7 @@ function getWhere_between($columnName, $value)
 
 function getWhere_like($columnName, $value)
 {
+	$value = $value + "";
 	if ($value.indexOf("%") < 0)
 	{
 		$value = "%" + $value + "%";
