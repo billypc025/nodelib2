@@ -700,7 +700,7 @@ function getWhere_in($columnName, $value, $extValue)
 
 	if (newValue)
 	{
-		return $columnName + "in (" + newValue + ")";
+		return $columnName + " in (" + newValue + ")";
 	}
 	return "";
 }
