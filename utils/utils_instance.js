@@ -13,11 +13,19 @@ function _($def, $options, $id)
 {
 	if (typeof $def != "function")
 	{
+		if ($id)
+		{
+			_instanceHash[$id] = $def;
+		}
 		return $def;
 	}
 
 	if (!$def.prototype.constructor.name)
 	{
+		if ($id)
+		{
+			_instanceHash[$id] = $def;
+		}
 		return $def;
 	}
 	var obj;
