@@ -1,6 +1,6 @@
 {
   "name": "nodelib2",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "node library, support http, socket, mysql, redis, web server and sciprt tool",
   "main": "./global.js",
   "scripts": {

@@ -350,8 +350,11 @@ function column($columnList)
 				var char = columnName.substring(li, ri);
 				if (char != "*")
 				{
-					columnName = columnName.replace("(", "(`");
-					columnName = columnName.replace(")", "`)");
+					if (char.indexOf(",") < 0)
+					{
+						columnName = columnName.replace("(", "(`");
+						columnName = columnName.replace(")", "`)");
+					}
 				}
 			}
 			str += columnName;
@@ -375,9 +378,16 @@ function groupBy($groupByObj)
 		}
 		else
 		{
-			val = val.replace(/`/g, "");
-			val = val.replace(/,/g, "`,`");
-			return "`" + val + "`";
+			if (val.indexOf("(") < 0 && val.indexOf(")") < 0)
+			{
+				val = val.replace(/`/g, "");
+				val = val.replace(/,/g, "`,`");
+				return "`" + val + "`";
+			}
+			else
+			{
+				return val;
+			}
 		}
 	}
 	return "";
@@ -477,7 +487,15 @@ function where($where, $obj)
 		paramHash = $where;
 	}
 	var columnNameList = Object.keys(paramHash);
-	while (columnNameList.indexOf("_or_") == 0 || columnNameList.indexOf("_and_") == 0)
+	var hasColumn = false;
+	for (let columnName of columnNameList)
+	{
+		if (columnName != "_or_" && columnName != "_and_")
+		{
+			hasColumn = true;
+		}
+	}
+	while (hasColumn && (columnNameList.indexOf("_or_") == 0 || columnNameList.indexOf("_and_") == 0))
 	{
 		let columnName = columnNameList.shift();
 		columnNameList.push(columnName);
