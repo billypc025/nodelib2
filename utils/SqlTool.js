@@ -27,6 +27,25 @@ var _whereCheckList = ["in ", "between ", "like ",
 	">", ">=",
 	"<", "<="]
 
+class Expression {
+	constructor($option)
+	{
+		this.formName = $option.formName;
+		this.columns = $option.columns;
+		this.where = $option.where;
+		this.groupBy = $option.groupBy;
+		this.order = $option.order;
+		this.page = $option.page;
+		this.pageSize = $option.pageSize;
+		this.sql = $option.sql;
+	}
+
+	toString()
+	{
+		return this.sql
+	}
+}
+
 /**
  * 生成查询sql语句
  * @param $formName 表名 / 库名.表名
@@ -165,37 +184,48 @@ function select($formName, $columns, $where, $groupBy, $order, $page, $pageSize)
 		return "";
 	}
 
-	var sqlStr = join("select", column(columnObj), "from", form(formName));
+	var sqlStr = make("select", column(columnObj), "from", form(formName));
 	if (whereObj)
 	{
 		var whereStr = where(whereObj);
-		whereStr && (sqlStr = join(sqlStr, "where", whereStr));
+		whereStr && (sqlStr = make(sqlStr, "where", whereStr));
 	}
 	if (groupByObj)
 	{
 		var groupByStr = groupBy(groupByObj);
-		groupByStr && (sqlStr = join(sqlStr, "group by", groupByStr));
+		groupByStr && (sqlStr = make(sqlStr, "group by", groupByStr));
 	}
 	if (orderObj)
 	{
 		var orderStr = order(orderObj);
-		orderStr && (sqlStr = join(sqlStr, "order by", orderStr));
+		orderStr && (sqlStr = make(sqlStr, "order by", orderStr));
 	}
 	if (page)
 	{
 		if (pageSize)
 		{
 			var offset = (page - 1) * pageSize
-			sqlStr = join(sqlStr, "limit", offset) + "," + pageSize;
+			sqlStr = make(sqlStr, "limit", offset) + "," + pageSize;
 		}
 		else
 		{
-			sqlStr = join(sqlStr, "limit", page);
+			sqlStr = make(sqlStr, "limit", page);
 		}
 	}
 	sqlStr += ";";
 //	console.log(sqlStr);
-	return sqlStr;
+//	return sqlStr;
+
+	return new Expression({
+		formName: formName,
+		columns: columnObj,
+		where: whereObj,
+		groupBy: groupByObj,
+		order: orderObj,
+		page: page,
+		pageSize: pageSize,
+		sql: sqlStr
+	});
 }
 
 /**
@@ -208,7 +238,7 @@ function select($formName, $columns, $where, $groupBy, $order, $page, $pageSize)
  */
 function insert($formName, $obj)
 {
-	var sqlStr = join("insert into", form($formName), insertData($obj));
+	var sqlStr = make("insert into", form($formName), insertData($obj));
 	sqlStr += ";";
 //	console.log(sqlStr);
 	return sqlStr;
@@ -216,7 +246,7 @@ function insert($formName, $obj)
 
 function insertUpdate($formName, $insertObj, $updateObj)
 {
-	var sqlStr = join("insert into", form($formName), insertData($insertObj), "on duplicate key update", updateData($updateObj));
+	var sqlStr = make("insert into", form($formName), insertData($insertObj), "on duplicate key update", updateData($updateObj));
 	sqlStr += ";";
 //	console.log(sqlStr);
 	return sqlStr;
@@ -230,10 +260,10 @@ function insertUpdate($formName, $insertObj, $updateObj)
  */
 function update($formName, $obj, $where)
 {
-	var sqlStr = join("update", form($formName), "set", updateData($obj));
+	var sqlStr = make("update", form($formName), "set", updateData($obj));
 	if ($where)
 	{
-		sqlStr = join(sqlStr, "where", where($where));
+		sqlStr = make(sqlStr, "where", where($where));
 	}
 	sqlStr += ";";
 //	console.log(sqlStr);
@@ -251,7 +281,7 @@ function del($formName, $where)
 	if ($where)
 	{
 		//删除语句, 必须有where, 以避免误删数据
-		return join("delete from", form($formName), "where", where($where)) + ";";
+		return make("delete from", form($formName), "where", where($where)) + ";";
 	}
 	return "";
 }
@@ -259,10 +289,10 @@ function del($formName, $where)
 function count($formName, $columaName, $where)
 {
 	$columaName = "`" + $columaName + "`";
-	var sqlStr = join("select", "count(*) as", $columaName, "from", form($formName))
+	var sqlStr = make("select", "count(*) as", $columaName, "from", form($formName))
 	if ($where && Object.keys($where).length > 0)
 	{
-		sqlStr = join(sqlStr, "where", where($where));
+		sqlStr = make(sqlStr, "where", where($where));
 	}
 	sqlStr += ";";
 	return sqlStr;
@@ -282,15 +312,106 @@ function insertSelect($insertFormName, $insertColumns, $selectFormName, $selectC
 	{
 		return "";
 	}
-	var sqlStr = join("insert into", form($insertFormName), "(" + column($insertColumns) + ")");
-	sqlStr = join(sqlStr, "select", column($selectColumns), "from", form($selectFormName));
+	var sqlStr = make("insert into", form($insertFormName), "(" + column($insertColumns) + ")");
+	sqlStr = make(sqlStr, "select", column($selectColumns), "from", form($selectFormName));
 	if ($where)
 	{
-		sqlStr = join(sqlStr, "where", where($where));
+		sqlStr = make(sqlStr, "where", where($where));
 	}
 	sqlStr += ";";
 //	console.log(sqlStr);
 	return sqlStr;
+}
+
+function join($sqlA, $sqlB, $join)
+{
+	var objA = getObj($sqlA);
+	var objB = getObj($sqlB);
+	if (!objA || !objB)
+	{
+		return ""
+	}
+
+	var str = make("select", objA.column, ",", objB.column, "from", objA.formName, "join", objB.formName);
+	str = make(str, "on", getJoin($join));
+	var whereObj = {};
+	objA.where && (whereObj = __merge(whereObj, objA.where));
+	objB.where && (whereObj = __merge(whereObj, objB.where));
+	Object.keys(whereObj).length > 0 && (str = make(str, "where", whereObj));
+	return str;
+}
+
+function getJoin($join)
+{
+	var con1 = trim($join.split("=")[0]);
+	var con2 = trim($join.split("=")[1]);
+	con1 = con1.replace(/`/g, "").split(".").map(v=>"`" + v + "`").join(".")
+	con2 = con2.replace(/`/g, "").split(".").map(v=>"`" + v + "`").join(".")
+	return make(con1, "=", con2);
+}
+
+function getObj($sql)
+{
+	if (!($sql instanceof Expression))
+	{
+		return null;
+	}
+	var obj = {};
+	obj.formName = form($sql.formName);
+	obj.column = column($sql.columns);
+	obj.column = obj.column.split(",").map(v=>obj.formName + "." + v);
+	if ($sql.where)
+	{
+		var whereObj = __merge($sql.where);
+		for (var col in whereObj)
+		{
+			var val = whereObj[col];
+			delete whereObj[col];
+			col = objA.formName + ".`" + col + "`";
+			whereObj[col] = val;
+		}
+		obj.where = where(whereObj);
+	}
+	return obj;
+}
+
+function getObj_bak($sql)
+{
+	var sql = trim($sql).toLowerCase().replace(";", "");
+	if (sql.substr(0, 6) != "select")
+	{
+		return null;
+	}
+
+	var obj = {};
+	sql = sql.replace("select", "")
+	sql = trim(sql);
+	var columnStr = sql.substr(0, sql.indexOf("from"));
+	columnStr = columnStr.replace(/`/g, "").replace(/\"/g, "").replace(/'/g, "");
+	columnStr = trim(columnStr);
+	obj.column = columnStr.split(",");
+	var i = sql.indexOf("from") + 5;
+	var fromStr = sql.substr(i);
+	if (fromStr.indexOf("where") > 0)
+	{
+		fromStr = fromStr.substr(0, fromStr.indexOf("where"));
+		obj.from = trim(fromStr);
+	}
+	else if (fromStr.indexOf("order by") > 0)
+	{
+		fromStr = fromStr.substr(0, fromStr.indexOf("order by"));
+		obj.from = trim(fromStr);
+	}
+	else if (fromStr.indexOf("limit") > 0)
+	{
+		fromStr = fromStr.substr(0, fromStr.indexOf("limit"));
+		obj.from = trim(fromStr);
+	}
+	else
+	{
+		obj.from = trim(fromStr);
+	}
+	return obj;
 }
 
 function form($formName)
@@ -308,7 +429,7 @@ function form($formName)
 	return "`" + formName + "`";
 }
 
-function join(...arg)
+function make(...arg)
 {
 	return arg.join(" ");
 }
@@ -446,7 +567,7 @@ function insertData($obj)
 		valStr += "(" + valItemStr + ")";
 	}
 	colStr = "(" + colStr + ")";
-	return join(colStr, "values", valStr);
+	return make(colStr, "values", valStr);
 }
 
 function updateData($obj)
@@ -792,7 +913,8 @@ exports.sql = {
 	insertUpdate: insertUpdate,
 	insertSelect: insertSelect,
 	delete: del,
-	count: count
+	count: count,
+	join: join,
 };
 
 /**

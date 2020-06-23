@@ -281,18 +281,25 @@ function __merge(d, b, cover)
 	{
 		for (var k in b)
 		{
-			if (typeof b[k] == "object" && (!d[k] || typeof d[k] == "object") && b[k] != null)
+			if (typeof b[k] == "object" && (!d[k] || typeof d[k] == "object"))
 			{
-				if (Array.isArray(b[k]))
+				if (b[k] === null && cover)
 				{
-					d[k] = d[k] || [];
+					d[k] = null;
 				}
 				else
 				{
-					d[k] = d[k] || {};
+					if (Array.isArray(b[k]))
+					{
+						d[k] = d[k] || [];
+						__merge(d[k], b[k], cover);
+					}
+					else
+					{
+						d[k] = d[k] || {};
+						__merge(d[k], b[k], cover);
+					}
 				}
-				__merge(d[k], b[k], cover);
-				__merge(d[k], b[k], cover);
 			}
 			else
 			{
@@ -775,3 +782,14 @@ function __cloneFilte($data, $cols)
 	return obj;
 }
 global.__cloneFilte = __cloneFilte;
+
+function __override($target, $data)
+{
+	for (var k in $data)
+	{
+		$target.hasOwnProperty(k) && ($target[k] = $data[k])
+	}
+	return $target;
+}
+
+global.__override = __override;

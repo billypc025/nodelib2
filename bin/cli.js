@@ -7,108 +7,19 @@ var OS = require("os");
 var opener = require("opener");
 var timeTool = require("../utils/TimeTool");
 var exec = require("child_process").exec;
+var pathTool = require("../utils/pathTool");
 
 var globalCmd = require("../utils/actionPool")();
 //var addCmd = require("../utils/actionPool")();
 
-var libPath = path.join(__dirname, "../");
-var currPath = path.resolve("./");
-var projPath = currPath;
 var self = {globalCmd};
 
 var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 
-(function ()
-{
-	while (currPath != g.file.getDirectory(currPath))
-	{
-		var tempPath = path.join(currPath, "package.json");
-		if (fs.existsSync(tempPath))
-		{
-			if (require(tempPath).proj == "nodecli")
-			{
-				projPath = path.join(g.file.getDirectory(tempPath), "");
-			}
-			break;
-		}
-		currPath = g.file.getDirectory(currPath);
-	}
-})();
+pathTool.init(self);
 
 (function ($scope)
 {
-	global.__libPath = libPath;   //nodeLib库路径
-	global.__$libPath = function ($path = "")  //以nodeLib库目录为根节点，获取绝对路径
-	{
-		if ($path.indexOf(libPath) < 0)
-		{
-			return path.join(libPath, $path);
-		}
-		return $path;
-	}
-	global.__projPath = projPath; //项目目录路径
-	global.__$projPath = function ($path = "")
-	{
-		if ($path.indexOf(projPath) < 0)
-		{
-			return path.join(projPath, $path);
-		}
-		return $path;
-	}
-
-	global.__$projExist = function ($path)
-	{
-		return fs.existsSync(__$projPath($path));
-	}
-
-	global.__$copy = function ($sourcePath, $targetPath)
-	{
-		if (!fs.existsSync($sourcePath))
-		{
-			return;
-		}
-
-		if (g.file.isDirectory($sourcePath))
-		{
-			var list = g.file.getDirectoryListing($sourcePath);
-			for (var i = 0; i < list.length; i++)
-			{
-				var temppath = g.path.resolve(list[i]).replace($sourcePath, "");
-				__$copy_lib2proj($sourcePath + temppath, $targetPath + temppath);
-			}
-		}
-		else
-		{
-			cp('-Rf', $sourcePath, $targetPath);
-		}
-	}
-
-	global.__$copy_lib2proj = function ($libPath, $projPath)
-	{
-		var sourcePath = __$libPath($libPath);
-		var targetPath = __$projPath($projPath);
-		__$copy(sourcePath, targetPath);
-	}
-
-	global.__$writeFile = function ($path, $data)
-	{
-		g.fs.writeFileSync(__$projPath($path), $data);
-	}
-
-	global.__$readLibFile = function ($path)
-	{
-		return fs.readFileSync(__$libPath($path)).toString();
-	}
-
-	global.__$readProjFile = function ($path)
-	{
-		return fs.readFileSync(__$projPath($path)).toString();
-	}
-	global.__$exit = function ($code)
-	{
-		process.exit($code);
-	}
-
 	$scope.showUsage = function ()
 	{
 		var usage = __$readLibFile("./bin/cli-template/cli-usage");
@@ -135,7 +46,7 @@ var os = OS.platform().indexOf("win32") >= 0 ? "win" : "unix";
 
 	$scope.checkInit = function ()
 	{
-		if (projPath == "")
+		if (__projPath == "")
 		{
 			log.error("没有找到工程目录，请使用以下命令初始化工程目录！");
 			log.info("nodecli init");
@@ -262,9 +173,9 @@ function update()
 {
 //	self.checkInit();
 
-	exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " checkout .", function (e, d)
+	exec("git --git-dir=" + __libPath + ".git --work-tree=" + __libPath + " checkout .", function (e, d)
 	{
-		exec("git --git-dir=" + libPath + ".git --work-tree=" + libPath + " pull", function (e, d)
+		exec("git --git-dir=" + __libPath + ".git --work-tree=" + __libPath + " pull", function (e, d)
 		{
 			trace("Update nodeLib Complete.");
 
@@ -275,7 +186,7 @@ function update()
 			{
 				for (var k in packageJson.bin)
 				{
-					var file = path.join(libPath, packageJson.bin[k]);
+					var file = path.join(__libPath, packageJson.bin[k]);
 
 					if (!fs.existsSync(file))
 					{
@@ -307,9 +218,9 @@ function update()
 				}
 			}
 			trace("开始导入库, 耐心等待...");
-			require("child_process").execSync("npm link", {cwd: libPath});
+			require("child_process").execSync("npm link", {cwd: __libPath});
 
-			if (projPath != "")
+			if (__projPath != "")
 			{
 				updateFile();
 			}
@@ -349,7 +260,7 @@ function updateFile()
 
 function open()
 {
-	opener(libPath, function ()
+	opener(__libPath, function ()
 	{
 		process.exit();
 	});

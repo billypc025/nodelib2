@@ -62,6 +62,7 @@ module.exports = class {
 //		trace("this.isConnected:" + this.isConnected);
 //		if (this.isConnected)
 //		{
+		$sql = $sql + "";
 		if ($sql)
 		{
 			try
