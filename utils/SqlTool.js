@@ -333,7 +333,7 @@ function join($sqlA, $sqlB, $join)
 	}
 
 	var str = make("select", objA.column, ",", objB.column, "from", objA.formName, "join", objB.formName);
-	str = make(str, "on", getJoin($join));
+	str = make(str, "on", getJoin(objA.formName, objB.formName, $join));
 	var whereObj = {};
 	objA.where && (whereObj = __merge(whereObj, objA.where));
 	objB.where && (whereObj = __merge(whereObj, objB.where));
@@ -341,13 +341,13 @@ function join($sqlA, $sqlB, $join)
 	return str;
 }
 
-function getJoin($join)
+function getJoin(formNameA, formNameB, $join)
 {
 	var con1 = trim($join.split("=")[0]);
 	var con2 = trim($join.split("=")[1]);
 	con1 = con1.replace(/`/g, "").split(".").map(v=>"`" + v + "`").join(".")
 	con2 = con2.replace(/`/g, "").split(".").map(v=>"`" + v + "`").join(".")
-	return make(con1, "=", con2);
+	return make(formNameA + "." + con1, "=", formNameB + "." + con2);
 }
 
 function getObj($sql)
