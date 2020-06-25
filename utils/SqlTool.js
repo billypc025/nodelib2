@@ -367,7 +367,7 @@ function getObj($sql)
 		{
 			var val = whereObj[col];
 			delete whereObj[col];
-			col = objA.formName + ".`" + col + "`";
+			col = $sql.formName + ".`" + col + "`";
 			whereObj[col] = val;
 		}
 		obj.where = where(whereObj);
