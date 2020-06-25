@@ -337,7 +337,7 @@ function join($sqlA, $sqlB, $join)
 	var whereObj = {};
 	objA.where && (whereObj = __merge(whereObj, objA.where));
 	objB.where && (whereObj = __merge(whereObj, objB.where));
-	Object.keys(whereObj).length > 0 && (str = make(str, "where", whereObj));
+	Object.keys(whereObj).length > 0 && (str = make(str, "where", where(whereObj)));
 	return str;
 }
 
@@ -362,15 +362,16 @@ function getObj($sql)
 	obj.column = obj.column.split(",").map(v=>obj.formName + "." + v);
 	if ($sql.where)
 	{
-		var whereObj = __merge($sql.where);
+		var whereObj = __merge({}, $sql.where);
 		for (var col in whereObj)
 		{
 			var val = whereObj[col];
 			delete whereObj[col];
-			col = $sql.formName + ".`" + col + "`";
+			col = $sql.formName.replace(/`/g, "") + "." + col + "";
+			col = col.replace(/\./g, "`.`");
 			whereObj[col] = val;
 		}
-		obj.where = where(whereObj);
+		obj.where = whereObj;
 	}
 	return obj;
 }
