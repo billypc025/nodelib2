@@ -226,26 +226,57 @@ function callGet($req, $url, $data, $headers)
 				}
 			}
 
+			var contentTypeStr = req.headers["content-type"] || "";
+			var contentType = "text"
+			if (contentTypeStr.indexOf("image/") == 0)
+			{
+				contentType = "image";
+			}
 			var returnData = "";
+			var index = 0;
 			req.on("data", (data) =>
 			{
-				returnData += data;
+				if (contentType == "image")
+				{
+					var contentLength = req.headers["content-length"] || "";
+					contentLength -= 0;
+					if (data instanceof Uint8Array)
+					{
+						if (typeof returnData == "string")
+						{
+							returnData = Buffer.alloc(contentLength);
+						}
+						returnData.fill(data, index, index + data.length)
+						index += data.length;
+					}
+					else
+					{
+						returnData += data;
+					}
+				}
+				else
+				{
+					returnData += data;
+				}
 			});
 			req.on("end", () =>
 			{
-				try
+				if (typeof returnData == "string")
 				{
-					returnData = JSON.parse(returnData);
-				}
-				catch (e)
-				{
+					try
+					{
+						returnData = JSON.parse(returnData);
+					}
+					catch (e)
+					{
+					}
 				}
 				resolved(returnData);
 			});
 		});
 		_req.on("error", (e) =>
 		{
-//			trace(e)
+			trace(e)
 			reject(e);
 		})
 	})

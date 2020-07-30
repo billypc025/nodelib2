@@ -320,34 +320,41 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 	if ($pathFunc)
 	{
 		formatDataObj($dataObj);
-		$pathFunc($dataObj,
-			function ($resultObj, $headerObj, $responseType, $noFormat)
-			{
-				if ($responseType == "template")
+		try
+		{
+			$pathFunc($dataObj,
+				function ($resultObj, $headerObj, $responseType, $noFormat)
 				{
-					$resultObj = __merge($resultObj || {}, {host: $request.headers.host || ""})
-					var content = g.data.file.get("/template").get($headerObj, $resultObj);
-					if (content)
+					if ($responseType == "template")
 					{
-						writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
+						$resultObj = __merge($resultObj || {}, {host: $request.headers.host || ""})
+						var content = g.data.file.get("/template").get($headerObj, $resultObj);
+						if (content)
+						{
+							writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
+						}
 					}
-				}
-				else
+					else
+					{
+						if (!$noFormat)
+						{
+							$resultObj = formatResponse($pathName, $resultObj);
+						}
+						writeOut(200, $resultObj, $request, $response, $headerObj, $responseType, $header);
+					}
+				}, function ($errorObj, $headerObj, $noFormat)
 				{
 					if (!$noFormat)
 					{
-						$resultObj = formatResponse($pathName, $resultObj);
+						$errorObj = formatResponse($pathName, null, $errorObj);
 					}
-					writeOut(200, $resultObj, $request, $response, $headerObj, $responseType, $header);
-				}
-			}, function ($errorObj, $headerObj, $noFormat)
-			{
-				if (!$noFormat)
-				{
-					$errorObj = formatResponse($pathName, null, $errorObj);
-				}
-				writeOut(200, $errorObj, $request, $response, $headerObj, "", $header);
-			}, $request, $response);
+					writeOut(200, $errorObj, $request, $response, $headerObj, "", $header);
+				}, $request, $response);
+		}
+		catch (e)
+		{
+			trace(e);
+		}
 	}
 	else
 	{

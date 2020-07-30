@@ -53,7 +53,7 @@ module.exports = class {
 						var regStr = childRouter;
 						if (regStr.indexOf("*") >= 0)
 						{
-							regStr = regStr.replace(/\*/g, "[^/\\r\\n]+");
+							regStr = regStr.replace(/\//g, "\\/").replace(/\*/g, "[^\\/\\r\\n]+");
 						}
 						if (regStr.indexOf("?") >= 0)
 						{
