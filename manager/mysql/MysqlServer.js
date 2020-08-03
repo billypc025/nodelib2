@@ -69,16 +69,23 @@ module.exports = class {
 			{
 				this.connection.query($sql, (err, rows, fields)=>
 				{
-					if (err)
+					try
 					{
-						log.error(err.sql);
-						log.error(err.sqlMessage);
-						g.log.out(err);
-						$errorBack && $errorBack(err);
+						if (err)
+						{
+							log.error(err.sql);
+							log.error(err.sqlMessage);
+							g.log.out(err);
+							$errorBack && $errorBack(err);
+						}
+						else
+						{
+							$callBack && $callBack(rows, fields);
+						}
 					}
-					else
+					catch (e)
 					{
-						$callBack && $callBack(rows, fields);
+						trace("error:", e);
 					}
 				});
 			}

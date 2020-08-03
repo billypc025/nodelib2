@@ -207,35 +207,42 @@ module.exports = class extends Manager {
 		{
 			server = http.createServer((request, response)=>
 			{
-				if (!this.param.hasOwnProperty("method")
-					|| this.param.method == ""
-					|| this.param.method == "*"
-					|| this.param.method.tolowercase() == request.method.tolowercase())
+				try
 				{
-					var paramObj = url.parse(request.url);
-					var nodelibCmd = nodeLibTool.check(paramObj.pathname);
-					if (nodelibCmd)
+					if (!this.param.hasOwnProperty("method")
+						|| this.param.method == ""
+						|| this.param.method == "*"
+						|| this.param.method.tolowercase() == request.method.tolowercase())
 					{
-						nodeLibTool.exe(nodelibCmd, request, response);
-					}
-					else
-					{
-						var func = this.getFunc(paramObj.pathname);
-						if (request.method && doMethod[request.method])
+						var paramObj = url.parse(request.url);
+						var nodelibCmd = nodeLibTool.check(paramObj.pathname);
+						if (nodelibCmd)
 						{
-							log.success(paramObj.pathname + ": " + _timeTool.getFullDate(0, true));
-							request.webParam = this.webParam;
-							if (this.socketRemoteServer && this.socketRemoteServer.connected && request.method != "OPTIONS")
+							nodeLibTool.exe(nodelibCmd, request, response);
+						}
+						else
+						{
+							var func = this.getFunc(paramObj.pathname);
+							if (request.method && doMethod[request.method])
 							{
-								trace("to Socket remote client...");
-								this.socketRemoteServer.request(request.method, this.router, paramObj.pathname, request, response, this.header);
-							}
-							else
-							{
-								doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+								log.success(paramObj.pathname + ": " + _timeTool.getFullDate(0, true));
+								request.webParam = this.webParam;
+								if (this.socketRemoteServer && this.socketRemoteServer.connected && request.method != "OPTIONS")
+								{
+									trace("to Socket remote client...");
+									this.socketRemoteServer.request(request.method, this.router, paramObj.pathname, request, response, this.header);
+								}
+								else
+								{
+									doMethod[request.method](this.router, func, paramObj.pathname, request, response, this.header);
+								}
 							}
 						}
 					}
+				}
+				catch (e)
+				{
+					trace(e);
 				}
 			});
 		}
@@ -367,7 +374,7 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 				var content = g.data.file.get("/template").get(path, {host: $request.headers.host || ""});
 				if (content)
 				{
-					writeOut(200, content, $request, $response, {"Content-Type": "text/html"}, "text", $header);
+					writeOut(200, content, $request, $response, {"Content-Type": "text/html; charset=UTF-8"}, "text", $header);
 				}
 			}
 		}
