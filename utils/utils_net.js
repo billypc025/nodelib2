@@ -91,7 +91,7 @@ function doRequest($url, $data, $method, $headers)
 
 	method = method || "get";
 	data = data || {};
-	headers = headers || {"Content-Type": "application/json"};
+	headers = headers || {"Content-Type": "application/json; charset=utf-8"};
 
 	if (!url || typeof url != "string")
 	{
