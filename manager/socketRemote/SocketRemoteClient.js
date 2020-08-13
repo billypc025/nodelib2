@@ -33,7 +33,10 @@ class SocketRemoteClient {
 			{
 				log.success(pathName + ": " + _timeTool.getFullDate(0, true));
 			}
-			doRequest(router, func, pathName, data, {headers: {cookie: ""}}, {}).then(($data)=>
+			doRequest(router, func, pathName, data, {
+				headers: {cookie: ""},
+				url: pathName
+			}, {}).then(($data)=>
 			{
 				var dataObj = {
 					requestId: requestId,
@@ -89,7 +92,7 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 							responseType: $responseType
 						});
 					}
-				}, function ($errorObj, $headerObj, $noFormat)
+				}, function ($errorObj, $headerObj, $responseType, $noFormat)
 				{
 					if (!$noFormat)
 					{
@@ -126,7 +129,6 @@ function doRequest($router, $pathFunc, $pathName, $dataObj, $request, $response,
 			else
 			{
 //		log._warn(this.getMsg("Not Found Func-", $pathName));
-				writeOut(404, "", $request, $response);
 				resolved({
 					status: 404,
 					result: "",
