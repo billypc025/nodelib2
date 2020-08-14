@@ -1,7 +1,8 @@
+#!/usr/bin/env node
 /**
  * Created by billy on 2020/8/14.
  */
-var g = require("../global");
+require("../global");
 var os = require('os');
 
 var netListHash = os.networkInterfaces();
