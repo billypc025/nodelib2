@@ -1,6 +1,6 @@
 {
   "name": "nodelib2",
-  "version": "2.2.15",
+  "version": "2.3.0",
   "description": "node library, support http, socket, mysql, redis, web server and sciprt tool",
   "main": "./global.js",
   "scripts": {
@@ -11,7 +11,8 @@
 	"openthis": "./bin/openthis.js",
 	"nodecli": "./bin/cli.js",
 	"reconfig": "./bin/reconfig.js",
-	"markthis": "./bin/markthis.js"
+	"markthis": "./bin/markthis.js",
+	"ipthis": "./bin/ipthis.js"
   },
   "author": "billypc@163.com",
   "license": "ISC",

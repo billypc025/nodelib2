@@ -34,5 +34,6 @@ global.sql = sql;
 
 global.co = require("co");
 exports.startServer = require("./utils/startServer");
+global.exit = ()=>process.exit();
 
 global.g = exports;

@@ -91,7 +91,7 @@ function doRequest($url, $data, $method, $headers)
 
 	method = method || "get";
 	data = data || {};
-	headers = headers || {"Content-Type": "application/json; charset=utf-8"};
+	headers = headers || {"Content-type": "application/json; charset=UTF-8"};
 
 	if (!url || typeof url != "string")
 	{
@@ -213,8 +213,6 @@ function callGet($req, $url, $data, $headers)
 		{
 			$url.searchParams.set(k, $data[k]);
 		}
-//		trace($url.href)
-//		trace($headers)
 		var _req = $req.get($url.href, {headers: $headers}, (req, res) =>
 		{
 			for (var k in req.headers)
