@@ -11,36 +11,32 @@ var net = require('net');
 exports.getLocalIp = function ()
 {
 	var localIp = "127.0.0.1";
-	var platform = os.platform();
 	var netListHash = os.networkInterfaces();
-	var netList;
-	if (platform == "win32")
+
+	var list = [];
+	for (var netName in netListHash)
 	{
-		netList = netListHash['本地连接']
-	}
-	else
-	{
-		netList = netListHash['en0'] || netListHash['eth0'];
-		if (!netList)
+		var netList = netListHash[netName];
+		var obj = {
+			name: netName,
+			list: []
+		};
+		for (var netItem of netList)
 		{
-			var ethList = Object.keys(netListHash);
-			for (var ethName of ethList)
+			if (netItem.family.toLowerCase() == "ipv4" && netItem.address != "127.0.0.1")
 			{
-				if (ethName != "lo")
+				obj.list.push(netItem);
+				if (list.indexOf(obj) < 0)
 				{
-					netList = netListHash[ethName];
-					break;
+					list.push(obj);
 				}
 			}
 		}
 	}
 
-	for (var i = 0; i < netList.length; i++)
+	if (list.length > 0)
 	{
-		if (netList[i].family == 'IPv4')
-		{
-			localIp = netList[i].address;
-		}
+		localIp = list[0].address;
 	}
 
 	return localIp;

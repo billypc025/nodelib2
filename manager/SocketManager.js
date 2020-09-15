@@ -39,6 +39,77 @@ module.exports = class extends Manager {
 		}
 		this.loginTimeoutList = [];
 		super.init();
+		this.initNet();
+	}
+
+	initNet()
+	{
+		var statusName = "status";
+		var successStatus = 1;
+		var failStatus = 0;
+		var dataName = "data";
+		var errorName = "error";
+		var errorMsg = "";
+
+		if (this.param && this.param.hasOwnProperty("req"))
+		{
+			if (this.param.req.result)
+			{
+				statusName = this.param.req.result.name || statusName;
+				successStatus = this.param.req.result.success || successStatus;
+				failStatus = this.param.req.result.fail || failStatus;
+			}
+			if (this.param.req.data)
+			{
+				dataName = this.param.req.data.name || dataName;
+			}
+			if (this.param.req.error)
+			{
+				errorName = this.param.req.error.name || errorName;
+			}
+			if (this.param.req.errorMsg)
+			{
+				errorMsg = this.param.req.errorMsg.name || errorMsg;
+			}
+
+			//不对，这里应该是将程序里面返回的{code:222}，进行分割处理
+			//但是这些error其实是业务逻辑自己返回的，所以其实是可以定义的
+			//那么其中一种就可以是对status字段进行覆盖处理
+		}
+
+		this.webParam = null;
+		if (this.param && this.param.hasOwnProperty("param"))
+		{
+			this.webParam = this.param.param;
+		}
+
+		this.formatResponse = function ($reqId, $cmd, $dataObj, error)
+		{
+			var result = {cmd: $cmd};
+			result[statusName] = successStatus;
+			result[dataName] = $dataObj;
+			if ($reqId)
+			{
+				result["reqId"] = $reqId;
+			}
+
+			//这里就需要对结构进行定义
+			if (error)
+			{
+				result.status = failStatus;
+				result[errorName] = error;
+
+				if (errorMsg.indexOf(".") > 0)
+				{
+
+				}
+				else
+				{
+					result[errorMsg] = error.msg;
+				}
+			}
+			return result;
+		}
 	}
 
 	start()
@@ -100,14 +171,14 @@ module.exports = class extends Manager {
 				var clientData = this.clientPool.get($client.id);
 				if (!this.requireLogin || (clientData && clientData.isLogin))
 				{
-					go(this, $data, clientData);
+					this.go($data, clientData);
 				}
 				else if ($data.data.length > 0 && $data.data[0] == "login")
 				{
 					//这里应该使用一个标准回调，module里面只负责逻辑
 					$data.data.shift();
 					$data.data.unshift(this.loginModule);
-					go(this, $data, clientData, ($returnData, $client)=>
+					this.go($data, clientData, ($returnData, $client)=>
 					{
 						this.clientPool.addList($client.id);
 						this.removeLoginCheckList($client.id);
@@ -265,47 +336,50 @@ module.exports = class extends Manager {
 	{
 		this.server && this.server.close();
 	}
-}
 
-function go($mgr, $data, $clientData, $callBack, $errorBack)
-{
-	var nsp = $data.nsp;
-	var type = $data.type;
-	var dataArr = $data.data;
-	var dataType = "";
-	if (dataArr.length > 0)
+	go($data, $clientData, $callBack, $errorBack)
 	{
-		dataType = dataArr[0];
-
-		var func = $mgr.getFunc(dataType);
-		if (func)
+		var nsp = $data.nsp;
+		var type = $data.type;
+		var dataArr = $data.data;
+		var dataType = "";
+		if (dataArr.length > 0)
 		{
-			func(dataArr[1], function successBack($returnObj, $cmd)
-				{
-					//这里是否有什么办法，让回调可以直接进行一个单方的，或者多方的推送
-					//因为socket主要是用于推送的
-					//这里的推送分为，针对单人，针对多人
-					//如果能根据id进行推送就会方便的很
-					//所以这个回调就仅仅用于回调
-					//另外再追加一个用于推送的
+			dataType = dataArr[0];
+
+			var func = this.getFunc(dataType);
+			if (func)
+			{
+				var param = dataArr[1];
+				var reqId = param.reqId;
+				delete param.reqId;
+				func(param, ($returnObj, $cmd)=>
+					{
+						//这里是否有什么办法，让回调可以直接进行一个单方的，或者多方的推送
+						//因为socket主要是用于推送的
+						//这里的推送分为，针对单人，针对多人
+						//如果能根据id进行推送就会方便的很
+						//所以这个回调就仅仅用于回调
+						//另外再追加一个用于推送的
 //					trace("[success]", dataType);
-					$callBack && $callBack($returnObj, $clientData);
-					$clientData && $clientData.client && $clientData.client.emit("data", formatResponse($cmd || dataType, $returnObj));
-				},
-				function errorBack($dataObj)
-				{
+						$callBack && $callBack($returnObj, $clientData);
+						$clientData && $clientData.client && $clientData.client.emit("data", this.formatResponse(reqId, $cmd || dataType, $returnObj));
+					},
+					($dataObj)=>
+					{
 //					trace("[error]", dataType);
-					$errorBack && $errorBack($dataObj, $clientData);
-					$clientData && $clientData.client && $clientData.client.emit("data", formatResponse(dataType, null, $dataObj));
-				}, $clientData);
+						$errorBack && $errorBack($dataObj, $clientData);
+						$clientData && $clientData.client && $clientData.client.emit("data", this.formatResponse(reqId, dataType, null, $dataObj));
+					}, $clientData);
+			}
+			else
+			{
+				trace("@ Not Found Func:", dataType);
+			}
 		}
 		else
 		{
-			trace("@ Not Found Func:", dataType);
+			trace("Request Error: require a eventType!");
 		}
-	}
-	else
-	{
-		trace("Request Error: require a eventType!");
 	}
 }
