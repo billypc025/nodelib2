@@ -45,7 +45,7 @@ global.$.request = function ($param, ...arg)
 	return doRequest(url, data, method, headers);
 }
 
-global.$.get = function ($param, $data)
+global.$.get = function ($param, $data, $headers)
 {
 	var url, data, headers;
 	if (typeof $param == "object")
@@ -60,12 +60,13 @@ global.$.get = function ($param, $data)
 		if ($data && typeof $data == "object")
 		{
 			data = $data;
+			headers = $headers;
 		}
 	}
 	return doRequest(url, data, "get", headers);
 }
 
-global.$.post = function ($param, $data)
+global.$.post = function ($param, $data, $headers)
 {
 	var url, data, headers;
 	if (typeof $param == "object")
@@ -80,6 +81,7 @@ global.$.post = function ($param, $data)
 		if ($data && typeof $data == "object")
 		{
 			data = $data;
+			headers = $headers;
 		}
 	}
 	return doRequest(url, data, "post", headers);
