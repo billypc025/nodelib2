@@ -26,9 +26,9 @@ exports.getLocalIp = function ()
 			if (netItem.family.toLowerCase() == "ipv4" && netItem.address != "127.0.0.1")
 			{
 				obj.list.push(netItem);
-				if (list.indexOf(obj) < 0)
+				if (list.indexOf(netItem) < 0)
 				{
-					list.push(obj);
+					list.push(netItem);
 				}
 			}
 		}
