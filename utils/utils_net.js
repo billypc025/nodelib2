@@ -93,7 +93,19 @@ function doRequest($url, $data, $method, $headers)
 
 	method = method || "get";
 	data = data || {};
-	headers = headers || {"Content-type": "application/json; charset=UTF-8"};
+	headers = headers || {"Content-Type": "application/json; charset=UTF-8"};
+	var kList = Object.keys(headers);
+	var contentTypeIndex = kList.findIndex(v=>v.toLowerCase() == "content-type");
+	if (contentTypeIndex < 0)
+	{
+		headers["Content-Type"] = "application/json; charset=UTF-8";
+	}
+	else if (!headers["Content-Type"])
+	{
+		var contentType = headers[kList[contentTypeIndex]];
+		delete headers[kList[contentTypeIndex]];
+		headers["Content-Type"] = contentType;
+	}
 
 	if (!url || typeof url != "string")
 	{
@@ -133,23 +145,70 @@ function callPost($req, $url, $data, $headers)
 {
 	var promise = new Promise((resolved, reject) =>
 	{
-		var netObj = {
-			host: $url.hostname,
-			path: $url.pathname + $url.search,
-			method: "POST",
-			headers: $headers
-		}
-
-		if ($url.port)
-		{
-			netObj.port = $url.port - 0;
-		}
-
+		var headers = {...$headers}
 		var queryString = $url.searchParams.toString();
 		if (queryString)
 		{
 			var queryObj = querystring.decode(queryString);
 			$data = __merge($data, queryObj);
+		}
+
+		var postData = querystring.stringify($data);
+
+		var contentType = headers["Content-Type"];
+
+		if (contentType.indexOf("application/x-www-form-urlencoded") >= 0)
+		{
+			if (typeof $data == "object")
+			{
+				if (Object.keys($data).length > 0)
+				{
+					postData = querystring.stringify($data);
+				}
+			}
+			else
+			{
+				$data += "";
+				if ($data.length > 0)
+				{
+					postData = $data;
+				}
+			}
+		}
+		else if (contentType.indexOf("application/json") >= 0)
+		{
+			if (typeof $data == "object")
+			{
+				if (Object.keys($data).length > 0)
+				{
+					postData = JSON.stringify($data);
+				}
+			}
+			else
+			{
+				$data += "";
+				if ($data.length > 0)
+				{
+					postData = $data;
+				}
+			}
+		}
+
+		if (postData.length > 0)
+		{
+			headers["Content-Length"] = Buffer.byteLength(postData);
+		}
+
+		var netObj = {
+			host: $url.hostname,
+			path: $url.pathname + $url.search,
+			method: "POST",
+			headers: headers
+		}
+
+		if ($url.port)
+		{
+			netObj.port = $url.port - 0;
 		}
 
 		var _req = $req.request(netObj, (req, res) =>
@@ -186,20 +245,9 @@ function callPost($req, $url, $data, $headers)
 			reject(e);
 		});
 
-		if (typeof $data == "object")
+		if (postData.length > 0)
 		{
-			if (Object.keys($data).length > 0)
-			{
-				_req.write(JSON.stringify($data));
-			}
-		}
-		else
-		{
-			$data += "";
-			if ($data.length > 0)
-			{
-				_req.write($data);
-			}
+			_req.write(postData);
 		}
 		_req.end();
 	})
