@@ -793,3 +793,9 @@ function __override($target, $data)
 }
 
 global.__override = __override;
+
+function exit($code = 0)
+{
+	process.exit($code);
+}
+global.exit = exit;
