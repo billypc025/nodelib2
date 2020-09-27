@@ -379,7 +379,8 @@ function getWeekNum(...arg)
 	startDate = new Date(endDate.getFullYear(), 0, 1);
 	startTime = startDate.getTime();
 	startDay = startDate.getDay();
-	var dayNum = int((endTime - startTime) / 1000 / 86400) + 1;
+	var dayNum = int((endTime - startTime) / 1000 / 86400);
+	var resultWeek = 1;
 	if (startAtMonday)
 	{
 		dayNum = startDay == 0 ? dayNum - 1 : dayNum - (7 - startDay);
@@ -388,7 +389,7 @@ function getWeekNum(...arg)
 	{
 		dayNum = dayNum - (8 - startDay);
 	}
-	return Math.ceil(dayNum / 7) + 1;
+	return Math.ceil(dayNum / 7) + resultWeek;
 }
 exports.getWeekNum = getWeekNum;
 
