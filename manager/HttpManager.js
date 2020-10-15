@@ -225,7 +225,7 @@ module.exports = class extends Manager {
 							var func = this.getFunc(paramObj.pathname);
 							if (request.method && doMethod[request.method])
 							{
-								log.success(paramObj.pathname + ": " + _timeTool.getFullDate(0, true));
+								log.success(`[${this._data.name}] ${paramObj.pathname}: ${_timeTool.getFullDate(0, true)}`);
 								request.webParam = this.webParam;
 								if (this.socketRemoteServer && this.socketRemoteServer.connected && request.method != "OPTIONS")
 								{

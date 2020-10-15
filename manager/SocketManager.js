@@ -3,7 +3,7 @@
  */
 var g = require("../global");
 var Manager = require("./Manager");
-var time = require("../utils/TimeTool");
+var _timeTool = require("../utils/TimeTool");
 var _defaultPort = 12000;
 
 g.data.clientPool = require("../data/SocketClientPool");
@@ -347,6 +347,7 @@ module.exports = class extends Manager {
 		{
 			dataType = dataArr[0];
 
+			log.success(`[${this._data.name}] ${dataType}: ${_timeTool.getFullDate(0, true)}`);
 			var func = this.getFunc(dataType);
 			if (func)
 			{

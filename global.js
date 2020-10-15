@@ -4,6 +4,7 @@
 require("./utils/utils");
 require("./utils/utils_instance");
 require("./utils/utils_net");
+exports.mysql_server = require("./utils/utils_mysql");
 
 global.log = require("./utils/log"); //控制台输出
 exports.readline = require('./utils/readLine'); //输入流
