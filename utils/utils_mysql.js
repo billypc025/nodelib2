@@ -58,7 +58,7 @@ exports.query = query;
 
 async function queryOne($name, $sql = "")
 {
-	var list = await query($name, $sql = "");
+	var list = await query($name, $sql);
 	return list[0];
 };
 exports.queryOne = queryOne;
