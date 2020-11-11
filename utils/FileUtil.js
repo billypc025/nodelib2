@@ -377,9 +377,9 @@ function getDirectoryAllListing(path)
 	if (isDirectory(path))
 	{
 		var fileList = getDirectoryListing(path);
-		for (var key in fileList)
+		for (var file of fileList)
 		{
-			list = list.concat(getDirectoryAllListing(fileList[key]));
+			list = list.concat(getDirectoryAllListing(file));
 		}
 		return list;
 	}
