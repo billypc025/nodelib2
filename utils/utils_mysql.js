@@ -48,7 +48,7 @@ function query($name, $sql = "")
 	var sqlStr = $sql || $name;
 	return _promise((resolved, reject)=>
 	{
-		mysql.server.query(sqlStr, $list=>resolved($list), ()=>
+		mysql.server.query(sqlStr, $list=>resolved($list), (e)=>
 		{
 			reject(new GError({msg: "数据库查询出错"}));
 		})

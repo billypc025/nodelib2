@@ -6,28 +6,54 @@ var file = require("fs");
 var fs = require("./FileUtil");
 var exec = require('child_process').exec;
 
+/**
+ * zip压缩包
+ * @param $sourcePath 源路径
+ * @param $outputFile 目标路径
+ * @param $password   解压密码
+ * @param $callBack
+ */
 module.exports = function ($sourcePath, $outputFile, $password, $callBack)
 {
+	var outputFile = "";
+	var password = "";
+	var callBack;
+	if (typeof $outputFile == "function")
+	{
+		callBack = $outputFile;
+	}
+	else
+	{
+		outputFile = $outputFile;
+		if (typeof $password == "function")
+		{
+			callBack = $password;
+		}
+		else
+		{
+			password = $password;
+			callBack = $callBack;
+		}
+	}
+
 	if ($sourcePath == undefined)
 	{
-		$callBack && $callBack({
+		callBack && callBack({
 			status: 1,
 			msg: "需要指定一个待压缩的目标文件或文件夹！"
 		});
 	}
 
-	$password = $password || "";
-
-	var fileDirName = "";
-
 	$sourcePath = path.resolve($sourcePath);
 	if (!fs.exists(path.resolve($sourcePath)))
 	{
-		$callBack && $callBack({
+		callBack && callBack({
 			status: 2,
 			msg: "待压缩的目标文件或文件夹不存在！"
 		});
 	}
+
+	var fileDirName = "";
 
 	var basePath = fs.getDirectory($sourcePath);
 
@@ -40,18 +66,18 @@ module.exports = function ($sourcePath, $outputFile, $password, $callBack)
 
 	}
 
-	if (!$outputFile)
+	if (!outputFile)
 	{
-		$outputFile = path.join(basePath, fs.getFileName($sourcePath));
+		outputFile = path.join(basePath, fs.getFileName($sourcePath));
 	}
 //	else if (outputFile.indexOf("$") >= 0)
 //	{
 //		outputFile = outputFile.replace("$", basePath + fs.getFileName(sourcePath))
 //	}
 
-	if ($outputFile.indexOf(".zip") < 0)
+	if (outputFile.indexOf(".zip") < 0)
 	{
-		$outputFile += ".zip";
+		outputFile += ".zip";
 	}
 
 	if (fileDirName)
@@ -61,13 +87,13 @@ module.exports = function ($sourcePath, $outputFile, $password, $callBack)
 
 	var compilerPath = path.join(__dirname, "ZipTool_v1.0.2.jar");
 	compilerPath = addQuotes(compilerPath);
-	$outputFile = addQuotes($outputFile);
+	outputFile = addQuotes(outputFile);
 	$sourcePath = addQuotes($sourcePath);
 	var cmd = getGlobalJava() + " ";
 	cmd += "-jar " + compilerPath + " ";
-	cmd += "zip " + $outputFile + " ";
+	cmd += "zip " + outputFile + " ";
 	cmd += $sourcePath + " ";
-	cmd += $password || "";
+	cmd += password || "";
 	var zip = exec(cmd);
 //	zip.stdout.on("data", function (data)
 //	{
@@ -85,7 +111,7 @@ module.exports = function ($sourcePath, $outputFile, $password, $callBack)
 			{
 				fs.remove(fileDirName);
 			}
-			$callBack && $callBack({
+			callBack && callBack({
 				status: 0,
 				msg: ""
 			});
@@ -102,7 +128,7 @@ function getGlobalJava()
 	var JAVA_EXT = process.platform == 'win32' ? '.exe' : '';
 
 	var java = path.join(process.execPath, "../jre/bin", "java" + JAVA_EXT);
-	if (!file.exists(java))
+	if (!file.existsSync(java))
 	{
 		java = null;
 		if (process.env["JAVA_HOME"])
