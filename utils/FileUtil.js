@@ -323,7 +323,7 @@ exports.getFileName = getFileName;
  * @param path 要搜索的文件夹
  * @param relative 是否返回相对路径，若不传入或传入false，都返回绝对路径。
  */
-function getDirectoryListing(path, relative)
+function getDirectoryListing(path, relative = false, options = {})
 {
 	if (relative === void 0)
 	{
@@ -343,7 +343,7 @@ function getDirectoryListing(path, relative)
 	{
 		for (var i = length - 1; i >= 0; i--)
 		{
-			if (list[i].charAt(0) == ".")
+			if (list[i].charAt(0) == "." && options.all !== true)
 			{
 				list.splice(i, 1);
 			}
@@ -371,15 +371,15 @@ exports.getDirectoryListing = getDirectoryListing;
  * @param path
  * @returns {any}
  */
-function getDirectoryAllListing(path)
+function getDirectoryAllListing(path, options = {})
 {
 	var list = [];
 	if (isDirectory(path))
 	{
-		var fileList = getDirectoryListing(path);
+		var fileList = getDirectoryListing(path, !!options.relative, options);
 		for (var file of fileList)
 		{
-			list = list.concat(getDirectoryAllListing(file));
+			list = list.concat(getDirectoryAllListing(file, options));
 		}
 		return list;
 	}
@@ -534,18 +534,6 @@ function relative(from, to)
 	return path;
 }
 exports.relative = relative;
-function getAbsolutePath(path)
-{
-	var tempPath = Path.resolve(path);
-	tempPath = escapePath(tempPath);
-	path = escapePath(path);
-	if (tempPath == path)
-	{
-		return path;
-	}
-	return joinPath(egret.args.projectDir, path);
-}
-exports.getAbsolutePath = getAbsolutePath;
 /**
  * 检查文件是否为UTF8格式
  */
