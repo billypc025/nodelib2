@@ -190,6 +190,7 @@ module.exports = class extends Manager {
 						{
 							request.webParam = this.webParam;
 							request.ip = _local.getLocalIp(request);
+							log.success(`[${this._data.name}] ${paramObj.pathname}: ${_timeTool.getFullDate(0, true)}`);
 							if (this.socketRemote && this.socketRemote.connected && request.method != "OPTIONS")
 							{
 								this.socketRemote.request(request.method, this.router, func, paramObj.pathname, request, response, this.header);
