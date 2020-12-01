@@ -655,7 +655,14 @@ function where($where, $obj)
 			var param = paramHash[columnName];
 			if (Array.isArray(param))
 			{
-				whereStr = getWhere(whereStr, columnName, param[0], param[1], param[2], param[3]);
+				if (!_whereCheckHash[param[0]])
+				{
+					whereStr = getWhere(whereStr, columnName, "in", param);
+				}
+				else
+				{
+					whereStr = getWhere(whereStr, columnName, param[0], param[1], param[2], param[3]);
+				}
 			}
 			else if (typeof param == "string")
 			{
