@@ -6,7 +6,7 @@ const TYPE_H = "hh";
 const TYPE_M = "mm";
 const TYPE_S = "ss";
 const TYPE_HMS = "hh:mm:ss";
-const TYPE_DHMS = "dd：hh:mm:ss";
+const TYPE_DHMS = "dd:hh:mm:ss";
 const TYPE_MS = "mm:ss";
 
 exports.TYPE_D = TYPE_D;
@@ -154,11 +154,24 @@ exports.getNowStamp = getNowStamp;
  * @param type 格式化类型
  * @returns {*}
  */
-function formatTime($time, type = TYPE_DHMS)
+function formatTime($time, type = "YYYY-MM-DD hh:mm:ss")
 {
 	if (String($time).length >= 10)
 	{
-		return getFullDate($time, true);
+		var list = getFullDateArray($time, true);
+		return type
+			.replace("YYYY", list[0])
+			.replace("YY", (list[0] + "").substr(2))
+			.replace("MM", list[1])
+			.replace("M", parseInt(list[1]))
+			.replace("DD", list[2])
+			.replace("D", parseInt(list[2]))
+			.replace("hh", list[3])
+			.replace("h", parseInt(list[3]))
+			.replace("mm", list[4])
+			.replace("m", parseInt(list[4]))
+			.replace("ss", list[5])
+			.replace("s", parseInt(list[5]))
 	}
 	else
 	{
@@ -168,12 +181,20 @@ function formatTime($time, type = TYPE_DHMS)
 		}
 		else
 		{
-			var a = getCountDown($time, type);
+			var a = getCountDown($time, TYPE_DHMS);
 			for (var i = 0; i < a.length; i++)
 			{
 				a[i] = a[i] < 10 ? "0" + a[i] : a[i];
 			}
-			return a.join(":");
+			return type
+				.replace("ss", a[3])
+				.replace("s", parseInt(a[3]))
+				.replace("mm", a[2])
+				.replace("m", parseInt(a[2]))
+				.replace("hh", a[1])
+				.replace("h", parseInt(a[1]))
+				.replace("DD", a[0])
+				.replace("D", parseInt(a[0]))
 		}
 	}
 }

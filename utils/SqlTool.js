@@ -4,6 +4,7 @@
 //require("nodeLib")
 var _whereCheckHash = {
 	in: getWhere_in,
+	"not in": getWhere_not_in,
 	equal: getWhere_equal,
 	between: getWhere_between,
 	like: getWhere_like,
@@ -774,6 +775,26 @@ function getWhere_notEqual($columnName, $value)
  */
 function getWhere_in($columnName, $value, $extValue)
 {
+	var newValue = getWhere_in_item($value, $extValue);
+	if (newValue)
+	{
+		return $columnName + " in (" + newValue + ")";
+	}
+	return "";
+}
+
+function getWhere_not_in($columnName, $value, $extValue)
+{
+	var newValue = getWhere_in_item($value, $extValue);
+	if (newValue)
+	{
+		return $columnName + "not in (" + newValue + ")";
+	}
+	return "";
+}
+
+function getWhere_in_item($value, $extValue)
+{
 	var newValue = ""
 	if (Array.isArray($value))
 	{
@@ -836,20 +857,15 @@ function getWhere_in($columnName, $value, $extValue)
 			}
 		}
 	}
-	else if (typeof $value == "string")
+	else if (typeof $value == "string" || $value instanceof Expression)
 	{
-		newValue = $value;
+		newValue = ($value + "").replace(";", "");
 //		if ($value.charAt(0) != "'" && $value.substr($value.length - 1) != "'")
 //		{
 //			$value = "'" + $value + "'";
 //		}
 	}
-
-	if (newValue)
-	{
-		return $columnName + " in (" + newValue + ")";
-	}
-	return "";
+	return newValue;
 }
 
 /**
