@@ -48,7 +48,11 @@ function init()
 			__merge(managerData.param, _data.manager[managerData.name], true);
 		}
 	}
-//	trace(_data);
+
+	if (_data.param && Object.keys(_data.param).length > 0)
+	{
+		__merge(g.data.server.param, _data.param, true);
+	}
 }
 
 function update($data)
