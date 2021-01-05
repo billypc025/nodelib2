@@ -5,6 +5,7 @@ require("./utils/utils");
 require("./utils/utils_instance");
 require("./utils/utils_net");
 require("./utils/utils_array");
+require("./utils/stdout");
 exports.mysql_server = require("./utils/utils_mysql");
 exports.zip = require("./utils/zip");
 

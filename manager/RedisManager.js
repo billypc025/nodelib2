@@ -4,25 +4,20 @@
 var g = require("../global");
 var _timeTool = require("../utils/TimeTool");
 var Manager = require("./Manager");
-var _module = require("../module/module");
-var exec = require("child_process").exec;
-var Redis = require("redis");
+var RedisClient = require("./redis/RedisClient");
 
 module.exports = class extends Manager {
 
 	init()
 	{
+		this.server = {};
+		this._serverHash = {};
 		this._hash = {};
 		this._isConnected = false;
 		this.managerType = "Redis";
 		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
 		{
 			this._isConnected = true;
-			this.server = Redis.createClient({
-				detect_buffers: true,
-				host: this.param.host
-			});
-			this.server.auth(this.param.password);
 		}
 
 		/*
@@ -81,59 +76,58 @@ module.exports = class extends Manager {
 		 });
 		 }
 		 */
+
 		super.init();
+		var server = new RedisClient(0, this.param);
+		this._serverHash[0] = [server];
+		for (var cmd of server.cmdList)
+		{
+			this.server[cmd] = (($cmd)=>
+			{
+				return async(...arg)=>
+				{
+					var db = 0;
+					var arg0 = arg[0];
+					if (isNum(arg0))
+					{
+						db = arg.shift();
+						db = db - 0;
+					}
+					db = parseInt(db);
+					if (db < 0 || db > 15)
+					{
+						db = 0;
+					}
+					var server = this.getInstance(db);
+					if (!server.isInit)
+					{
+						await server.init();
+					}
+
+					server.isFree = false;
+					var backResult = await server[$cmd].apply(server[$cmd], arg);
+					server.isFree = true;
+					this._serverHash[server.db].unshift(server);
+					return backResult;
+				}
+			})(cmd)
+		}
 	}
 
-	set($key, $value, $ex, $timeout)
+	getInstance($db)
 	{
-		if (this._isConnected)
+		var server;
+		if (!this._serverHash[$db])
 		{
-			if ($ex && $timeout)
-			{
-				this.server.set($key, $value, $ex, $timeout);
-			}
-			else
-			{
-				this.server.set($key, $value);
-			}
+			this._serverHash[$db] = [];
 		}
-		else
-		{
-			this._hash[$key] = $value;
-		}
-	}
 
-	get($key, $callBack)
-	{
-		if (this._isConnected)
+		server = this._serverHash[$db][0];
+		if (!server)
 		{
-			this.server.get($key, $callBack);
+			server = new RedisClient($db, this.param);
 		}
-		else
-		{
-			var dObj = this._hash[$key];
-			delete this._hash[$key];
-			$callBack(null, dObj);
-		}
-	}
 
-	incrby($key, $increment, $callBack)
-	{
-		if (this._isConnected)
-		{
-			this.server.incrby($key, $increment, $callBack)
-		}
-		else
-		{
-			if (!this._hash[$key])
-			{
-				this._hash[$key] = 0
-			}
-			var dObj
-			var increment = isNaN(Number($increment)) ? 0 : Number($increment)
-			this._hash[$key] += increment
-			dObj = this._hash[$key]
-			$callBack(null, dObj);
-		}
+		return server;
 	}
 }

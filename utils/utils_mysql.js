@@ -138,3 +138,4 @@ class MysqlShell {
 		return resultObj.total;
 	}
 }
+MysqlShell.constructor = "MysqlShell";
