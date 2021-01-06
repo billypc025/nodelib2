@@ -5,12 +5,16 @@ var _module = require("../../module/module");
 var exec = require("child_process").exec;
 var Redis = require("redis");
 var promisify = require("./promisify");
-var cmdList = require("./redis-cmd.json");
+var redisCmds = require("./redis-cmd.json");
+var excludeList = ["multi"];
+var EventEmitter = require('events').EventEmitter;
 
-class RedisClient {
+class RedisClient extends EventEmitter {
 	constructor($db, $param)
 	{
-		this.cmdList = cmdList;
+		super();
+		this.cmdList = redisCmds.promisify;
+		this.excludeList = excludeList;
 		this.isInit = false;
 		this.db = $db;
 		this.param = $param;
@@ -27,7 +31,14 @@ class RedisClient {
 
 		for (var cmd of this.cmdList)
 		{
-			this[cmd] = promisify(client[cmd]).bind(client);
+			if (excludeList.indexOf(cmd) < 0)
+			{
+				this[cmd] = promisify(client[cmd]).bind(client);
+			}
+			else
+			{
+				this[cmd] = client[cmd].bind(client);
+			}
 		}
 		this.client = client;
 	}
@@ -36,6 +47,24 @@ class RedisClient {
 	{
 		await this.select(this.db);
 		this.isInit = true;
+	}
+
+	multi()
+	{
+		var _self = this;
+		var multi = this.client.multi();
+		multi.exeAsync = function (callback)
+		{
+			return _promise((resolved, reject)=>
+			{
+				this.exec((execError, results)=>
+				{
+					_self.emit("MULTI_COMPLETE");
+					resolved(results);
+				});
+			})
+		}
+		return multi;
 	}
 }
 

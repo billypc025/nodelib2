@@ -12,7 +12,6 @@ module.exports = class extends Manager {
 	{
 		this.server = {};
 		this._serverHash = {};
-		this._hash = {};
 		this._isConnected = false;
 		this.managerType = "Redis";
 		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
@@ -112,6 +111,24 @@ module.exports = class extends Manager {
 				}
 			})(cmd)
 		}
+
+		this.server["multi"] = (db = 0)=>
+		{
+			db = parseInt(db);
+			if (db < 0 || db > 15)
+			{
+				db = 0;
+			}
+			var server = this.getInstance(db);
+			server.isFree = false;
+			var multi = server.multi();
+
+			if (!server.isInit)
+			{
+				server.client.select(db);
+			}
+			return multi;
+		}
 	}
 
 	getInstance($db)
@@ -126,6 +143,11 @@ module.exports = class extends Manager {
 		if (!server)
 		{
 			server = new RedisClient($db, this.param);
+			server.on("MULTI_COMPLETE", ()=>
+			{
+				server.isFree = true;
+				this._serverHash[server.db].unshift(server);
+			})
 		}
 
 		return server;
