@@ -31,10 +31,13 @@ class RedisShell {
 	{
 		this.serverName = $serverName;
 		this.param = $mysqlParam;
-		this.server = {};
 		this._serverHash = {};
+		this.server = {
+			getInstance: this.getInstance.bind(this),
+			_serverHash: this._serverHash
+		};
 
-		var server = new RedisClient(0, this.param);
+		var server = this.getInstance(0);
 		this._serverHash[0] = [server];
 		for (let cmd of server.cmdList)
 		{
@@ -96,7 +99,7 @@ class RedisShell {
 			this._serverHash[$db] = [];
 		}
 
-		server = this._serverHash[$db][0];
+		server = this._serverHash[$db].shift();
 		if (!server)
 		{
 			server = new RedisClient($db, this.param);

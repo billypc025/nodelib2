@@ -13,6 +13,7 @@ class RedisClient extends EventEmitter {
 	constructor($db, $param)
 	{
 		super();
+		this._id = Date.now() + "" + (Math.random() + "").substr(5, 8);
 		this.cmdList = redisCmds.promisify;
 		this.excludeList = excludeList;
 		this.isInit = false;
@@ -65,6 +66,11 @@ class RedisClient extends EventEmitter {
 			})
 		}
 		return multi;
+	}
+
+	toString()
+	{
+		return this._id;
 	}
 }
 

@@ -1,6 +1,6 @@
 {
 	"name": "nodelib2",
-	"version": "2.4.1",
+	"version": "2.4.2",
 	"description": "node library, support http, socket, mysql, redis, web server and sciprt tool",
 	"main": "./global.js",
 	"scripts": {
@@ -40,7 +40,6 @@
 		"iconv-lite": "^0.4.18",
 		"images": "^3.2.3",
 		"inquirer": "^3.2.2",
-		"ioredis": "^3.1.4",
 		"marked": "^0.3.6",
 		"md5": "^2.2.1",
 		"mime-types": "^2.1.21",

@@ -10,8 +10,11 @@ module.exports = class extends Manager {
 
 	init()
 	{
-		this.server = {};
 		this._serverHash = {};
+		this.server = {
+			getInstance: this.getInstance.bind(this),
+			_serverHash: this._serverHash
+		};
 		this._isConnected = false;
 		this.managerType = "Redis";
 		if (!this.param.hasOwnProperty("allows") || this.param.allows.indexOf(__ip) >= 0)
@@ -77,7 +80,7 @@ module.exports = class extends Manager {
 		 */
 
 		super.init();
-		var server = new RedisClient(0, this.param);
+		var server = this.getInstance(0);
 		this._serverHash[0] = [server];
 		for (var cmd of server.cmdList)
 		{
@@ -119,7 +122,7 @@ module.exports = class extends Manager {
 			{
 				db = 0;
 			}
-			var server = this.getInstance(db);
+			var server = this.getInstance(0);
 			server.isFree = false;
 			var multi = server.multi();
 
@@ -139,7 +142,7 @@ module.exports = class extends Manager {
 			this._serverHash[$db] = [];
 		}
 
-		server = this._serverHash[$db][0];
+		server = this._serverHash[$db].shift();
 		if (!server)
 		{
 			server = new RedisClient($db, this.param);
