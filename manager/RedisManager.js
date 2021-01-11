@@ -12,6 +12,7 @@ module.exports = class extends Manager {
 	{
 		this._serverHash = {};
 		this.server = {
+			_param: this.param,
 			getInstance: this.getInstance.bind(this),
 			_serverHash: this._serverHash
 		};
