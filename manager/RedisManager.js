@@ -10,6 +10,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
+		this._defaultDB = -1;
 		this._serverHash = {};
 		this.server = {
 			_param: this.param,
@@ -96,6 +97,13 @@ module.exports = class extends Manager {
 						db = arg.shift();
 						db = db - 0;
 					}
+					else
+					{
+						if (this._defaultDB >= 0)
+						{
+							db = this._defaultDB;
+						}
+					}
 					db = parseInt(db);
 					if (db < 0 || db > 15)
 					{
@@ -116,8 +124,19 @@ module.exports = class extends Manager {
 			})(cmd)
 		}
 
-		this.server["multi"] = (db = 0)=>
+		this.server["multi"] = (db = -1)=>
 		{
+			if (db == -1)
+			{
+				if (this._defaultDB >= 0)
+				{
+					db = this._defaultDB;
+				}
+				else
+				{
+					db = 0;
+				}
+			}
 			db = parseInt(db);
 			if (db < 0 || db > 15)
 			{
@@ -133,6 +152,22 @@ module.exports = class extends Manager {
 			}
 			return multi;
 		}
+
+		this.server.setDB = this.setDB.bind(this);
+		this.server.clearDB = this.clearDB.bind(this);
+	}
+
+	setDB($db)
+	{
+		if ($db >= 0 && $db < 16)
+		{
+			this._defaultDB = $db;
+		}
+	}
+
+	clearDB()
+	{
+		this._defaultDB = -1;
 	}
 
 	getInstance($db)

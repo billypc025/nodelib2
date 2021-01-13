@@ -29,6 +29,7 @@ exports.create = function ($param = {})
 class RedisShell {
 	constructor($serverName, $mysqlParam)
 	{
+		this._defaultDB = -1;
 		this.serverName = $serverName;
 		this.param = $mysqlParam;
 		this._serverHash = {};
@@ -53,6 +54,13 @@ class RedisShell {
 						db = arg.shift();
 						db = db - 0;
 					}
+					else
+					{
+						if (this._defaultDB >= 0)
+						{
+							db = this._defaultDB;
+						}
+					}
 					db = parseInt(db);
 					if (db < 0 || db > 15)
 					{
@@ -73,8 +81,19 @@ class RedisShell {
 			})(cmd)
 		}
 
-		this.server["multi"] = (db = 0)=>
+		this.server["multi"] = (db = -1)=>
 		{
+			if (db == -1)
+			{
+				if (this._defaultDB >= 0)
+				{
+					db = this._defaultDB;
+				}
+				else
+				{
+					db = 0;
+				}
+			}
 			db = parseInt(db);
 			if (db < 0 || db > 15)
 			{
@@ -90,6 +109,22 @@ class RedisShell {
 			}
 			return multi;
 		}
+
+		this.server.setDB = this.setDB.bind(this);
+		this.server.clearDB = this.clearDB.bind(this);
+	}
+
+	setDB($db)
+	{
+		if ($db >= 0 && $db < 16)
+		{
+			this._defaultDB = $db;
+		}
+	}
+
+	clearDB()
+	{
+		this._defaultDB = -1;
 	}
 
 	getInstance($db)
