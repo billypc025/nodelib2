@@ -8,6 +8,7 @@ require("./utils/utils_array");
 require("./utils/stdout");
 exports.mysql_server = require("./utils/utils_mysql");
 exports.redis_server = require("./utils/utils_redis");
+exports.multi_process = require("./utils/utils_multiProcess");
 exports.zip = require("./utils/zip");
 
 global.log = require("./utils/log"); //控制台输出

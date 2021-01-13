@@ -799,3 +799,22 @@ function exit($code = 0)
 	process.exit($code);
 }
 global.exit = exit;
+
+var startTime = Date.now();
+global.__startTiming = function ()
+{
+	startTime = Date.now();
+};
+
+global.__endTiming = function ()
+{
+	var num = Date.now() - startTime;
+	if (num < 1000)
+	{
+		trace(num + " ms");
+	}
+	else
+	{
+		trace((num / 1000).toFixed(3) + " s");
+	}
+};
