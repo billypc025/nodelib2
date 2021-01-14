@@ -10,7 +10,7 @@ module.exports = class extends Manager {
 
 	init()
 	{
-		this._defaultDB = -1;
+		this._defaultDB = this.param.defaultDB || -1;
 		this._serverHash = {};
 		this.server = {
 			_param: this.param,
@@ -82,7 +82,7 @@ module.exports = class extends Manager {
 		 */
 
 		super.init();
-		var server = this.getInstance(0);
+		var server = this.getInstance(this.param.db || (this._defaultDB >= 0 ? this._defaultDB : null) || 0);
 		this._serverHash[0] = [server];
 		for (var cmd of server.cmdList)
 		{
