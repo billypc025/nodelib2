@@ -16,22 +16,22 @@ exports.create = function ($param = {})
 	var serverName = $param.name || `${host}-${port}-${password}`;
 	if (!_hash[serverName])
 	{
-		_hash[serverName] = new RedisShell(serverName, {
-			host,
-			port,
-			password
-		});
+		_hash[serverName] = new RedisShell(serverName, {...$param});
 	}
 
 	return _hash[serverName].server;
 };
 
 class RedisShell {
-	constructor($serverName, $mysqlParam)
+	constructor($serverName, $redisParam)
 	{
 		this._defaultDB = -1;
 		this.serverName = $serverName;
-		this.param = $mysqlParam;
+		this.param = $redisParam;
+		if (this.param.defaultDB)
+		{
+			this._defaultDB = this.param.defaultDB;
+		}
 		this._serverHash = {};
 		this.server = {
 			_param: this.param,
@@ -39,7 +39,7 @@ class RedisShell {
 			_serverHash: this._serverHash
 		};
 
-		var server = this.getInstance(0);
+		var server = this.getInstance(this.param.db || (this._defaultDB >= 0 ? this._defaultDB : null) || 0);
 		this._serverHash[0] = [server];
 		for (let cmd of server.cmdList)
 		{
