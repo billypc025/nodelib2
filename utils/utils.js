@@ -806,15 +806,19 @@ global.__startTiming = function ()
 	startTime = Date.now();
 };
 
-global.__endTiming = function ()
+global.__endTiming = function ($trace = true)
 {
 	var num = Date.now() - startTime;
-	if (num < 1000)
+	if ($trace)
 	{
-		trace(num + " ms");
+		if (num < 1000)
+		{
+			trace(num + " ms");
+		}
+		else
+		{
+			trace((num / 1000).toFixed(3) + " s");
+		}
 	}
-	else
-	{
-		trace((num / 1000).toFixed(3) + " s");
-	}
+	return num;
 };
