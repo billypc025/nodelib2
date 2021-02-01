@@ -22,7 +22,9 @@ class RedisClient extends EventEmitter {
 		this.isFree = true;
 		var client = Redis.createClient({
 			detect_buffers: true,
-			host: this.param.host
+			host: this.param.host,
+			port: this.param.port || 6379,
+			db: this.param.db
 		});
 
 		if (this.param.password)
