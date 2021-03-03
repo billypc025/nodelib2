@@ -47,12 +47,16 @@ function toHash($key = "id", $toArray = false, $valKey = "")
  * list.toCountHash("userId","orderNum")
  * 结果:{aaa:3,bbb:1}
  */
-function toCountHash($key = "id", $totalKey)
+function toCountHash($key, $totalKey)
 {
 	var hash = {};
 	for (var item of this)
 	{
-		var id = item[$key];
+		var id = item;
+		if (typeof item == "object")
+		{
+			id = item[$key];
+		}
 		if (!hash[id])
 		{
 			if ($totalKey)
