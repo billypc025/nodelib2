@@ -363,9 +363,9 @@ function defineProperty($targetObj, propertyName, getFunc, setFunc)
 }
 global.defineProperty = defineProperty;
 
-function exec(cmd)
+function exec(...arg)
 {
-	return require('child_process').execSync(cmd).toString().trim();
+	return require('child_process').execSync(arg.join(" ")).toString().trim();
 }
 global.exec = exec;
 

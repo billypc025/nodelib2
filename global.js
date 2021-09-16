@@ -42,4 +42,7 @@ global.co = require("co");
 exports.startServer = require("./utils/startServer");
 global.exit = ()=>process.exit();
 
+exports.open = require("opener");
+exports.inquirer = require("inquirer");
+
 global.g = exports;
