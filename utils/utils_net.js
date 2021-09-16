@@ -45,7 +45,7 @@ global.$.request = function ($param, ...arg)
 	return doRequest(url, data, method, headers);
 }
 
-global.$.get = function ($param, $data, $headers)
+global.$.get = function ($param, $data, $headers, $options = {})
 {
 	var url, data, headers;
 	if (typeof $param == "object")
@@ -63,10 +63,10 @@ global.$.get = function ($param, $data, $headers)
 			headers = $headers;
 		}
 	}
-	return doRequest(url, data, "get", headers);
+	return doRequest(url, data, "get", headers, $options);
 }
 
-global.$.post = function ($param, $data, $headers)
+global.$.post = function ($param, $data, $headers, $options = {})
 {
 	var url, data, headers;
 	if (typeof $param == "object")
@@ -84,12 +84,12 @@ global.$.post = function ($param, $data, $headers)
 			headers = $headers;
 		}
 	}
-	return doRequest(url, data, "post", headers);
+	return doRequest(url, data, "post", headers, $options);
 }
 
-function doRequest($url, $data, $method, $headers)
+function doRequest($url, $data, $method, $headers, $options = {})
 {
-	var url = $url, data = $data, method = $method, headers = $headers;
+	var url = $url, data = $data, method = $method, headers = $headers, options = $options;
 
 	method = method || "get";
 	data = data || {};
@@ -138,10 +138,10 @@ function doRequest($url, $data, $method, $headers)
 		headers.cookie = cookie;
 	}
 
-	return _methodHash[method](_protocolHash[protocol], url, data, headers);
+	return _methodHash[method](_protocolHash[protocol], url, data, headers, options);
 }
 
-function callPost($req, $url, $data, $headers)
+function callPost($req, $url, $data, $headers, $options)
 {
 	var promise = new Promise((resolved, reject) =>
 	{
@@ -255,7 +255,7 @@ function callPost($req, $url, $data, $headers)
 	return promise;
 }
 
-function callGet($req, $url, $data, $headers)
+function callGet($req, $url, $data, $headers, $options)
 {
 	var promise = new Promise((resolved, reject) =>
 	{
@@ -263,18 +263,18 @@ function callGet($req, $url, $data, $headers)
 		{
 			$url.searchParams.set(k, $data[k]);
 		}
-		var _req = $req.get($url.href, {headers: $headers}, (req, res) =>
+		var _req = $req.get($url.href, {headers: $headers}, (res) =>
 		{
-			for (var k in req.headers)
+			for (var k in res.headers)
 			{
 				if (k.toLowerCase().indexOf("cookie") >= 0)
 				{
-					_cookiePool[$url.origin] = req.headers[k];
+					_cookiePool[$url.origin] = res.headers[k];
 					break;
 				}
 			}
 
-			var contentTypeStr = req.headers["content-type"] || "";
+			var contentTypeStr = res.headers["content-type"] || "";
 			var contentType = "text"
 			if (contentTypeStr.indexOf("image/") == 0)
 			{
@@ -282,11 +282,11 @@ function callGet($req, $url, $data, $headers)
 			}
 			var returnData = "";
 			var index = 0;
-			req.on("data", (data) =>
+			res.on("data", (data) =>
 			{
 				if (contentType == "image")
 				{
-					var contentLength = req.headers["content-length"] || "";
+					var contentLength = res.headers["content-length"] || "";
 					contentLength -= 0;
 					if (data instanceof Uint8Array)
 					{
@@ -307,7 +307,7 @@ function callGet($req, $url, $data, $headers)
 					returnData += data;
 				}
 			});
-			req.on("end", () =>
+			res.on("end", () =>
 			{
 				if (typeof returnData == "string")
 				{
@@ -319,7 +319,18 @@ function callGet($req, $url, $data, $headers)
 					{
 					}
 				}
-				resolved(returnData);
+				if ($options && $options.all)
+				{
+					resolved({
+						res: res,
+						req: res,
+						data: returnData
+					});
+				}
+				else
+				{
+					resolved(returnData);
+				}
 			});
 		});
 		_req.on("error", (e) =>
