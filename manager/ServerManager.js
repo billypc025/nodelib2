@@ -12,7 +12,7 @@ global.emiter = new EventEmitter();
 
 var nodeLibTool = require("../module/nodelib-tool");
 
-exports.start = function ($options)
+exports.start = async function ($options)
 {
 	_managerInitNum = 0;
 	global.emiter.emit("START_INIT_ROUTER");
@@ -20,11 +20,17 @@ exports.start = function ($options)
 	global.emiter.emit("START_INIT_DATA");
 	initData();
 	global.emiter.emit("START_INIT_MANAGER");
-	initManager();
+	await initManager();
 }
 
 function initRouter($router)
 {
+	if(typeof $router=="object")
+	{
+		_routerObj = $router;
+		return;
+	}
+
 	var routerPath = g.path.resolve($router);
 	if (!g.fs.existsSync(routerPath))
 	{
@@ -56,36 +62,31 @@ function initData()
 	g.data.manager.init(_routerObj.info);
 }
 
-function initManager()
+async function initManager()
 {
 	var managerList = g.data.manager.list;
-	if (_managerInitNum < managerList.length)
+	while (_managerInitNum < managerList.length)
 	{
 		var managerItem = managerList[_managerInitNum];
 
 		if (managerItem.enabled)
 		{
-			startManager(managerList[_managerInitNum], function ($managerName, $success)
-			{
-				global.emiter.emit("COMPLETED_MANAGER_ITEM", $managerName);
-				nextManager(managerItem.name, $success ? "Started" : "failed");
-			})
+			var {managerName, success} = await startManager(managerList[_managerInitNum])
+			global.emiter.emit("COMPLETED_MANAGER_ITEM", managerName);
+			showResult(managerItem.name, success ? "Started" : "failed");
 		}
-		else
-		{
-			nextManager(managerItem, "Skipped");
-		}
+
+		showResult(managerItem, "Skipped");
+		_managerInitNum++;
+		await __setTimeout(200);
 	}
-	else
-	{
-		log.success("--------------- All INITED ---------------");
-		log.success("start at:" + global.ip);
-		global.emiter.emit("ALL_INITED");
-		trace("");
-	}
+
+	log.success("--------------- All INITED ---------------");
+	log.success("start at:" + global.ip);
+	global.emiter.emit("ALL_INITED");
 }
 
-function nextManager($managerName, $status)
+function showResult($managerName, $status)
 {
 	var managerList = g.data.manager.list;
 	var manager = managerList[_managerInitNum];
@@ -107,34 +108,35 @@ function nextManager($managerName, $status)
 			break;
 	}
 	_managerInitNum++;
-	setTimeout(function ()
-	{
-		initManager();
-	}, 500);
 }
 
-function startManager($managerData, $callBack)
+function startManager($managerData)
 {
-	if (!$managerData.type)
+	return _promise((resolved)=>
 	{
-		log.error("路由配置缺少服务类型!");
-		log.info("请指定一种服务类型: [" + _serverTypes.join(", ") + "]");
-		process.exit();
-	}
+		if (!$managerData.type)
+		{
+			log.error("路由配置缺少服务类型!");
+			log.info("请指定一种服务类型: [" + _serverTypes.join(", ") + "]");
+			process.exit();
+		}
 
-	var managerType = $managerData.type;
-	if (_serverTypes.indexOf(managerType) < 0)
-	{
-		log.error("不存在的服务类型：" + managerType);
-		log.info("请指定一种服务类型: [http, socket, web]");
-		process.exit();
-	}
+		var managerType = $managerData.type;
+		if (_serverTypes.indexOf(managerType) < 0)
+		{
+			log.error("不存在的服务类型：" + managerType);
+			log.info("请指定一种服务类型: [http, socket, web]");
+			process.exit();
+		}
 
-	global.emiter.emit("BEFORE_CREATE_MANAGER", $managerData);
-	managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
-	var ManagerClass = require("./" + managerType + "Manager");
-	var managerItem = new ManagerClass($managerData);
-	global.emiter.emit("BEFORE_PRESTART_MANAGER_ITEM", $managerData);
-	managerItem.preStart($callBack);
+		global.emiter.emit("BEFORE_CREATE_MANAGER", $managerData);
+		managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
+		var ManagerClass = require("./" + managerType + "Manager");
+		var managerItem = new ManagerClass($managerData);
+		global.emiter.emit("BEFORE_PRESTART_MANAGER_ITEM", $managerData);
+		managerItem.preStart((managerName, success)=>{
+			resolved({managerName, success})
+		});
+	})
 }
 exports.startManager = startManager;

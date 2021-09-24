@@ -1,7 +1,7 @@
 /**
  * Created by billy on 2020/1/17.
  */
-module.exports = function ($routerName, $options = null)
+module.exports = async function ($routerName, $options = null)
 {
 	var clusterNum = 1;
 	if ($options)
@@ -33,5 +33,5 @@ module.exports = function ($routerName, $options = null)
 
 	var self = {};
 	require("./pathTool").init(self);
-	require("../bin/server")($routerName);
+	await require("../bin/server")($routerName);
 }

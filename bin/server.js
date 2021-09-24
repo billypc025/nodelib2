@@ -5,37 +5,39 @@ var g = require("../global");
 var serverManager = require("../manager/ServerManager");
 var options = {router: ""};
 
-module.exports = function ($routerName)
+module.exports = async function ($routerName)
 {
 	global.g = g;
-	var currPath = g.path.resolve("./");
-	var projPath = "";
-
-	while (currPath != g.file.getDirectory(currPath))
+	if(!global.projPath)
 	{
-		var tempPath = g.path.join(currPath, "package.json");
-		if (g.fs.existsSync(tempPath))
+		var currPath = g.path.resolve("./");
+		var projPath = "";
+
+		while (currPath != g.file.getDirectory(currPath))
 		{
-			if (require(tempPath).proj == "nodecli")
+			var tempPath = g.path.join(currPath, "package.json");
+			if (g.fs.existsSync(tempPath))
 			{
-				projPath = g.file.getDirectory(tempPath);
+				if (require(tempPath).proj == "nodecli")
+				{
+					projPath = g.file.getDirectory(tempPath);
+				}
+				break;
 			}
-			break;
+			currPath = g.file.getDirectory(currPath);
 		}
-		currPath = g.file.getDirectory(currPath);
-	}
 
-	if (projPath == "")
-	{
-		log.error("没有找到工程目录，请使用以下命令初始化工程目录！");
+		if (projPath == "")
+		{
+			log.error("没有找到工程目录，请使用以下命令初始化工程目录！");
+			process.exit();
+		}
 		log.info("nodecli init");
-		process.exit();
+		global.projPath = projPath;
 	}
-
 	global.libPath = g.path.resolve(__dirname, "../");
-	global.projPath = projPath;
 	global.__libdir = libPath;   //nodeLib库路径
-	global.__projdir = projPath; //项目目录路径
+	global.__projdir = global.projPath; //项目目录路径
 	global.__libpath = function ($path)  //以nodeLib库目录为根节点，获取绝对路径
 	{
 		return g.path.join(global.__libdir, $path);
@@ -53,29 +55,37 @@ module.exports = function ($routerName)
 	var routerPath;
 	if ($routerName)
 	{
-		routerPath = g.path.join(projPath, "./router/" + $routerName);
-		if (!g.file.exists(routerPath))
+		if(typeof $routerName == "string")
 		{
-			if ($routerName.indexOf(".json") < 0)
+			routerPath = g.path.join(projPath, "./router/" + $routerName);
+			if (!g.file.exists(routerPath))
 			{
-				var routerPath0 = g.path.join(projPath, "./router/" + $routerName + ".json");
-				if (g.file.exists(routerPath0))
+				if ($routerName.indexOf(".json") < 0)
 				{
-					checkFile(routerPath0);
+					var routerPath0 = g.path.join(projPath, "./router/" + $routerName + ".json");
+					if (g.file.exists(routerPath0))
+					{
+						await checkFile(routerPath0);
+					}
+					else
+					{
+						showErrorAndExit("指定的router目录不存在！", "找不到目录 \"" + routerPath + "\"");
+					}
 				}
 				else
 				{
-					showErrorAndExit("指定的router目录不存在！", "找不到目录 \"" + routerPath + "\"");
+					showErrorAndExit("指定的router文件不存在！", "找不到文件 \"" + routerPath + "\"");
 				}
 			}
 			else
 			{
-				showErrorAndExit("指定的router文件不存在！", "找不到文件 \"" + routerPath + "\"");
+				await checkFile(routerPath);
 			}
 		}
-		else
+		else if(typeof $routerName == "object")
 		{
-			checkFile(routerPath);
+			options.router = $routerName;
+			await start();
 		}
 	}
 	else
@@ -93,16 +103,16 @@ module.exports = function ($routerName)
 	}
 }
 
-function checkFile($filePath)
+async function checkFile($filePath)
 {
 	if (g.file.isFile($filePath))
 	{
 		options.router = $filePath;
-		start();
+		await start();
 	}
 	else
 	{
-		showRouterList($filePath);
+		await showRouterList($filePath);
 	}
 }
 
@@ -115,7 +125,7 @@ function showErrorAndExit(...arg)
 	process.exit();
 }
 
-function showRouterList($basePath)
+async function showRouterList($basePath)
 {
 	var inquirer = require('inquirer');
 	var selectOption = {
@@ -128,18 +138,16 @@ function showRouterList($basePath)
 	var fileList = g.file.getDirectoryListing(g.path.resolve($basePath));
 	selectOption.choices = fileList.concat();
 
-	inquirer.prompt(selectOption).then(function ($answer)
-	{
-		__merge(options, $answer, true);
-		process.argv.push(options.router);
-		start();
-	});
+	var answer = inquirer.prompt(selectOption);
+	__merge(options, answer, true);
+	process.argv.push(options.router);
+	await start();
 }
 
-function start()
+async function start()
 {
 	global.ip = g.localHost.getLocalIp();
 	global.__ip = global.ip;
 	log.success("start at:" + global.ip);
-	serverManager.start(options);
+	await serverManager.start(options);
 }

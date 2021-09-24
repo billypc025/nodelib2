@@ -80,15 +80,3 @@ module.exports = async function ($exeFunc, $targetList, $multiNum, $param = {})
 	}
 	return resultList;
 }
-
-function __setTimeout(callback, time)
-{
-	return _promise(r=>
-	{
-		setTimeout(()=>
-		{
-			callback();
-			r();
-		}, time)
-	})
-}

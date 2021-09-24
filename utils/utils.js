@@ -197,27 +197,27 @@ function trim(p_string)
 }
 global.trim = trim;
 
-function queryUrl($query)
+function parseUrl($url)
 {
 	var res = Object.create(null)
-	var url = $query.split("?")[0];
+	var url = $url.split("?")[0];
 	var port = url.split("://")[0];
 	port != "" && (port += "://");
 	var tempurl = url.substr(port.length);
 	var host = port + tempurl.substring(0, tempurl.indexOf("/"));
-	$query = $query.replace(url, "");
+	$url = $url.replace(url, "");
 	var query = Object.create(null);
 	var bookmark = "";
-	$query = $query.trim().replace(/^(\?|#|&)/, '')
-	if ($query.indexOf('#') > 0)
+	$url = $url.trim().replace(/^(\?|#|&)/, '')
+	if ($url.indexOf('#') > 0)
 	{
-		bookmark = $query.substr($query.indexOf('#') + 1);
-		$query = $query.replace('#' + bookmark, '');
+		bookmark = $url.substr($url.indexOf('#') + 1);
+		$url = $url.replace('#' + bookmark, '');
 	}
 
-	if ($query)
+	if ($url)
 	{
-		$query.split('&').forEach(function (param)
+		$url.split('&').forEach(function (param)
 		{
 			var parts = param.replace(/\+/g, ' ').split('=')
 			var key = decodeURIComponent(parts.shift())
@@ -245,7 +245,7 @@ function queryUrl($query)
 	res.query = query;
 	return res
 }
-global.queryUrl = queryUrl;
+global.parseUrl = parseUrl;
 
 // function __extends(d, b)
 // {
@@ -822,3 +822,19 @@ global.__endTiming = function ($trace = true)
 	}
 	return num;
 };
+
+function __setTimeout($callback, $time)
+{
+	var time = $time || $callback;
+	!isNum(time) && (time = 200);
+	var callback = typeof $callback == "function" ? $callback : null;
+	return _promise(r=>
+	{
+		setTimeout(()=>
+		{
+			callback && callback();
+			r();
+		}, time)
+	})
+}
+global.__setTimeout = __setTimeout;

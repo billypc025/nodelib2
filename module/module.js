@@ -6,86 +6,79 @@ var co = require("co");
 var _hash = {};
 var _nameList = [];
 
-function addModule($modName, $moduleClass, $managerData)
+async function addModule($modName, $moduleClass, $managerData)
 {
-	var promise = new Promise((resloved, reject)=>
+	var isGlobalModule = false;
+	var managerType = $managerData.type;
+	managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
+	var managerName = $managerData.name;
+
+	if (!$modName)
 	{
-		var isGlobalModule = false;
-		var managerType = $managerData.type;
-		managerType = managerType.charAt(0).toUpperCase() + managerType.substr(1);
-		var managerName = $managerData.name;
+		log.warn("[" + managerType + "] " + managerName + " 发现空模块名，请检查配置！");
+		return;
+	}
+	if ($modName.indexOf("@") == 0)
+	{
+		isGlobalModule = true;
+		$modName = $modName.substr(1);
+	}
+	else
+	{
+		$modName += "";
+	}
 
-		if (!$modName)
+	_nameList.push($modName);
+
+	var moduleItem;
+	var mustInit = false;
+	if (!isGlobalModule || !_hash[$modName])
+	{
+		$moduleClass.prototype.add = addFunc($modName);
+		try
 		{
-			log.warn("[" + managerType + "] " + managerName + " 发现空模块名，请检查配置！");
-			return;
+			moduleItem = new $moduleClass();
 		}
-		if ($modName.indexOf("@") == 0)
+		catch (e)
 		{
-			isGlobalModule = true;
-			$modName = $modName.substr(1);
+			log.error("模块加载出错： " + $modName)
+			trace(e);
+			process.exit(0);
+		}
+		moduleItem.name = $modName;
+		moduleItem.data = $managerData;
+		moduleItem.funcList = moduleItem.funcList || [];
+		moduleItem.funcHash = moduleItem.funcHash || {};
+		moduleItem.isGlobal = isGlobalModule;
+		if (moduleItem.init)
+		{
+			mustInit = true;
+		}
+		if (isGlobalModule && !_hash[$modName])
+		{
+			_hash[$modName] = moduleItem;
+		}
+	}
+	else
+	{
+		moduleItem = _hash[$modName];
+	}
+
+	if (mustInit)
+	{
+		if (moduleItem.init.length > 0)
+		{
+			moduleItem.init(()=>
+			{
+				return moduleItem;
+			});
 		}
 		else
 		{
-			$modName += "";
+			return moduleItem;
 		}
-
-		_nameList.push($modName);
-
-		var moduleItem;
-		var mustInit = false;
-		if (!isGlobalModule || !_hash[$modName])
-		{
-			$moduleClass.prototype.add = addFunc($modName);
-			try
-			{
-				moduleItem = new $moduleClass();
-			}
-			catch (e)
-			{
-				log.error("模块加载出错： " + $modName)
-				trace(e);
-				process.exit(0);
-			}
-			moduleItem.name = $modName;
-			moduleItem.data = $managerData;
-			moduleItem.funcList = moduleItem.funcList || [];
-			moduleItem.funcHash = moduleItem.funcHash || {};
-			moduleItem.isGlobal = isGlobalModule;
-			if (moduleItem.init)
-			{
-				mustInit = true;
-			}
-			if (isGlobalModule && !_hash[$modName])
-			{
-				_hash[$modName] = moduleItem;
-			}
-		}
-		else
-		{
-			moduleItem = _hash[$modName];
-		}
-
-		if (mustInit)
-		{
-			if (moduleItem.init.length > 0)
-			{
-				moduleItem.init(()=>
-				{
-					resloved(moduleItem);
-				});
-			}
-			else
-			{
-				resloved(moduleItem);
-			}
-		}
-		else
-		{
-			resloved(moduleItem);
-		}
-	})
-	return promise;
+	}
+	return moduleItem;
 }
 
 function addFunc($modName)

@@ -15,7 +15,7 @@ module.exports = class {
 		$managerData.update({manager: this});
 	}
 
-	preStart($callBack)
+	async preStart($callBack)
 	{
 		this._callBack = $callBack;
 		this.init();
@@ -32,7 +32,7 @@ module.exports = class {
 		for (var routerPath in this.module)
 		{
 			var modulePath = this.module[routerPath];
-			var moduleClass = require(g.path.join(global.projPath || "", modulePath));
+			var moduleClass = typeof modulePath == "string" ? require(g.path.join(global.projPath || "", modulePath)) : modulePath;
 			var promise = _module.addModule(routerPath, moduleClass, this.data);
 
 			list.push(promise);
