@@ -10,7 +10,6 @@ var exec = require("child_process").exec;
 var pathTool = require("../utils/pathTool");
 
 var globalCmd = require("../utils/actionPool")();
-//var addCmd = require("../utils/actionPool")();
 
 var self = {globalCmd};
 
@@ -80,20 +79,13 @@ pathTool.init(self);
 		test: addTest,
 		bin: addBin,
 	});
-//	globalCmd.add(update);
-//	globalCmd.add(open);
-//	globalCmd.add(start);
-//	globalCmd.add(run);
+
 	globalCmd.log = function (...arg)
 	{
 		arg.unshift("[nodecli]")
 		global.log.info(arg.join(" "));
 	}
-//	addCmd.add("router", addRouter);
-//	addCmd.add("server", addServer);
-//	addCmd.add("module", addModule);
-//	addCmd.add("test", addTest);
-//	addCmd.add("bin", addBin);
+
 })();
 
 (function ()

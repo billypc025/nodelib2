@@ -71,10 +71,6 @@ module.exports = class extends Manager {
 			{
 				errorMsg = this.param.req.errorMsg.name || errorMsg;
 			}
-
-			//不对，这里应该是将程序里面返回的{code:222}，进行分割处理
-			//但是这些error其实是业务逻辑自己返回的，所以其实是可以定义的
-			//那么其中一种就可以是对status字段进行覆盖处理
 		}
 
 		this.webParam = null;
@@ -93,7 +89,6 @@ module.exports = class extends Manager {
 				result["reqId"] = $reqId;
 			}
 
-			//这里就需要对结构进行定义
 			if (error)
 			{
 				result.status = failStatus;
@@ -145,13 +140,6 @@ module.exports = class extends Manager {
 
 		this.server.on('connection', ($client)=>
 		{
-//			var startTime = 0;
-//			startTime = Date.now();
-//			trace("[connection]", $client.client.id);
-//			for (var n in $client.client.server.nsps)
-//			{
-//				trace(n);
-//			}
 			this.clientPool.add($client);
 
 			if (this.requireLogin)
@@ -167,7 +155,7 @@ module.exports = class extends Manager {
 			{
 				//返回结构如下：
 				//{type:2,nsp:'/',data:[eventType,params]};
-//				log.log("[Socket] " + this.name + "[recieved]", $data)
+				// log.log("[Socket] " + this.name + "[recieved]", $data)
 				var clientData = this.clientPool.get($client.id);
 				if (!this.requireLogin || (clientData && clientData.isLogin))
 				{
@@ -175,7 +163,6 @@ module.exports = class extends Manager {
 				}
 				else if ($data.data.length > 0 && $data.data[0] == "login")
 				{
-					//这里应该使用一个标准回调，module里面只负责逻辑
 					$data.data.shift();
 					$data.data.unshift(this.loginModule);
 					this.go($data, clientData, ($returnData, $client)=>
@@ -200,7 +187,6 @@ module.exports = class extends Manager {
 					func.call(target, $client.id);
 				}
 				this.clientPool.remove($client.id);
-//				trace(Date.now() - startTime);
 //				trace("[disconnect]", $client.client.id);
 
 			});
@@ -270,7 +256,7 @@ module.exports = class extends Manager {
 	push($client, $cmd, $dataObj)
 	{
 		//识别$client为  client / clientId / clientIds
-//		trace(getType($client));
+		// trace(getType($client));
 	}
 
 	addLoginCheckList($id)
@@ -356,12 +342,6 @@ module.exports = class extends Manager {
 				delete param.reqId;
 				func(param, ($returnObj, $cmd)=>
 					{
-						//这里是否有什么办法，让回调可以直接进行一个单方的，或者多方的推送
-						//因为socket主要是用于推送的
-						//这里的推送分为，针对单人，针对多人
-						//如果能根据id进行推送就会方便的很
-						//所以这个回调就仅仅用于回调
-						//另外再追加一个用于推送的
 //					trace("[success]", dataType);
 						$callBack && $callBack($returnObj, $clientData);
 						$clientData && $clientData.client && $clientData.client.emit("data", this.formatResponse(reqId, $cmd || dataType, $returnObj));

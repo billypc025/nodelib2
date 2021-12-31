@@ -88,8 +88,6 @@ exports.init = function ($param)
 {
 	_param = $param || {};
 
-//	_httpInfo = __merge(_httpInfo, _param.req, true);
-
 	if (_param.hasOwnProperty("req"))
 	{
 		if (_param.req.hasOwnProperty("result"))
@@ -285,8 +283,6 @@ function createObj(obj)
 	while (true)
 	{
 		var tObj = __merge({}, obj);
-//		delete tObj.param;
-//		tObj.param = {};
 		for (var i = 0; i < arrKey.length; i++)
 		{
 			var key = arrKey[i];
@@ -507,10 +503,7 @@ function startNext()
 							error.apply(null, arg);
 						}, _cookies);
 					}
-//				this.callback = _currObj.callback.bind(this);
-//				this.callback(d.data, _currObj.param, _cookies);
 				}
-				//这中间可能要调用sql去数据库查询最终数据，所以这里也是异步的
 			}, (d)=>
 			{
 				error("[" + _count + "]", _currObj.func, "fail");
@@ -528,22 +521,6 @@ function startNext()
 function callTest($obj)
 {
 	return createNet($obj);
-	/*
-	 var list = [];
-	 if (Array.isArray($obj))
-	 {
-	 $obj.map(function (v)
-	 {
-	 return createNet(v);
-	 });
-	 }
-	 else
-	 {
-	 $obj = [$obj];
-	 }
-
-	 return Promise.all($obj);
-	 */
 }
 
 function createNet($obj)
@@ -569,14 +546,12 @@ function createNet($obj)
 			.send($obj.param)
 			.end((err, res)=>
 			{
-//				trace(res.text)
 				if (err)
 				{
 					reject(err);
 				}
 				else
 				{
-//					trace(res.header);
 					if (res.headers.hasOwnProperty("set-cookie"))
 					{
 						_cookies = _cookies.concat(res.headers["set-cookie"]);
@@ -587,19 +562,3 @@ function createNet($obj)
 	})
 	return promise;
 }
-
-//这里还需要做这样的处理
-/*
- 1.将test并入到nodecli
- 如果test作为一个router类型的话，那么就能够通过test来创建新的router，但是这个router里面就没办法拥有多个模块
- 而应该是创建另外一种类型的工程，在工程下创建的模块能自动并入到router中，去，以下列举一下目录层级，应该是这样的
-
- 工程目录      通过nodecli init test创建
- router文件   通过nodecli add router {$name}创建
- module       通过nodecli add module {$name}创建
-
- 这样在一个router文件中，就可以加入多个模块
- 而工程的总入口文件是一个地址
-
- 入口文件打开以后，应该是选择各个项目进行测试
- */

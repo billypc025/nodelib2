@@ -59,9 +59,6 @@ module.exports = class {
 
 	query($sql, $callBack, $errorBack)
 	{
-//		trace("this.isConnected:" + this.isConnected);
-//		if (this.isConnected)
-//		{
 		$sql = $sql + "";
 		if ($sql)
 		{
@@ -100,12 +97,6 @@ module.exports = class {
 			g.log.out("Query was empty");
 			$errorBack && $errorBack("Query was empty");
 		}
-//		}
-//		else
-//		{
-//			this._waitList.push([$sql, $callBack, $errorBack]);
-//			this.connect();
-//		}
 	}
 
 	toString()

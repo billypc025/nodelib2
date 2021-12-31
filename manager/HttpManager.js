@@ -77,10 +77,6 @@ module.exports = class extends Manager {
 			{
 				errorMsg = this.param.req.errorMsg.name || errorMsg;
 			}
-
-			//不对，这里应该是将程序里面返回的{code:222}，进行分割处理
-			//但是这些error其实是业务逻辑自己返回的，所以其实是可以定义的
-			//那么其中一种就可以是对status字段进行覆盖处理
 		}
 
 		this.webParam = null;
@@ -95,7 +91,6 @@ module.exports = class extends Manager {
 			result[statusName] = successStatus;
 			result[dataName] = $dataObj;
 
-			//这里就需要对结构进行定义
 			if (error)
 			{
 				result.status = failStatus;
@@ -165,7 +160,6 @@ module.exports = class extends Manager {
 	initServer()
 	{
 		var server;
-// 		trace(this.protocol == "https", this.param.httpsOptions)
 		if (this.protocol == "https" && this.param.httpsOptions && this.param.httpsOptions.key && this.param.httpsOptions.cert && !(this.param.checkLocal && ip.indexOf("192.168") == 0))
 		{
 			this.param.httpsOptions.key = g.fs.readFileSync(this.param.httpsOptions.key);
@@ -399,16 +393,6 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 	$response.writeHead($status, header);
 	if ($responseType == "download")
 	{
-//		$resultObj.on("data", (chunk) =>
-//		{
-//			trace(123123)
-//			$response.write(chunk, "binary")
-//		});
-//		$resultObj.on("end", function ()
-//		{
-//			$response.end();
-//		});
-
 		let fileStream = g.fs.createReadStream($resultObj.data);
 		fileStream.pipe($response);
 	}

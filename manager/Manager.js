@@ -67,7 +67,6 @@ module.exports = class {
 						});
 					}
 				}
-//				this.funcHash = __merge(this.funcHash, moduleItem.funcHash);
 			}
 			global.emiter.emit("INITED_MANAGER_ITEM", this._data);
 			this.start();

@@ -100,7 +100,14 @@ function addFunc($modName)
 		var cmd = $modName;
 		if ($modName.charAt(0) == "/")
 		{
-			cmd += "/" + $funcName;
+			if(cmd == "/")
+			{
+				cmd += $funcName;
+			}
+			else
+			{
+				cmd += "/" + $funcName;
+			}
 		}
 		else
 		{

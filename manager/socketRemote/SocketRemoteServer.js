@@ -49,7 +49,6 @@ class SocketRemoteServer {
 		this.reqHash = {};
 		this.param = $param;
 		this.connected = false;
-//		this.connected = true;
 		this.emiter = new Emitter();
 		this.init();
 	}
@@ -240,16 +239,6 @@ function writeOut($status, $resultObj, $request, $response, $headerObj, $respons
 	$response.writeHead($status, header);
 	if ($responseType == "download")
 	{
-//		$resultObj.on("data", (chunk) =>
-//		{
-//			trace(123123)
-//			$response.write(chunk, "binary")
-//		});
-//		$resultObj.on("end", function ()
-//		{
-//			$response.end();
-//		});
-
 		let fileStream = g.fs.createReadStream($resultObj.data);
 		fileStream.pipe($response);
 	}

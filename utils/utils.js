@@ -201,10 +201,17 @@ function parseUrl($url)
 {
 	var res = Object.create(null)
 	var url = $url.split("?")[0];
-	var port = url.split("://")[0];
-	port != "" && (port += "://");
-	var tempurl = url.substr(port.length);
-	var host = port + tempurl.substring(0, tempurl.indexOf("/"));
+	var protocol = url.split("://")[0];
+	protocol != "" && (protocol += "://");
+	var tempurl = url.substr(protocol.length);
+	var domain = tempurl.substring(0, tempurl.indexOf("/"));
+	var host = domain;
+	var port = 80;
+	if(domain.indexOf(":") > 0)
+	{
+		port = domain.substring(domain.indexOf(":")+1) - 0;
+		domain = domain.substring(0, domain.indexOf(":"));
+	}
 	$url = $url.replace(url, "");
 	var query = Object.create(null);
 	var bookmark = "";
@@ -243,9 +250,12 @@ function parseUrl($url)
 	res.host = host;
 	res.bookmark = bookmark;
 	res.query = query;
+	res.domain = domain;
+	res.port = port;
 	return res
 }
 global.parseUrl = parseUrl;
+global.queryUrl = parseUrl;
 
 // function __extends(d, b)
 // {

@@ -49,16 +49,6 @@ function hhhhhhhh()
 			})
 		}
 	})
-//				fs.rename(files.btn.path, filePath, ()=>
-//				{
-//					var html = g.data.file.get("/template").get("upload.html", {
-//						fileName: fileName,
-//						size: fileSize,
-//						redirectUrl: $data.redirectUrl
-//					});
-//					$succcess(html, {"Content-Type": "text/html"}, "text", true);
-//				});
-
 }
 
 function del()
