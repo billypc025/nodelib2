@@ -2,7 +2,7 @@
  * Created by billy on 2021/1/12.
  */
 
-module.exports = async function ($exeFunc, $targetList, $multiNum, $param = {})
+module.exports = async function ($exeFunc, $targetList, $multiNum, $param={})
 {
 	var _timeList = []
 	var promiseList = [];
@@ -18,9 +18,9 @@ module.exports = async function ($exeFunc, $targetList, $multiNum, $param = {})
 		var avg = Math.ceil(targetList.length / $multiNum);
 		var tempList = targetList.splice(0, Math.min(avg, targetList.length));
 		var infoObj = {
-			curr: 0,
-			total: tempList.length,
-			...$param
+			__curr: 0,
+			__total: tempList.length,
+			...$param,
 		};
 		_timeList.push(infoObj);
 //		promiseList.push($exeFunc(infoObj, tempList));
@@ -29,9 +29,9 @@ module.exports = async function ($exeFunc, $targetList, $multiNum, $param = {})
 			var resultList = [];
 			for (var itemObj of $list)
 			{
-				var resultObj = await $exeFunc(itemObj);
+				var resultObj = await $exeFunc(itemObj, infoObj);
 				resultList.push(resultObj);
-				$infoObj.curr++;
+				$infoObj.__curr++;
 			}
 			return resultList;
 		})(infoObj, tempList));
@@ -46,11 +46,11 @@ module.exports = async function ($exeFunc, $targetList, $multiNum, $param = {})
 			var curr = 0;
 			if (_timeList.length == 1)
 			{
-				curr = _timeList[0].curr;
+				curr = _timeList[0].__curr;
 			}
 			else
 			{
-				curr = _timeList.reduce((a, b)=>isNum(a) ? a + b.curr : a.curr + b.curr);
+				curr = _timeList.reduce((a, b)=>isNum(a) ? a + b.__curr : a.__curr + b.__curr);
 			}
 			var pastTime = Date.now() - startTime;
 			var speed = curr / pastTime * 1000; // 个/s
